@@ -1,1 +1,0 @@
-this.jymin = {version: 'JYMIN_VERSION'};

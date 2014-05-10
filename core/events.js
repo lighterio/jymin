@@ -1,14 +1,13 @@
 /**
  * Bind a handler to listen for a particular event on an element.
  */
-function bind(
+var bind = function (
 	element,            // DOMElement|string*: Element or ID of element to bind to.
 	eventName,          // string*:            Name of event (e.g. "click", "mouseover", "keyup").
 	eventHandler,       // function*:          Function to run when the event is triggered. `eventHandler(element, event, target, customData)`
 	customData,         // object:             Custom data to pass through to the event handler when it's triggered.
 	multiBindCustomData
-	) {
-
+) {
 	// Allow multiple events to be bound at once using a space-delimited string.
 	if (containsString(eventName, ' ')) {
 		forEach(eventName.split(' '), function (singleEventName) {
@@ -52,58 +51,58 @@ function bind(
 			element['on' + eventName] = callback;
 		}
 	}
-}
-
+};
 
 /**
  * Stop event bubbling.
  */
-function stopEvent(
+var stopEvent = function (
 	event // object*: Event to be canceled.
-	) {
+) {
 	event.cancelBubble = true;
 	if (event.stopPropagation) {
 		event.stopPropagation();
 	}
-}
-
+};
 
 /**
  * Bind an event handler for both the focus and blur events.
  */
-function bindFocusChange(
+var bindFocusChange = function (
 	element, // DOMElement|string*
 	eventHandler,
 	customData
-	) {
+) {
 	bind(element, 'focus', eventHandler, true, customData);
 	bind(element, 'blur', eventHandler, false, customData);
-}
-
+};
 
 /**
  * Bind an event handler for both the mouseenter and mouseleave events.
  */
-function bindHover(element, eventHandler, customData) {
+var bindHover = function (
+	element,
+	eventHandler,
+	customData
+) {
 	var ieVersion = getBrowserVersionOrZero('msie');
 	var HOVER_OVER = 'mouse' + (ieVersion ? 'enter' : 'over');
 	var HOVER_OUT = 'mouse' + (ieVersion ? 'leave' : 'out');
 	bind(element, HOVER_OVER, eventHandler, true, customData);
 	bind(element, HOVER_OUT, eventHandler, false, customData);
-}
-
+};
 
 /**
  * Bind an event handler on an element that delegates to specified child elements.
  */
-function on(
+var on = function (
 	element,
 	tagAndClass,
 	eventName,
 	eventHandler,
 	customData,
 	multiBindCustomData
-	) {
+) {
 	tagAndClass = tagAndClass.split('.');
 	var tagName = tagAndClass[0].toUpperCase();
 	var className = tagAndClass[1];
@@ -119,30 +118,39 @@ function on(
 		}
 	};
 	bind(element, eventName, onHandler, customData);
-}
-
+};
 
 /**
  * Bind an event handler for both the mouseenter and mouseleave events.
  */
-function onHover(element, tagAndClass, eventHandler, customData) {
+var onHover = function (
+	element,
+	tagAndClass,
+	eventHandler,
+	customData
+) {
 	on(element, tagAndClass, 'mouseover', eventHandler, true, customData);
 	on(element, tagAndClass, 'mouseout', eventHandler, false, customData);
-}
-
+};
 
 /**
  * Bind an event handler for both the mouseenter and mouseleave events.
  */
-function bindClick(element, eventHandler, customData) {
+var bindClick = function (
+	element,
+	eventHandler,
+	customData
+) {
 	bind(element, 'click', eventHandler, customData);
-}
-
+};
 
 /**
  * Bind a callback to be run after window onload.
  */
-function bindWindowLoad(callback, windowObject) {
+var bindWindowLoad = function (
+	callback,
+	windowObject
+) {
 	// Default to the run after the window we're in.
 	windowObject = windowObject || window;
 	// If the window is already loaded, run the callback now.
@@ -153,42 +161,46 @@ function bindWindowLoad(callback, windowObject) {
 	else {
 		bind(windowObject, 'load', callback);
 	}
-}
-
+};
 
 /**
  * Return true if the object is loaded (signaled by its readyState being "loaded" or "complete").
  * This can be useful for the documents, iframes and scripts.
  */
-function isLoaded(object) {
+var isLoaded = function (
+	object
+) {
 	var state = object.readyState;
 	// In all browsers, documents will reach readyState=="complete".
 	// In IE, scripts can reach readyState=="loaded" or readyState=="complete".
 	// In non-IE browsers, we can bind to script.onload instead of checking script.readyState.
 	return state == 'complete' || (object.tagName == 'script' && state == 'loaded');
-}
-
+};
 
 /**
  * Focus on a specified element.
  */
-function focusElement(element) {
+var focusElement = function (
+	element
+) {
 	element = getElement(element);
 	if (element) {
 		element.focus();
 	}
-}
-
+};
 
 /**
  * Stop events from triggering a handler more than once in rapid succession.
  */
-function doOnce(method, args, delay) {
+var doOnce = function (
+	method,
+	args,
+	delay
+) {
 	clearTimeout(method.t);
 	method.t = setTimeout(function () {
 		clearTimeout(method.t);
 		method.call(args);
 	}, delay || 9);
-}
-
+};
 

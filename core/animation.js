@@ -4,7 +4,7 @@ var DEFAULT_ANIMATION_FRAME_DELAY = 20;
 /**
  * Perform an animation.
  */
-function animate(
+var animate = function (
 	element,          // string|DOMElement*: Element or ID of element to animate.
 	styleTransitions, // object*:            cssText values to animate through.
 	onFinish,         // function:           Callback to execute when animation is complete.
@@ -43,18 +43,16 @@ function animate(
             onFinish(element);
         }
     }
-}
-
+};
 
 /**
  * Stop an animation on a given DOM element.
  */
-function stopAnimation(
+var stopAnimation = function (
 	element // string|DOMElement*: Element or ID of element to cancel the animation on.
 ) {
     if (element = getElement(element)) {
         clearTimeout(element.animation);
     }
-}
-
+};
 

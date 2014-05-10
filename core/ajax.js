@@ -1,14 +1,15 @@
 /**
  * Empty handler.
  */
-var doNothing = function doNothing() {};
-
+var doNothing = function () {};
+var globalResponseSuccessHandler = doNothing;
+var globalResponseFailureHandler = doNothing;
 
 /**
  * Make an AJAX request, and handle it with success or failure.
  * @return boolean: True if AJAX is supported.
  */
-function getResponse(
+var getResponse = function (
 	url,       // string*:  The URL to request data from.
 	data,      // object:   Data to post. The method is automagically "POST" if data is truey, otherwise "GET".
 	onSuccess, // function: Callback to run on success. `onSuccess(response, request)`.
@@ -33,12 +34,16 @@ function getResponse(
 	if (request) {
 		request.onreadystatechange = function() {
 			if (request.readyState == 4) {
-				var callback = request.status == 200 ? onSuccess || doNothing : onFailure || getResponse.onFailure;
+				var callback = request.status == 200 ?
+					onSuccess || globalResponseSuccessHandler :
+					onFailure || globalResponseFailureHandler;
 				var response = request.responseText;
 				if (evalJson) {
 					try {
-						eval('eval.J=' + response);
-						response = eval.J;
+						// Trick Uglify into thinking there's no eval.
+						var e = window.eval;
+						e('eval.J=' + response);
+						response = e.J;
 					}
 					catch (e) {
 						log('ERROR: Could not parse JSON', response);
@@ -54,20 +59,17 @@ function getResponse(
 		request.send(data || null);
 	}
 	return true;
-}
-getResponse.onFailure = doNothing;
-
+};
 
 /**
  * Request a JSON resource with a given URL.
  * @return boolean: True if AJAX is supported.
  */
-function getJson(
+var getJson = function (
 	url,       // string*:  The URL to request data from.
 	onSuccess, // function: Callback to run on success. `onSuccess(response, request)`.
 	onFailure  // function: Callback to run on failure. `onFailure(response, request)`.
 ) {
 	return getResponse(url, onSuccess, onFailure, true);
-}
-
+};
 

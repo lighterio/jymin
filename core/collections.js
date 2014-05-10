@@ -1,7 +1,7 @@
 /**
  * Iterate over an array, and call a function on each item.
  */
-function forEach(
+var forEach = function (
 	array,   // Array*:    The array to iterate over.
 	callback // function*: The function to call on each item. `callback(item, index, array)`
 ) {
@@ -13,13 +13,12 @@ function forEach(
             }
         }
     }
-}
-
+};
 
 /**
  * Iterate over an object's keys, and call a function on each key value pair.
  */
-function forIn(
+var forIn = function (
 	object,  // object*:   The object to iterate over.
 	callback // function*: The function to call on each pair. `callback(value, key, object)`
 ) {
@@ -31,13 +30,12 @@ function forIn(
             }
         }
     }
-}
-
+};
 
 /**
  * Decorate an object with properties from another object. If the properties
  */
-function decorateObject(
+var decorateObject = function (
 	object,      // object*: The object to decorate.
 	decorations  // object*: The object to iterate over.
 ) {
@@ -47,6 +45,5 @@ function decorateObject(
 		});
     }
     return object;
-}
-
+};
 

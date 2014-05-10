@@ -1,7 +1,10 @@
 /**
  * Get or set the value of a form element.
  */
-var valueOf = function (input, value) {
+var valueOf = function (
+	input,
+	value
+) {
 	input = getElement(input);
 	var type = input.type;
 	var isCheckbox = type == 'checkbox';

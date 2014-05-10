@@ -15,7 +15,9 @@ var getBaseUrl = function () {
 /**
  * Get the query parameters from a URL.
  */
-var getQueryParams = function (url) {
+var getQueryParams = function (
+	url
+) {
 	url = url || location.href;
 	var query = url.substr(url.indexOf('?') + 1).split('#')[0];
 	var pairs = query.split('&');
@@ -32,7 +34,9 @@ var getQueryParams = function (url) {
 /**
  * Get the query parameters from the hash of a URL.
  */
-var getHashParams = function (hash) {
+var getHashParams = function (
+	hash
+) {
 	hash = (hash || location.hash).replace(/^#/, '');
 	return hash ? getQueryParams(hash) : {};
 };

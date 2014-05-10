@@ -1,4 +1,0 @@
-var $ = getElement;
-var $$ = getElementsByTagAndClass;
-
-

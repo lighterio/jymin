@@ -19,21 +19,27 @@ var getHistory = function () {
 /**
  * Push an item into the history.
  */
-var pushHistory = function (href) {
+var pushHistory = function (
+	href
+) {
 	getHistory().push(href);
 };
 
 /**
  * Push an item into the history.
  */
-var replaceHistory = function (href) {
+var replaceHistory = function (
+	href
+) {
 	getHistory().replace(href);
 };
 
 /**
  * Go back.
  */
-var popHistory = function (href) {
+var popHistory = function (
+	href
+) {
 	getHistory().back();
 };
 

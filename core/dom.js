@@ -3,31 +3,32 @@
  * If you pass in a DOM element, it just returns it.
  * This can be used to ensure that you have a DOM element.
  */
-function getElement(
+var getElement = function (
 	id,           // string|DOMElement*: DOM element or ID of a DOM element.
 	parentElement // DOMElement:         Document or DOM element for getElementById. (Default: document)
 ) {
     // If the argument is not a string, just assume it's already an element reference, and return it.
     return typeof id == 'string' ? (fromDocument || document).getElementById(id) : id;
-}
-
+};
 
 /**
  * Get DOM elements that have a specified tag name.
  */
-function getElementsByTagName(
+var getElementsByTagName = function (
 	tagName,      // string:     Name of the tag to look for. (Default: "*")
 	parentElement // DOMElement: Document or DOM element for getElementsByTagName. (Default: document)
 ) {
     parentElement = getElement(parentElement || document);
     return parentElement ? parentElement.getElementsByTagName(tagName || '*') : [];
-}
-
+};
 
 /**
  * Get DOM elements that have a specified tag and class.
  */
-function getElementsByTagAndClass(tagAndClass, parentElement) {
+var getElementsByTagAndClass = function (
+	tagAndClass,
+	parentElement
+) {
     tagAndClass = tagAndClass.split('.');
     var tagName = (tagAndClass[0] || '*').toUpperCase();
     var className = tagAndClass[1];
@@ -53,13 +54,15 @@ function getElementsByTagAndClass(tagAndClass, parentElement) {
     	elements = getElementsByTagName(tagName, parentElement);
     }
     return elements;
-}
-
+};
 
 /**
  * Get the parent of a DOM element.
  */
-function getParent(element, tagName) {
+var getParent = function (
+	element,
+	tagName
+) {
     var parentElement = (getElement(element) || {}).parentNode;
     // If a tag name is specified, keep walking up.
     if (tagName && parentElement) {
@@ -68,13 +71,16 @@ function getParent(element, tagName) {
         }
     }
     return parentElement;
-}
-
+};
 
 /**
  * Create a DOM element, and append it to a parent element.
  */
-function addElement(parentElement, tagIdentifier, beforeSibling) {
+var addElement = function (
+	parentElement,
+	tagIdentifier,
+	beforeSibling
+) {
 	var tagAndAttributes = tagIdentifier.split('?');
 	var tagAndClass = tagAndAttributes[0].split('.');
     var className = tagAndClass.slice(1).join(' ');
@@ -102,41 +108,47 @@ function addElement(parentElement, tagIdentifier, beforeSibling) {
 	    });
     }
     return element;
-}
-
+};
 
 /**
  * Create a DOM element, and prepend it to a parent element.
  */
-function prependElement(parentElement, tagIdentifier) {
+var prependElement = function (
+	parentElement,
+	tagIdentifier
+) {
 	var beforeSibling = getFirstChild(parentElement);
 	return addElement(parentElement, tagIdentifier, beforeSibling);
-}
-
+};
 
 /**
  * Wrap an existing DOM element within a newly created one.
  */
-function wrapElement(element, tagIdentifier) {
+var wrapElement = function (
+	element,
+	tagIdentifier
+) {
     var parentElement = getParent(element);
     var wrapper = addElement(parentElement, tagIdentifier, element);
     insertChild(wrapper, element);
     return wrapper;
-}
-
+};
 
 /**
  * Return the children of a parent DOM element.
  */
-function getChildren(parentElement) {
+var getChildren = function (
+	parentElement
+) {
     return getElement(parentElement).childNodes;
-}
-
+};
 
 /**
  * Return a DOM element's index with respect to its parent.
  */
-function getIndex(element) {
+var getIndex = function (
+	element
+) {
     if (element = getElement(element)) {
         var index = 0;
         while (element = element.previousSibling) {
@@ -144,13 +156,16 @@ function getIndex(element) {
         }
         return index;
     }
-}
-
+};
 
 /**
  * Append a child DOM element to a parent DOM element.
  */
-function insertChild(parentElement, childElement, beforeSibling) {
+var insertChild = function (
+	parentElement,
+	childElement,
+	beforeSibling
+) {
     // Ensure that we have elements, not just IDs.
     parentElement = getElement(parentElement);
     childElement = getElement(childElement);
@@ -162,13 +177,14 @@ function insertChild(parentElement, childElement, beforeSibling) {
         // Insert the element, optionally before an existing sibling.
         parentElement.insertBefore(childElement, beforeSibling || null);
     }
-}
-
+};
 
 /**
  * Remove a DOM element from its parent.
  */
-function removeElement(element) {
+var removeElement = function (
+	element
+) {
     // Ensure that we have an element, not just an ID.
     if (element = getElement(element)) {
         // Remove the element from its parent, provided that its parent still exists.
@@ -177,145 +193,161 @@ function removeElement(element) {
             parentElement.removeChild(element);
         }
     }
-}
-
+};
 
 /**
  * Remove children from a DOM element.
  */
-function removeChildren(element) {
+var removeChildren = function (
+	element
+) {
     setHtml(element, '');
-}
-
+};
 
 /**
  * Get a DOM element's inner HTML if the element can be found.
  */
-function getHtml(element) {
+var getHtml = function (
+	element
+) {
     // Ensure that we have an element, not just an ID.
     if (element = getElement(element)) {
         return element.innerHTML;
     }
-}
-
+};
 
 /**
  * Set a DOM element's inner HTML if the element can be found.
  */
-function setHtml(element, html) {
+var setHtml = function (
+	element,
+	html
+) {
     // Ensure that we have an element, not just an ID.
     if (element = getElement(element)) {
         // Set the element's innerHTML.
         element.innerHTML = html;
     }
-	return html;
-}
-
+};
 
 /**
  * Get a DOM element's inner text if the element can be found.
  */
-function getText(element) {
+var getText = function (
+	element
+) {
     // Ensure that we have an element, not just an ID.
     if (element = getElement(element)) {
         return element.innerText;
     }
-}
-
+};
 
 /**
  * Set a DOM element's inner text if the element can be found.
  */
-function setText(element, text) {
+var setText = function (
+	element,
+	text
+) {
     // Ensure that we have an element, not just an ID.
     if (element = getElement(element)) {
         // Set the element's innerText.
         element.innerHTML = text;
     }
-	return text;
-}
-
+};
 
 /**
  * Get a DOM element's class name if the element can be found.
  */
-function getClass(element) {
+var getClass = function (
+	element
+) {
     // Ensure that we have an element, not just an ID.
     if (element = getElement(element)) {
         return element.className;
     }
-}
-
+};
 
 /**
  * Set a DOM element's class name if the element can be found.
  */
-function setClass(element, text) {
+var setClass = function (
+	element,
+	className
+) {
     // Ensure that we have an element, not just an ID.
     if (element = getElement(element)) {
         // Set the element's innerText.
-        element.className = text;
+        element.className = className;
     }
-	return text;
-}
-
+};
 
 /**
  * Get a DOM element's firstChild if the element can be found.
  */
-function getFirstChild(element) {
+var getFirstChild = function (
+	element
+) {
     // Ensure that we have an element, not just an ID.
     if (element = getElement(element)) {
         return element.firstChild;
     }
-}
-
+};
 
 /**
  * Get a DOM element's previousSibling if the element can be found.
  */
-function getPreviousSibling(element) {
+var getPreviousSibling = function (
+	element
+) {
     // Ensure that we have an element, not just an ID.
     if (element = getElement(element)) {
         return element.previousSibling;
     }
-}
-
+};
 
 /**
  * Get a DOM element's nextSibling if the element can be found.
  */
-function getNextSibling(element) {
+var getNextSibling = function (
+	element
+) {
     // Ensure that we have an element, not just an ID.
     if (element = getElement(element)) {
 		return element.nextSibling;
     }
-}
-
+};
 
 /**
  * Case-sensitive class detection.
  */
-function hasClass(element, className) {
+var hasClass = function (
+	element,
+	className
+) {
 	var pattern = new RegExp('(^|\\s)' + className + '(\\s|$)');
 	return pattern.test(getClass(element));
-}
-
+};
 
 /**
  * Add a class to a given element.
  */
-function addClass(element, className) {
+var addClass = function (
+	element,
+	className
+) {
     if (element = getElement(element)) {
     	element.className += ' ' + className;
     }
-}
-
+};
 
 /**
  * Remove a class from a given element.
  */
-function removeClass(element, className) {
+var removeClass = function (
+	element,
+	className
+) {
 	if (element = getElement(element)) {
     	var tokens = getClass(element).split(/\s/);
     	var ok = [];
@@ -326,30 +358,37 @@ function removeClass(element, className) {
     	});
 	    element.className = ok.join(' ');
     }
-}
-
+};
 
 /**
  * Turn a class on or off on a given element.
  */
-function flipClass(element, className, flipOn) {
+var flipClass = function (
+	element,
+	className,
+	flipOn
+) {
     var method = flipOn ? addClass : removeClass;
     method(element, className);
-}
-
+};
 
 /**
  * Turn a class on or off on a given element.
  */
-function toggleClass(element, className) {
+var toggleClass = function (
+	element,
+	className
+) {
     flipClass(element, className, !hasClass(element, className));
-}
-
+};
 
 /**
  * Insert a call to an external JavaScript file.
  */
-function insertScript(src, callback) {
+var insertScript = function (
+	src,
+	callback
+) {
     var head = getElementsByTagName('head')[0];
     var script = addElement(0, 'script');
     if (callback) {
@@ -361,6 +400,5 @@ function insertScript(src, callback) {
         };
     }
     script.src = src;
-}
-
+};
 

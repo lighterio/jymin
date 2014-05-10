@@ -2,7 +2,7 @@
  * Return all cookies.
  * @return object: Cookie names and values.
  */
-function getAllCookies() {
+var getAllCookies = function () {
 	var str = document.cookie;
 	var decode = decodeURIComponent;
 	var obj = {};
@@ -14,24 +14,22 @@ function getAllCookies() {
 		obj[decode(pair[0])] = decode(pair[1]);
 	}
 	return obj;
-}
-
+};
 
 /**
  * Get a cookie by name.
  * @return string: Cookie value.
  */
-function getCookie(
+var getCookie = function (
 	name // string*: Name of the cookie.
 ) {
 	return getAllCookies()[name];
-}
-
+};
 
 /**
  * Set a cookie.
  */
-function setCookie(
+var setCookie = function (
 	name,   // string*: Name of the cookie.
 	value,  // string*: Value to set.
 	options // object:  Name/value pairs for options including "maxage", "expires", "path", "domain" and "secure".
@@ -50,7 +48,7 @@ function setCookie(
 	if (options.expires) str += ';expires=' + options.expires.toUTCString();
 	if (options.secure) str += ';secure';
 	document.cookie = str;
-}
+};
 
 /**
  * Delete a cookie.
@@ -59,5 +57,5 @@ var deleteCookie = function deleteCookie(
 	name   // string*: Name of the cookie.
 ) {
 	setCookie(name, null);
-}
+};
 
