@@ -6,9 +6,16 @@ require('figlet').text('Jymin v' + exports.version, {font: 'Standard'}, function
 
 	figlet = figlet.replace(/\n/g, '\n *');
 
-	require('chug')('core')
-		.concat('jymin.js')
+	var source = require('chug')('scripts');
+
+	source.concat('jymin.js')
 		.each(function (asset) {
+			var locations = source.getLocations();
+			locations.forEach(function (location, index) {
+				locations[index] = location.replace(
+					/^.*\/node_modules\/([a-z]+)\/(.*?)$/,
+					' *   https://github.com/zerious/$1/blob/master/$2');
+			});
 			asset.setContent(
 				"/**\n" +
 				" *" + figlet + "\n" +
@@ -16,7 +23,10 @@ require('figlet').text('Jymin v' + exports.version, {font: 'Standard'}, function
 				" * http://lighter.io/jymin\n" +
 				" * MIT License\n" +
 				" *\n" +
-				" * If you're seeing this, you haven't minified yet!\n" +
+				" * If you're seeing this in production, you really should minify.\n" +
+				" *\n" +
+				" * Source files:\n" +
+				locations.join("\n") + "\n" +
 				" */\n\n\n" +
 				"this.jymin = {version: '" + exports.version + "'};\n\n" +
 				asset.getContent());

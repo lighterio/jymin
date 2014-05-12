@@ -1,19 +1,34 @@
 /**
- *      _                 _                ___   _  _  _   
- *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ / || || |  
- *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | || || || |_ 
- * | |_| | |_| | | | | | | | | | |  \ V /| |_| || ||__   _|
- *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_(_) |_|  
+ *      _                 _                ___   _   ____  
+ *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ / | | ___| 
+ *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | || | |___ \ 
+ * | |_| | |_| | | | | | | | | | |  \ V /| |_| || |_ ___) |
+ *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_(_)____/ 
  *        |___/                                            
  *
  * http://lighter.io/jymin
  * MIT License
  *
- * If you're seeing this, you haven't minified yet!
+ * If you're seeing this in production, you really should minify.
+ *
+ * Source files:
+ *   https://github.com/zerious/jymin/blob/master/scripts/ajax.js
+ *   https://github.com/zerious/jymin/blob/master/scripts/animation.js
+ *   https://github.com/zerious/jymin/blob/master/scripts/collections.js
+ *   https://github.com/zerious/jymin/blob/master/scripts/cookies.js
+ *   https://github.com/zerious/jymin/blob/master/scripts/dates.js
+ *   https://github.com/zerious/jymin/blob/master/scripts/dom.js
+ *   https://github.com/zerious/jymin/blob/master/scripts/events.js
+ *   https://github.com/zerious/jymin/blob/master/scripts/forms.js
+ *   https://github.com/zerious/jymin/blob/master/scripts/history.js
+ *   https://github.com/zerious/jymin/blob/master/scripts/logging.js
+ *   https://github.com/zerious/jymin/blob/master/scripts/numbers.js
+ *   https://github.com/zerious/jymin/blob/master/scripts/strings.js
+ *   https://github.com/zerious/jymin/blob/master/scripts/url.js
  */
 
 
-this.jymin = {version: '0.1.4'};
+this.jymin = {version: '0.1.5'};
 
 /**
  * Empty handler.
@@ -51,11 +66,12 @@ var getResponse = function (
 	if (request) {
 		request.onreadystatechange = function() {
 			if (request.readyState == 4) {
-				var callback = request.status == 200 ?
+				var isSuccess = (request.status == 200);
+				var callback = isSuccess ?
 					onSuccess || globalResponseSuccessHandler :
 					onFailure || globalResponseFailureHandler;
 				var response = request.responseText;
-				if (evalJson) {
+				if (isSuccess && evalJson) {
 					try {
 						// Trick Uglify into thinking there's no eval.
 						var e = window.eval;
@@ -63,7 +79,7 @@ var getResponse = function (
 						response = e.J;
 					}
 					catch (e) {
-						log('ERROR: Could not parse JSON', response);
+						log('ERROR: Could not parse JSON: "' + response + '"');
 					}
 				}
 				callback(response, request);
@@ -149,6 +165,55 @@ var stopAnimation = function (
 };
 
 /**
+ * Iterate over an array, and call a function on each item.
+ */
+var forEach = function (
+	array,   // Array*:    The array to iterate over.
+	callback // function*: The function to call on each item. `callback(item, index, array)`
+) {
+    if (array) {
+        for (var index = 0, length = array.length; index < length; index++) {
+            var result = callback(array[index], index, array);
+            if (result === false) {
+                break;
+            }
+        }
+    }
+};
+
+/**
+ * Iterate over an object's keys, and call a function on each key value pair.
+ */
+var forIn = function (
+	object,  // object*:   The object to iterate over.
+	callback // function*: The function to call on each pair. `callback(value, key, object)`
+) {
+    if (object) {
+        for (var key in object) {
+            var result = callback(object[key], key, object);
+            if (result === false) {
+                break;
+            }
+        }
+    }
+};
+
+/**
+ * Decorate an object with properties from another object. If the properties
+ */
+var decorateObject = function (
+	object,      // object*: The object to decorate.
+	decorations  // object*: The object to iterate over.
+) {
+    if (object && decorations) {
+		forIn(decorations, function (value, key) {
+			object[key] = value;
+		});
+    }
+    return object;
+};
+
+/**
  * Return all cookies.
  * @return object: Cookie names and values.
  */
@@ -207,55 +272,6 @@ var deleteCookie = function deleteCookie(
 	name   // string*: Name of the cookie.
 ) {
 	setCookie(name, null);
-};
-
-/**
- * Iterate over an array, and call a function on each item.
- */
-var forEach = function (
-	array,   // Array*:    The array to iterate over.
-	callback // function*: The function to call on each item. `callback(item, index, array)`
-) {
-    if (array) {
-        for (var index = 0, length = array.length; index < length; index++) {
-            var result = callback(array[index], index, array);
-            if (result === false) {
-                break;
-            }
-        }
-    }
-};
-
-/**
- * Iterate over an object's keys, and call a function on each key value pair.
- */
-var forIn = function (
-	object,  // object*:   The object to iterate over.
-	callback // function*: The function to call on each pair. `callback(value, key, object)`
-) {
-    if (object) {
-        for (var key in object) {
-            var result = callback(object[key], key, object);
-            if (result === false) {
-                break;
-            }
-        }
-    }
-};
-
-/**
- * Decorate an object with properties from another object. If the properties
- */
-var decorateObject = function (
-	object,      // object*: The object to decorate.
-	decorations  // object*: The object to iterate over.
-) {
-    if (object && decorations) {
-		forIn(decorations, function (value, key) {
-			object[key] = value;
-		});
-    }
-    return object;
 };
 
 /**

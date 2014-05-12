@@ -34,11 +34,12 @@ var getResponse = function (
 	if (request) {
 		request.onreadystatechange = function() {
 			if (request.readyState == 4) {
-				var callback = request.status == 200 ?
+				var isSuccess = (request.status == 200);
+				var callback = isSuccess ?
 					onSuccess || globalResponseSuccessHandler :
 					onFailure || globalResponseFailureHandler;
 				var response = request.responseText;
-				if (evalJson) {
+				if (isSuccess && evalJson) {
 					try {
 						// Trick Uglify into thinking there's no eval.
 						var e = window.eval;
@@ -46,7 +47,7 @@ var getResponse = function (
 						response = e.J;
 					}
 					catch (e) {
-						log('ERROR: Could not parse JSON', response);
+						log('ERROR: Could not parse JSON: "' + response + '"');
 					}
 				}
 				callback(response, request);
