@@ -12,7 +12,7 @@
     "zepto",
     "alternative"
   ],
-  "version": "0.1.5",
+  "version": "0.1.6",
   "main": "chug/chug.js",
   "homepage": "http://lighter.io/jymin",
   "repository": "http://github.com/zerious/jymin.git",
@@ -37,6 +37,7 @@
     "node >= 0.2.6"
   ],
   "scripts": {
+    "build": "node chug/chug",
     "test": "mocha",
     "retest": "mocha --watch",
     "cover": "istanbul cover _mocha",
@@ -50,7 +51,7 @@
     "mocha": "1.18.2",
     "istanbul": "0.2.9",
     "coveralls": "2.10.0",
-    "chug": "0.1.8",
+    "chug": "0.1.12",
     "figlet": "1.0.8"
   }
 }

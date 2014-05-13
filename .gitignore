@@ -1,4 +1,3 @@
-
 *.seed
 *.log
 *.csv
@@ -15,5 +14,5 @@ logs
 results
 coverage
 node_modules
-
 build
+jymin.min.js
