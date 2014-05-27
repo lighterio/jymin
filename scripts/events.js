@@ -96,28 +96,28 @@ var bindHover = function (
  * Bind an event handler on an element that delegates to specified child elements.
  */
 var on = function (
-	element,
-	tagAndClass,
-	eventName,
-	eventHandler,
-	customData,
-	multiBindCustomData
+  element,
+  tagAndClass,
+  eventName,
+  eventHandler,
+  customData,
+  multiBindCustomData
 ) {
-	tagAndClass = tagAndClass.split('.');
-	var tagName = tagAndClass[0].toUpperCase();
-	var className = tagAndClass[1];
-	var onHandler = function(target, event, element, customData) {
-		if (!tagName || (target.tagName == tagName)) {
-			if (!className || hasClass(target, className)) {
-				return eventHandler(target, event, element, multiBindCustomData || customData);
-			}
-		}
-		// Bubble up to find a tagAndClass match because we didn't find one this time.
-		if (target = getParent(target)) {
-			onHandler(target, event, element, customData);
-		}
-	};
-	bind(element, eventName, onHandler, customData);
+  tagAndClass = tagAndClass.split('.');
+  var tagName = tagAndClass[0].toUpperCase();
+  var className = tagAndClass[1];
+  var onHandler = function(element, event, target, customData) {
+    if (!tagName || (target.tagName == tagName)) {
+      if (!className || hasClass(target, className)) {
+        return eventHandler(target, event, element, multiBindCustomData || customData);
+      }
+    }
+    // Bubble up to find a tagAndClass match because we didn't find one this time.
+    if (target = getParent(target)) {
+      onHandler(element, event, target, customData);
+    }
+  };
+  bind(element, eventName, onHandler, customData);
 };
 
 /**
@@ -203,4 +203,3 @@ var doOnce = function (
 		method.call(args);
 	}, delay || 9);
 };
-
