@@ -5,12 +5,12 @@ var DEFAULT_ANIMATION_FRAME_DELAY = 20;
  * Perform an animation.
  */
 var animate = function (
-	element,          // string|DOMElement*: Element or ID of element to animate.
-	styleTransitions, // object*:            cssText values to animate through.
-	onFinish,         // function:           Callback to execute when animation is complete.
-	frameCount,       // integer:            Number of frames to animate through. (Default: 40)
-	frameDelay,       // integer:            Number of milliseconds between frames. (Default: 20ms)
-	frameIndex        // integer:            Index of the frame to start on. (Default: 0)
+  element,          // string|DOMElement*: Element or ID of element to animate.
+  styleTransitions, // object*:            cssText values to animate through.
+  onFinish,         // function:           Callback to execute when animation is complete.
+  frameCount,       // integer:            Number of frames to animate through. (Default: 40)
+  frameDelay,       // integer:            Number of milliseconds between frames. (Default: 20ms)
+  frameIndex        // integer:            Index of the frame to start on. (Default: 0)
 ) {
     if (element = getElement(element)) {
         // Only allow one animation on an element at a time.
@@ -49,7 +49,7 @@ var animate = function (
  * Stop an animation on a given DOM element.
  */
 var stopAnimation = function (
-	element // string|DOMElement*: Element or ID of element to cancel the animation on.
+  element // string|DOMElement*: Element or ID of element to cancel the animation on.
 ) {
     if (element = getElement(element)) {
         clearTimeout(element.animation);

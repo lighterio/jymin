@@ -2,8 +2,8 @@
  * Iterate over an array, and call a function on each item.
  */
 var forEach = function (
-	array,   // Array*:    The array to iterate over.
-	callback // function*: The function to call on each item. `callback(item, index, array)`
+  array,   // Array*:    The array to iterate over.
+  callback // function*: The function to call on each item. `callback(item, index, array)`
 ) {
     if (array) {
         for (var index = 0, length = array.length; index < length; index++) {
@@ -19,8 +19,8 @@ var forEach = function (
  * Iterate over an object's keys, and call a function on each key value pair.
  */
 var forIn = function (
-	object,  // object*:   The object to iterate over.
-	callback // function*: The function to call on each pair. `callback(value, key, object)`
+  object,  // object*:   The object to iterate over.
+  callback // function*: The function to call on each pair. `callback(value, key, object)`
 ) {
     if (object) {
         for (var key in object) {
@@ -36,13 +36,13 @@ var forIn = function (
  * Decorate an object with properties from another object. If the properties
  */
 var decorateObject = function (
-	object,      // object*: The object to decorate.
-	decorations  // object*: The object to iterate over.
+  object,      // object*: The object to decorate.
+  decorations  // object*: The object to iterate over.
 ) {
     if (object && decorations) {
-		forIn(decorations, function (value, key) {
-			object[key] = value;
-		});
+    forIn(decorations, function (value, key) {
+      object[key] = value;
+    });
     }
     return object;
 };

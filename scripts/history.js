@@ -1,45 +1,45 @@
 /**
- * Return a history object. 
+ * Return a history object.
  */
 var getHistory = function () {
-	var history = window.history || {};
-	forEach(['push', 'replace'], function (key) {
-		var fn = history[key + 'State'];
-		history[key] = function (href) {
-			if (fn) {
-				fn.apply(history, [null, null, href]);
-			} else {
-				// TODO: Create a backward compatible history push.
-			}
-		};
-	});
-	return history;
+  var history = window.history || {};
+  forEach(['push', 'replace'], function (key) {
+    var fn = history[key + 'State'];
+    history[key] = function (href) {
+      if (fn) {
+        fn.apply(history, [null, null, href]);
+      } else {
+        // TODO: Create a backward compatible history push.
+      }
+    };
+  });
+  return history;
 };
 
 /**
  * Push an item into the history.
  */
 var pushHistory = function (
-	href
+  href
 ) {
-	getHistory().push(href);
+  getHistory().push(href);
 };
 
 /**
  * Push an item into the history.
  */
 var replaceHistory = function (
-	href
+  href
 ) {
-	getHistory().replace(href);
+  getHistory().replace(href);
 };
 
 /**
  * Go back.
  */
 var popHistory = function (
-	href
+  href
 ) {
-	getHistory().back();
+  getHistory().back();
 };
 

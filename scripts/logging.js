@@ -2,8 +2,8 @@
  * Log values to the console, if it's available.
  */
 var log = function (
-	message,
-	object
+  message,
+  object
 ) {
     if (window.console && console.log) {
         // Prefix the first argument (hopefully a string) with the marker.
@@ -15,4 +15,3 @@ var log = function (
         }
     }
 };
-

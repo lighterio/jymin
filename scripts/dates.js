@@ -3,9 +3,9 @@
  * @return integer: Epoch milliseconds.
  */
 var getTime = function (
-	date // Date: Date object. (Default: now)
+  date // Date: Date object. (Default: now)
 ) {
-	date = date || new Date();
-	return date.getTime();
+  date = date || new Date();
+  return date.getTime();
 };
 
