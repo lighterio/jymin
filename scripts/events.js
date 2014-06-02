@@ -10,7 +10,8 @@ var bind = function (
 ) {
   // Allow multiple events to be bound at once using a space-delimited string.
   if (containsString(eventName, ' ')) {
-    forEach(eventName.split(' '), function (singleEventName) {
+    var eventNames = splitBySpaces(eventName);
+    forEach(eventNames, function (singleEventName) {
       bind(element, singleEventName, eventHandler, customData, multiBindCustomData);
     });
     return;
@@ -190,7 +191,7 @@ var focusElement = function (
       element.focus();
     }
   };
-  if (typeof delay == 'undefined') {
+  if (isUndefined(delay)) {
     focus();
   }
   else {
@@ -221,12 +222,12 @@ var addTimeout = function (
   callback,
   delay
 ) {
-  var isString = (typeof elementOrString == 'string');
-  var object = isString ? addTimeout : elementOrString;
-  var key = isString ? elementOrString : 'T';
+  var usingString = isString(elementOrString);
+  var object = usingString ? addTimeout : elementOrString;
+  var key = usingString ? elementOrString : 'T';
   clearTimeout(object[key]);
   if (callback) {
-    if (typeof delay == 'undefined') {
+    if (isUndefined(delay)) {
       delay = 9;
     }
     object[key] = setTimeout(callback, delay);

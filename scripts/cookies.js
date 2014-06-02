@@ -21,7 +21,7 @@ var getAllCookies = function () {
  * @return string: Cookie value.
  */
 var getCookie = function (
-  name // string*: Name of the cookie.
+  name // string: Name of the cookie.
 ) {
   return getAllCookies()[name];
 };
@@ -30,9 +30,9 @@ var getCookie = function (
  * Set a cookie.
  */
 var setCookie = function (
-  name,   // string*: Name of the cookie.
-  value,  // string*: Value to set.
-  options // object:  Name/value pairs for options including "maxage", "expires", "path", "domain" and "secure".
+  name,   // string:  Name of the cookie.
+  value,  // string:  Value to set.
+  options // object|: Name/value pairs for options including "maxage", "expires", "path", "domain" and "secure".
 ) {
   options = options || {};
   var encode = encodeURIComponent;
@@ -54,8 +54,7 @@ var setCookie = function (
  * Delete a cookie.
  */
 var deleteCookie = function deleteCookie(
-  name   // string*: Name of the cookie.
+  name   // string: Name of the cookie.
 ) {
   setCookie(name, null);
 };
-

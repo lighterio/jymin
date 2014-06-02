@@ -1,17 +1,44 @@
 /**
  * Log values to the console, if it's available.
  */
-var log = function (
-  message,
-  object
-) {
-    if (window.console && console.log) {
-        // Prefix the first argument (hopefully a string) with the marker.
-        if (typeof object == 'undefined') {
-            console.log(message);
-        }
-        else {
-            console.log(message, object);
-        }
-    }
+var error = function () {
+  ifConsole('error', arguments);
+};
+
+/**
+ * Log values to the console, if it's available.
+ */
+var warn = function () {
+  ifConsole('warn', arguments);
+};
+
+/**
+ * Log values to the console, if it's available.
+ */
+var info = function () {
+  ifConsole('info', arguments);
+};
+
+/**
+ * Log values to the console, if it's available.
+ */
+var log = function () {
+  ifConsole('log', arguments);
+};
+
+/**
+ * Log values to the console, if it's available.
+ */
+var trace = function () {
+  ifConsole('trace', arguments);
+};
+
+/**
+ * Log values to the console, if it's available.
+ */
+var ifConsole = function (method, arguments) {
+  var console = window.console;
+  if (console && console[method]) {
+    console[method].apply(console, arguments);
+  }
 };

@@ -7,8 +7,8 @@ var getElement = function (
   id,           // string|DOMElement*: DOM element or ID of a DOM element.
   parentElement // DOMElement:         Document or DOM element for getElementById. (Default: document)
 ) {
-    // If the argument is not a string, just assume it's already an element reference, and return it.
-    return typeof id == 'string' ? (parentElement || document).getElementById(id) : id;
+  // If the argument is not a string, just assume it's already an element reference, and return it.
+  return isString(id) ? (parentElement || document).getElementById(id) : id;
 };
 
 /**
@@ -18,8 +18,8 @@ var getElementsByTagName = function (
   tagName,      // string:     Name of the tag to look for. (Default: "*")
   parentElement // DOMElement: Document or DOM element for getElementsByTagName. (Default: document)
 ) {
-    parentElement = getElement(parentElement || document);
-    return parentElement ? parentElement.getElementsByTagName(tagName || '*') : [];
+  parentElement = getElement(parentElement || document);
+  return parentElement ? parentElement.getElementsByTagName(tagName || '*') : [];
 };
 
 /**
@@ -29,31 +29,31 @@ var getElementsByTagAndClass = function (
   tagAndClass,
   parentElement
 ) {
-    tagAndClass = tagAndClass.split('.');
-    var tagName = (tagAndClass[0] || '*').toUpperCase();
-    var className = tagAndClass[1];
-    if (className) {
-      parentElement = getElement(parentElement || document);
-      var elements = [];
-      if (parentElement.getElementsByClassName) {
-          forEach(parentElement.getElementsByClassName(className), function(element) {
-              if (element.tagName == tagName) {
-                  elements.push(element);
-              }
-          });
-      }
-      else {
-          forEach(getElementsByTagName(tagName), function(element) {
-              if (hasClass(element, className)) {
-                  elements.push(element);
-              }
-          });
-      }
+  tagAndClass = tagAndClass.split('.');
+  var tagName = (tagAndClass[0] || '*').toUpperCase();
+  var className = tagAndClass[1];
+  if (className) {
+    parentElement = getElement(parentElement || document);
+    var elements = [];
+    if (parentElement.getElementsByClassName) {
+      forEach(parentElement.getElementsByClassName(className), function(element) {
+        if (element.tagName == tagName) {
+          elements.push(element);
+        }
+      });
     }
     else {
-      elements = getElementsByTagName(tagName, parentElement);
+      forEach(getElementsByTagName(tagName), function(element) {
+        if (hasClass(element, className)) {
+          elements.push(element);
+        }
+      });
     }
-    return elements;
+  }
+  else {
+    elements = getElementsByTagName(tagName, parentElement);
+  }
+  return elements;
 };
 
 /**
@@ -63,14 +63,14 @@ var getParent = function (
   element,
   tagName
 ) {
-    var parentElement = (getElement(element) || {}).parentNode;
-    // If a tag name is specified, keep walking up.
-    if (tagName && parentElement) {
-        if (parentElement.tagName != tagName) {
-            parentElement = getParent(parentElement, tagName);
-        }
+  var parentElement = (getElement(element) || {}).parentNode;
+  // If a tag name is specified, keep walking up.
+  if (tagName && parentElement) {
+    if (parentElement.tagName != tagName) {
+      parentElement = getParent(parentElement, tagName);
     }
-    return parentElement;
+  }
+  return parentElement;
 };
 
 /**
@@ -79,7 +79,7 @@ var getParent = function (
 var createElement = function (
   tagIdentifier
 ) {
-  if (typeof tagIdentifier != 'string') {
+  if (!isString(tagIdentifier)) {
     return tagIdentifier;
   }
   tagIdentifier = tagIdentifier || '';
@@ -155,10 +155,10 @@ var wrapElement = function (
   element,
   tagIdentifier
 ) {
-    var parentElement = getParent(element);
-    var wrapper = addElement(parentElement, tagIdentifier, element);
-    insertElement(wrapper, element);
-    return wrapper;
+  var parentElement = getParent(element);
+  var wrapper = addElement(parentElement, tagIdentifier, element);
+  insertElement(wrapper, element);
+  return wrapper;
 };
 
 /**
@@ -167,7 +167,7 @@ var wrapElement = function (
 var getChildren = function (
   parentElement
 ) {
-    return getElement(parentElement).childNodes;
+  return getElement(parentElement).childNodes;
 };
 
 /**
@@ -176,13 +176,13 @@ var getChildren = function (
 var getIndex = function (
   element
 ) {
-    if (element = getElement(element)) {
-        var index = 0;
-        while (element = element.previousSibling) {
-            ++index;
-        }
-        return index;
+  if (element = getElement(element)) {
+    var index = 0;
+    while (element = element.previousSibling) {
+      ++index;
     }
+    return index;
+  }
 };
 
 /**
@@ -193,17 +193,17 @@ var insertElement = function (
   childElement,
   beforeSibling
 ) {
-    // Ensure that we have elements, not just IDs.
-    parentElement = getElement(parentElement);
-    childElement = getElement(childElement);
-    if (parentElement && childElement) {
-        // If the beforeSibling value is a number, get the (future) sibling at that index.
-        if (typeof beforeSibling == 'number') {
-            beforeSibling = getChildren(parentElement)[beforeSibling];
-        }
-        // Insert the element, optionally before an existing sibling.
-        parentElement.insertBefore(childElement, beforeSibling || null);
+  // Ensure that we have elements, not just IDs.
+  parentElement = getElement(parentElement);
+  childElement = getElement(childElement);
+  if (parentElement && childElement) {
+    // If the beforeSibling value is a number, get the (future) sibling at that index.
+    if (isNumber(beforeSibling)) {
+      beforeSibling = getChildren(parentElement)[beforeSibling];
     }
+    // Insert the element, optionally before an existing sibling.
+    parentElement.insertBefore(childElement, beforeSibling || null);
+  }
 };
 
 /**
@@ -212,14 +212,14 @@ var insertElement = function (
 var removeElement = function (
   element
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        // Remove the element from its parent, provided that its parent still exists.
-        var parentElement = getParent(element);
-        if (parentElement) {
-            parentElement.removeChild(element);
-        }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    // Remove the element from its parent, provided that its parent still exists.
+    var parentElement = getParent(element);
+    if (parentElement) {
+      parentElement.removeChild(element);
     }
+  }
 };
 
 /**
@@ -228,7 +228,7 @@ var removeElement = function (
 var clearElement = function (
   element
 ) {
-    setHtml(element, '');
+  setHtml(element, '');
 };
 
 /**
@@ -237,10 +237,10 @@ var clearElement = function (
 var getHtml = function (
   element
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        return element.innerHTML;
-    }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    return element.innerHTML;
+  }
 };
 
 /**
@@ -250,11 +250,11 @@ var setHtml = function (
   element,
   html
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        // Set the element's innerHTML.
-        element.innerHTML = html;
-    }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    // Set the element's innerHTML.
+    element.innerHTML = html;
+  }
 };
 
 /**
@@ -263,10 +263,10 @@ var setHtml = function (
 var getText = function (
   element
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        return element.innerText;
-    }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    return element.innerText;
+  }
 };
 
 /**
@@ -276,11 +276,11 @@ var setText = function (
   element,
   text
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        // Set the element's innerText.
-        element.innerHTML = text;
-    }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    // Set the element's innerText.
+    element.innerHTML = text;
+  }
 };
 
 /**
@@ -289,10 +289,10 @@ var setText = function (
 var getClass = function (
   element
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        return element.className;
-    }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    return element.className;
+  }
 };
 
 /**
@@ -302,11 +302,11 @@ var setClass = function (
   element,
   className
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        // Set the element's innerText.
-        element.className = className;
-    }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    // Set the element's innerText.
+    element.className = className;
+  }
 };
 
 /**
@@ -315,10 +315,10 @@ var setClass = function (
 var getFirstChild = function (
   element
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        return element.firstChild;
-    }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    return element.firstChild;
+  }
 };
 
 /**
@@ -327,10 +327,10 @@ var getFirstChild = function (
 var getPreviousSibling = function (
   element
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        return element.previousSibling;
-    }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    return element.previousSibling;
+  }
 };
 
 /**
@@ -339,10 +339,10 @@ var getPreviousSibling = function (
 var getNextSibling = function (
   element
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
     return element.nextSibling;
-    }
+  }
 };
 
 /**
@@ -363,9 +363,9 @@ var addClass = function (
   element,
   className
 ) {
-    if (element = getElement(element)) {
-      element.className += ' ' + className;
-    }
+  if (element = getElement(element)) {
+    element.className += ' ' + className;
+  }
 };
 
 /**
@@ -376,15 +376,15 @@ var removeClass = function (
   className
 ) {
   if (element = getElement(element)) {
-      var tokens = getClass(element).split(/\s/);
-      var ok = [];
-      forEach(tokens, function (token) {
-        if (token != className) {
-          ok.push(token);
-        }
-      });
-      element.className = ok.join(' ');
-    }
+    var tokens = getClass(element).split(/\s/);
+    var ok = [];
+    forEach(tokens, function (token) {
+      if (token != className) {
+        ok.push(token);
+      }
+    });
+    element.className = ok.join(' ');
+  }
 };
 
 /**
@@ -395,8 +395,8 @@ var flipClass = function (
   className,
   flipOn
 ) {
-    var method = flipOn ? addClass : removeClass;
-    method(element, className);
+  var method = flipOn ? addClass : removeClass;
+  method(element, className);
 };
 
 /**
@@ -406,7 +406,7 @@ var toggleClass = function (
   element,
   className
 ) {
-    flipClass(element, className, !hasClass(element, className));
+  flipClass(element, className, !hasClass(element, className));
 };
 
 /**
@@ -416,15 +416,15 @@ var insertScript = function (
   src,
   callback
 ) {
-    var head = getElementsByTagName('head')[0];
-    var script = addElement(0, 'script');
-    if (callback) {
-        script.onload = callback;
-        script.onreadystatechange = function() {
-            if (isLoaded(script)) {
-                callback();
-            }
-        };
-    }
-    script.src = src;
+  var head = getElementsByTagName('head')[0];
+  var script = addElement(0, 'script');
+  if (callback) {
+    script.onload = callback;
+    script.onreadystatechange = function() {
+      if (isLoaded(script)) {
+        callback();
+      }
+    };
+  }
+  script.src = src;
 };

@@ -3,10 +3,10 @@
  */
 var forEach = function (
   array,   // Array*:    The array to iterate over.
-  callback // function*: The function to call on each item. `callback(item, index, array)`
+  callback // Function*: The function to call on each item. `callback(item, index, array)`
 ) {
     if (array) {
-        for (var index = 0, length = array.length; index < length; index++) {
+        for (var index = 0, length = getLength(array); index < length; index++) {
             var result = callback(array[index], index, array);
             if (result === false) {
                 break;
@@ -19,8 +19,8 @@ var forEach = function (
  * Iterate over an object's keys, and call a function on each key value pair.
  */
 var forIn = function (
-  object,  // object*:   The object to iterate over.
-  callback // function*: The function to call on each pair. `callback(value, key, object)`
+  object,  // Object*:   The object to iterate over.
+  callback // Function*: The function to call on each pair. `callback(value, key, object)`
 ) {
     if (object) {
         for (var key in object) {
@@ -36,8 +36,8 @@ var forIn = function (
  * Decorate an object with properties from another object. If the properties
  */
 var decorateObject = function (
-  object,      // object*: The object to decorate.
-  decorations  // object*: The object to iterate over.
+  object,     // Object: The object to decorate.
+  decorations // Object: The object to iterate over.
 ) {
     if (object && decorations) {
     forIn(decorations, function (value, key) {
@@ -47,3 +47,79 @@ var decorateObject = function (
     return object;
 };
 
+/**
+ * Get the length of an array.
+ * @return number: Array length.
+ */
+var getLength = function (
+  array // Array|DomNodeCollection|String: The object to check for length.
+) {
+  return isInstance(array) || isString(array) ? array.length : 0;
+};
+
+/**
+ * Get the first item in an array.
+ * @return mixed: First item.
+ */
+var getFirst = function (
+  array // Array: The array to get the
+) {
+  return isInstance(array) ? array[0] : undefined;
+};
+
+/**
+ * Get the first item in an array.
+ * @return mixed: First item.
+ */
+var getLast = function (
+  array // Array: The array to get the
+) {
+  return isInstance(array) ? array[getLength(array) - 1] : undefined;
+};
+
+/**
+ * Check for multiple array items.
+ * @return boolean: true if the array has more than one item.
+ */
+var hasMany = function (
+  array // Array: The array to check for item.
+) {
+  return getLength(array) > 1;
+};
+
+/**
+ * Push an item into an array.
+ * @return mixed: Pushed item.
+ */
+var pushItem = function (
+  array, // Array: The array to push the item into.
+  item   // mixed: The item to push.
+) {
+  if (isArray(array)) {
+    array.push(item);
+  }
+  return item;
+};
+
+/**
+ * Push padding values onto an array up to a specified length.
+ * @return number: The number of padding values that were added.
+ */
+var padArray = function (
+  array,       // Array:  The array to check for items.
+  padToLength, // number: The minimum number of items in the array.
+  paddingValue // mixed|: The value to use as padding.
+) {
+  var countAdded = 0;
+  if (isArray(array)) {
+    var startingLength = getLength(array);
+    if (startingLength < length) {
+      paddingValue = isDefined(paddingValue) ? paddingValue : '';
+      for (var index = startingLength; index < length; index++) {
+        array.push(paddingValue);
+        countAdded++;
+      }
+    }
+  }
+  return countAdded;
+};

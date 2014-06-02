@@ -10,14 +10,14 @@ var globalResponseFailureHandler = doNothing;
  * @return boolean: True if AJAX is supported.
  */
 var getResponse = function (
-  url,       // string*:  The URL to request data from.
-  data,      // object:   Data to post. The method is automagically "POST" if data is truey, otherwise "GET".
-  onSuccess, // function: Callback to run on success. `onSuccess(response, request)`.
-  onFailure, // function: Callback to run on failure. `onFailure(response, request)`.
-  evalJson   // boolean:  Whether to evaluate the response as JSON.
+  url,       // string:    The URL to request data from.
+  data,      // object|:   Data to post. The method is automagically "POST" if data is truey, otherwise "GET".
+  onSuccess, // function|: Callback to run on success. `onSuccess(response, request)`.
+  onFailure, // function|: Callback to run on failure. `onFailure(response, request)`.
+  evalJson   // boolean|:  Whether to evaluate the response as JSON.
 ) {
   // If the optional data argument is omitted, shuffle it out.
-  if (typeof data == 'function') {
+  if (isFunction(data)) {
     evalJson = onFailure;
     onFailure = onSuccess;
     onSuccess = data;
@@ -54,8 +54,9 @@ var getResponse = function (
       }
     };
     request.open(data ? 'POST' : 'GET', url, true);
+    request.setRequestHeader('x-requested-with', 'XMLHttpRequest');
     if (data) {
-      request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      request.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
     }
     request.send(data || null);
   }
@@ -67,10 +68,9 @@ var getResponse = function (
  * @return boolean: True if AJAX is supported.
  */
 var getJson = function (
-  url,       // string*:  The URL to request data from.
-  onSuccess, // function: Callback to run on success. `onSuccess(response, request)`.
-  onFailure  // function: Callback to run on failure. `onFailure(response, request)`.
+  url,       // string:    The URL to request data from.
+  onSuccess, // function|: Callback to run on success. `onSuccess(response, request)`.
+  onFailure  // function|: Callback to run on failure. `onFailure(response, request)`.
 ) {
   return getResponse(url, onSuccess, onFailure, true);
 };
-

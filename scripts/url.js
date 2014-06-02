@@ -40,4 +40,3 @@ var getHashParams = function (
   hash = (hash || location.hash).replace(/^#/, '');
   return hash ? getQueryParams(hash) : {};
 };
-

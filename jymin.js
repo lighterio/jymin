@@ -24,6 +24,7 @@
  *   https://github.com/zerious/jymin/blob/master/scripts/logging.js
  *   https://github.com/zerious/jymin/blob/master/scripts/numbers.js
  *   https://github.com/zerious/jymin/blob/master/scripts/strings.js
+ *   https://github.com/zerious/jymin/blob/master/scripts/types.js
  *   https://github.com/zerious/jymin/blob/master/scripts/url.js
  */
 
@@ -42,14 +43,14 @@ var globalResponseFailureHandler = doNothing;
  * @return boolean: True if AJAX is supported.
  */
 var getResponse = function (
-  url,       // string*:  The URL to request data from.
-  data,      // object:   Data to post. The method is automagically "POST" if data is truey, otherwise "GET".
-  onSuccess, // function: Callback to run on success. `onSuccess(response, request)`.
-  onFailure, // function: Callback to run on failure. `onFailure(response, request)`.
-  evalJson   // boolean:  Whether to evaluate the response as JSON.
+  url,       // string:    The URL to request data from.
+  data,      // object|:   Data to post. The method is automagically "POST" if data is truey, otherwise "GET".
+  onSuccess, // function|: Callback to run on success. `onSuccess(response, request)`.
+  onFailure, // function|: Callback to run on failure. `onFailure(response, request)`.
+  evalJson   // boolean|:  Whether to evaluate the response as JSON.
 ) {
   // If the optional data argument is omitted, shuffle it out.
-  if (typeof data == 'function') {
+  if (isFunction(data)) {
     evalJson = onFailure;
     onFailure = onSuccess;
     onSuccess = data;
@@ -86,8 +87,9 @@ var getResponse = function (
       }
     };
     request.open(data ? 'POST' : 'GET', url, true);
+    request.setRequestHeader('x-requested-with', 'XMLHttpRequest');
     if (data) {
-      request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      request.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
     }
     request.send(data || null);
   }
@@ -99,13 +101,12 @@ var getResponse = function (
  * @return boolean: True if AJAX is supported.
  */
 var getJson = function (
-  url,       // string*:  The URL to request data from.
-  onSuccess, // function: Callback to run on success. `onSuccess(response, request)`.
-  onFailure  // function: Callback to run on failure. `onFailure(response, request)`.
+  url,       // string:    The URL to request data from.
+  onSuccess, // function|: Callback to run on success. `onSuccess(response, request)`.
+  onFailure  // function|: Callback to run on failure. `onFailure(response, request)`.
 ) {
   return getResponse(url, onSuccess, onFailure, true);
 };
-
 var DEFAULT_ANIMATION_FRAME_COUNT = 40;
 var DEFAULT_ANIMATION_FRAME_DELAY = 20;
 
@@ -113,66 +114,65 @@ var DEFAULT_ANIMATION_FRAME_DELAY = 20;
  * Perform an animation.
  */
 var animate = function (
-  element,          // string|DOMElement*: Element or ID of element to animate.
-  styleTransitions, // object*:            cssText values to animate through.
-  onFinish,         // function:           Callback to execute when animation is complete.
-  frameCount,       // integer:            Number of frames to animate through. (Default: 40)
-  frameDelay,       // integer:            Number of milliseconds between frames. (Default: 20ms)
-  frameIndex        // integer:            Index of the frame to start on. (Default: 0)
+  element,          // string|DOMElement: Element or ID of element to animate.
+  styleTransitions, // object:            cssText values to animate through.
+  onFinish,         // function|:         Callback to execute when animation is complete.
+  frameCount,       // integer|:          Number of frames to animate through. (Default: 40)
+  frameDelay,       // integer|:          Number of milliseconds between frames. (Default: 20ms)
+  frameIndex        // integer|:          Index of the frame to start on. (Default: 0)
 ) {
-    if (element = getElement(element)) {
-        // Only allow one animation on an element at a time.
-        stopAnimation(element);
-        frameIndex = frameIndex || 0;
-        frameCount = frameCount || DEFAULT_ANIMATION_FRAME_COUNT;
-        frameDelay = frameDelay || DEFAULT_ANIMATION_FRAME_DELAY;
-        var scale = Math.atan(1.5) * 2;
-        var fraction = Math.atan(frameIndex / frameCount * 3 - 1.5) / scale + 0.5;
-        var styles = {};
-        forIn(styleTransitions, function(transition, key) {
-            var start = transition[0];
-            var end = transition[1];
-            var value;
-            if (isNaN(start)) {
-                value = frameIndex ? end : start;
-            }
-            else {
-                value = (1 - fraction) * start + fraction * end;
-            }
-            styles[key] = value;
-        });
-        extendStyle(element, styles);
-        if (frameIndex < frameCount) {
-            element.animation = setTimeout(function() {
-                animate(element, styleTransitions, onFinish, frameCount, frameDelay, frameIndex + 1);
-            });
-        }
-        else if (onFinish) {
-            onFinish(element);
-        }
+  if (element = getElement(element)) {
+    // Only allow one animation on an element at a time.
+    stopAnimation(element);
+    frameIndex = frameIndex || 0;
+    frameCount = frameCount || DEFAULT_ANIMATION_FRAME_COUNT;
+    frameDelay = frameDelay || DEFAULT_ANIMATION_FRAME_DELAY;
+    var scale = Math.atan(1.5) * 2;
+    var fraction = Math.atan(frameIndex / frameCount * 3 - 1.5) / scale + 0.5;
+    var styles = {};
+    forIn(styleTransitions, function(transition, key) {
+      var start = transition[0];
+      var end = transition[1];
+      var value;
+      if (isNaN(start)) {
+        value = frameIndex ? end : start;
+      }
+      else {
+        value = (1 - fraction) * start + fraction * end;
+      }
+      styles[key] = value;
+    });
+    extendStyle(element, styles);
+    if (frameIndex < frameCount) {
+      element.animation = setTimeout(function() {
+        animate(element, styleTransitions, onFinish, frameCount, frameDelay, frameIndex + 1);
+      });
     }
+    else if (onFinish) {
+      onFinish(element);
+    }
+  }
 };
 
 /**
  * Stop an animation on a given DOM element.
  */
 var stopAnimation = function (
-  element // string|DOMElement*: Element or ID of element to cancel the animation on.
+  element // string|DOMElement: Element or ID of element to cancel the animation on.
 ) {
-    if (element = getElement(element)) {
-        clearTimeout(element.animation);
-    }
+  if (element = getElement(element)) {
+    clearTimeout(element.animation);
+  }
 };
-
 /**
  * Iterate over an array, and call a function on each item.
  */
 var forEach = function (
   array,   // Array*:    The array to iterate over.
-  callback // function*: The function to call on each item. `callback(item, index, array)`
+  callback // Function*: The function to call on each item. `callback(item, index, array)`
 ) {
     if (array) {
-        for (var index = 0, length = array.length; index < length; index++) {
+        for (var index = 0, length = getLength(array); index < length; index++) {
             var result = callback(array[index], index, array);
             if (result === false) {
                 break;
@@ -185,8 +185,8 @@ var forEach = function (
  * Iterate over an object's keys, and call a function on each key value pair.
  */
 var forIn = function (
-  object,  // object*:   The object to iterate over.
-  callback // function*: The function to call on each pair. `callback(value, key, object)`
+  object,  // Object*:   The object to iterate over.
+  callback // Function*: The function to call on each pair. `callback(value, key, object)`
 ) {
     if (object) {
         for (var key in object) {
@@ -202,8 +202,8 @@ var forIn = function (
  * Decorate an object with properties from another object. If the properties
  */
 var decorateObject = function (
-  object,      // object*: The object to decorate.
-  decorations  // object*: The object to iterate over.
+  object,     // Object: The object to decorate.
+  decorations // Object: The object to iterate over.
 ) {
     if (object && decorations) {
     forIn(decorations, function (value, key) {
@@ -213,6 +213,82 @@ var decorateObject = function (
     return object;
 };
 
+/**
+ * Get the length of an array.
+ * @return number: Array length.
+ */
+var getLength = function (
+  array // Array|DomNodeCollection|String: The object to check for length.
+) {
+  return isInstance(array) || isString(array) ? array.length : 0;
+};
+
+/**
+ * Get the first item in an array.
+ * @return mixed: First item.
+ */
+var getFirst = function (
+  array // Array: The array to get the
+) {
+  return isInstance(array) ? array[0] : undefined;
+};
+
+/**
+ * Get the first item in an array.
+ * @return mixed: First item.
+ */
+var getLast = function (
+  array // Array: The array to get the
+) {
+  return isInstance(array) ? array[getLength(array) - 1] : undefined;
+};
+
+/**
+ * Check for multiple array items.
+ * @return boolean: true if the array has more than one item.
+ */
+var hasMany = function (
+  array // Array: The array to check for item.
+) {
+  return getLength(array) > 1;
+};
+
+/**
+ * Push an item into an array.
+ * @return mixed: Pushed item.
+ */
+var pushItem = function (
+  array, // Array: The array to push the item into.
+  item   // mixed: The item to push.
+) {
+  if (isArray(array)) {
+    array.push(item);
+  }
+  return item;
+};
+
+/**
+ * Push padding values onto an array up to a specified length.
+ * @return number: The number of padding values that were added.
+ */
+var padArray = function (
+  array,       // Array:  The array to check for items.
+  padToLength, // number: The minimum number of items in the array.
+  paddingValue // mixed|: The value to use as padding.
+) {
+  var countAdded = 0;
+  if (isArray(array)) {
+    var startingLength = getLength(array);
+    if (startingLength < length) {
+      paddingValue = isDefined(paddingValue) ? paddingValue : '';
+      for (var index = startingLength; index < length; index++) {
+        array.push(paddingValue);
+        countAdded++;
+      }
+    }
+  }
+  return countAdded;
+};
 /**
  * Return all cookies.
  * @return object: Cookie names and values.
@@ -236,7 +312,7 @@ var getAllCookies = function () {
  * @return string: Cookie value.
  */
 var getCookie = function (
-  name // string*: Name of the cookie.
+  name // string: Name of the cookie.
 ) {
   return getAllCookies()[name];
 };
@@ -245,9 +321,9 @@ var getCookie = function (
  * Set a cookie.
  */
 var setCookie = function (
-  name,   // string*: Name of the cookie.
-  value,  // string*: Value to set.
-  options // object:  Name/value pairs for options including "maxage", "expires", "path", "domain" and "secure".
+  name,   // string:  Name of the cookie.
+  value,  // string:  Value to set.
+  options // object|: Name/value pairs for options including "maxage", "expires", "path", "domain" and "secure".
 ) {
   options = options || {};
   var encode = encodeURIComponent;
@@ -269,11 +345,10 @@ var setCookie = function (
  * Delete a cookie.
  */
 var deleteCookie = function deleteCookie(
-  name   // string*: Name of the cookie.
+  name   // string: Name of the cookie.
 ) {
   setCookie(name, null);
 };
-
 /**
  * Get Unix epoch milliseconds from a date.
  * @return integer: Epoch milliseconds.
@@ -294,8 +369,8 @@ var getElement = function (
   id,           // string|DOMElement*: DOM element or ID of a DOM element.
   parentElement // DOMElement:         Document or DOM element for getElementById. (Default: document)
 ) {
-    // If the argument is not a string, just assume it's already an element reference, and return it.
-    return typeof id == 'string' ? (parentElement || document).getElementById(id) : id;
+  // If the argument is not a string, just assume it's already an element reference, and return it.
+  return isString(id) ? (parentElement || document).getElementById(id) : id;
 };
 
 /**
@@ -305,8 +380,8 @@ var getElementsByTagName = function (
   tagName,      // string:     Name of the tag to look for. (Default: "*")
   parentElement // DOMElement: Document or DOM element for getElementsByTagName. (Default: document)
 ) {
-    parentElement = getElement(parentElement || document);
-    return parentElement ? parentElement.getElementsByTagName(tagName || '*') : [];
+  parentElement = getElement(parentElement || document);
+  return parentElement ? parentElement.getElementsByTagName(tagName || '*') : [];
 };
 
 /**
@@ -316,31 +391,31 @@ var getElementsByTagAndClass = function (
   tagAndClass,
   parentElement
 ) {
-    tagAndClass = tagAndClass.split('.');
-    var tagName = (tagAndClass[0] || '*').toUpperCase();
-    var className = tagAndClass[1];
-    if (className) {
-      parentElement = getElement(parentElement || document);
-      var elements = [];
-      if (parentElement.getElementsByClassName) {
-          forEach(parentElement.getElementsByClassName(className), function(element) {
-              if (element.tagName == tagName) {
-                  elements.push(element);
-              }
-          });
-      }
-      else {
-          forEach(getElementsByTagName(tagName), function(element) {
-              if (hasClass(element, className)) {
-                  elements.push(element);
-              }
-          });
-      }
+  tagAndClass = tagAndClass.split('.');
+  var tagName = (tagAndClass[0] || '*').toUpperCase();
+  var className = tagAndClass[1];
+  if (className) {
+    parentElement = getElement(parentElement || document);
+    var elements = [];
+    if (parentElement.getElementsByClassName) {
+      forEach(parentElement.getElementsByClassName(className), function(element) {
+        if (element.tagName == tagName) {
+          elements.push(element);
+        }
+      });
     }
     else {
-      elements = getElementsByTagName(tagName, parentElement);
+      forEach(getElementsByTagName(tagName), function(element) {
+        if (hasClass(element, className)) {
+          elements.push(element);
+        }
+      });
     }
-    return elements;
+  }
+  else {
+    elements = getElementsByTagName(tagName, parentElement);
+  }
+  return elements;
 };
 
 /**
@@ -350,14 +425,14 @@ var getParent = function (
   element,
   tagName
 ) {
-    var parentElement = (getElement(element) || {}).parentNode;
-    // If a tag name is specified, keep walking up.
-    if (tagName && parentElement) {
-        if (parentElement.tagName != tagName) {
-            parentElement = getParent(parentElement, tagName);
-        }
+  var parentElement = (getElement(element) || {}).parentNode;
+  // If a tag name is specified, keep walking up.
+  if (tagName && parentElement) {
+    if (parentElement.tagName != tagName) {
+      parentElement = getParent(parentElement, tagName);
     }
-    return parentElement;
+  }
+  return parentElement;
 };
 
 /**
@@ -366,7 +441,7 @@ var getParent = function (
 var createElement = function (
   tagIdentifier
 ) {
-  if (typeof tagIdentifier != 'string') {
+  if (!isString(tagIdentifier)) {
     return tagIdentifier;
   }
   tagIdentifier = tagIdentifier || '';
@@ -442,10 +517,10 @@ var wrapElement = function (
   element,
   tagIdentifier
 ) {
-    var parentElement = getParent(element);
-    var wrapper = addElement(parentElement, tagIdentifier, element);
-    insertElement(wrapper, element);
-    return wrapper;
+  var parentElement = getParent(element);
+  var wrapper = addElement(parentElement, tagIdentifier, element);
+  insertElement(wrapper, element);
+  return wrapper;
 };
 
 /**
@@ -454,7 +529,7 @@ var wrapElement = function (
 var getChildren = function (
   parentElement
 ) {
-    return getElement(parentElement).childNodes;
+  return getElement(parentElement).childNodes;
 };
 
 /**
@@ -463,13 +538,13 @@ var getChildren = function (
 var getIndex = function (
   element
 ) {
-    if (element = getElement(element)) {
-        var index = 0;
-        while (element = element.previousSibling) {
-            ++index;
-        }
-        return index;
+  if (element = getElement(element)) {
+    var index = 0;
+    while (element = element.previousSibling) {
+      ++index;
     }
+    return index;
+  }
 };
 
 /**
@@ -480,17 +555,17 @@ var insertElement = function (
   childElement,
   beforeSibling
 ) {
-    // Ensure that we have elements, not just IDs.
-    parentElement = getElement(parentElement);
-    childElement = getElement(childElement);
-    if (parentElement && childElement) {
-        // If the beforeSibling value is a number, get the (future) sibling at that index.
-        if (typeof beforeSibling == 'number') {
-            beforeSibling = getChildren(parentElement)[beforeSibling];
-        }
-        // Insert the element, optionally before an existing sibling.
-        parentElement.insertBefore(childElement, beforeSibling || null);
+  // Ensure that we have elements, not just IDs.
+  parentElement = getElement(parentElement);
+  childElement = getElement(childElement);
+  if (parentElement && childElement) {
+    // If the beforeSibling value is a number, get the (future) sibling at that index.
+    if (isNumber(beforeSibling)) {
+      beforeSibling = getChildren(parentElement)[beforeSibling];
     }
+    // Insert the element, optionally before an existing sibling.
+    parentElement.insertBefore(childElement, beforeSibling || null);
+  }
 };
 
 /**
@@ -499,14 +574,14 @@ var insertElement = function (
 var removeElement = function (
   element
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        // Remove the element from its parent, provided that its parent still exists.
-        var parentElement = getParent(element);
-        if (parentElement) {
-            parentElement.removeChild(element);
-        }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    // Remove the element from its parent, provided that its parent still exists.
+    var parentElement = getParent(element);
+    if (parentElement) {
+      parentElement.removeChild(element);
     }
+  }
 };
 
 /**
@@ -515,7 +590,7 @@ var removeElement = function (
 var clearElement = function (
   element
 ) {
-    setHtml(element, '');
+  setHtml(element, '');
 };
 
 /**
@@ -524,10 +599,10 @@ var clearElement = function (
 var getHtml = function (
   element
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        return element.innerHTML;
-    }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    return element.innerHTML;
+  }
 };
 
 /**
@@ -537,11 +612,11 @@ var setHtml = function (
   element,
   html
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        // Set the element's innerHTML.
-        element.innerHTML = html;
-    }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    // Set the element's innerHTML.
+    element.innerHTML = html;
+  }
 };
 
 /**
@@ -550,10 +625,10 @@ var setHtml = function (
 var getText = function (
   element
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        return element.innerText;
-    }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    return element.innerText;
+  }
 };
 
 /**
@@ -563,11 +638,11 @@ var setText = function (
   element,
   text
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        // Set the element's innerText.
-        element.innerHTML = text;
-    }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    // Set the element's innerText.
+    element.innerHTML = text;
+  }
 };
 
 /**
@@ -576,10 +651,10 @@ var setText = function (
 var getClass = function (
   element
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        return element.className;
-    }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    return element.className;
+  }
 };
 
 /**
@@ -589,11 +664,11 @@ var setClass = function (
   element,
   className
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        // Set the element's innerText.
-        element.className = className;
-    }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    // Set the element's innerText.
+    element.className = className;
+  }
 };
 
 /**
@@ -602,10 +677,10 @@ var setClass = function (
 var getFirstChild = function (
   element
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        return element.firstChild;
-    }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    return element.firstChild;
+  }
 };
 
 /**
@@ -614,10 +689,10 @@ var getFirstChild = function (
 var getPreviousSibling = function (
   element
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
-        return element.previousSibling;
-    }
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
+    return element.previousSibling;
+  }
 };
 
 /**
@@ -626,10 +701,10 @@ var getPreviousSibling = function (
 var getNextSibling = function (
   element
 ) {
-    // Ensure that we have an element, not just an ID.
-    if (element = getElement(element)) {
+  // Ensure that we have an element, not just an ID.
+  if (element = getElement(element)) {
     return element.nextSibling;
-    }
+  }
 };
 
 /**
@@ -650,9 +725,9 @@ var addClass = function (
   element,
   className
 ) {
-    if (element = getElement(element)) {
-      element.className += ' ' + className;
-    }
+  if (element = getElement(element)) {
+    element.className += ' ' + className;
+  }
 };
 
 /**
@@ -663,15 +738,15 @@ var removeClass = function (
   className
 ) {
   if (element = getElement(element)) {
-      var tokens = getClass(element).split(/\s/);
-      var ok = [];
-      forEach(tokens, function (token) {
-        if (token != className) {
-          ok.push(token);
-        }
-      });
-      element.className = ok.join(' ');
-    }
+    var tokens = getClass(element).split(/\s/);
+    var ok = [];
+    forEach(tokens, function (token) {
+      if (token != className) {
+        ok.push(token);
+      }
+    });
+    element.className = ok.join(' ');
+  }
 };
 
 /**
@@ -682,8 +757,8 @@ var flipClass = function (
   className,
   flipOn
 ) {
-    var method = flipOn ? addClass : removeClass;
-    method(element, className);
+  var method = flipOn ? addClass : removeClass;
+  method(element, className);
 };
 
 /**
@@ -693,7 +768,7 @@ var toggleClass = function (
   element,
   className
 ) {
-    flipClass(element, className, !hasClass(element, className));
+  flipClass(element, className, !hasClass(element, className));
 };
 
 /**
@@ -703,17 +778,17 @@ var insertScript = function (
   src,
   callback
 ) {
-    var head = getElementsByTagName('head')[0];
-    var script = addElement(0, 'script');
-    if (callback) {
-        script.onload = callback;
-        script.onreadystatechange = function() {
-            if (isLoaded(script)) {
-                callback();
-            }
-        };
-    }
-    script.src = src;
+  var head = getElementsByTagName('head')[0];
+  var script = addElement(0, 'script');
+  if (callback) {
+    script.onload = callback;
+    script.onreadystatechange = function() {
+      if (isLoaded(script)) {
+        callback();
+      }
+    };
+  }
+  script.src = src;
 };
 /**
  * Bind a handler to listen for a particular event on an element.
@@ -727,7 +802,8 @@ var bind = function (
 ) {
   // Allow multiple events to be bound at once using a space-delimited string.
   if (containsString(eventName, ' ')) {
-    forEach(eventName.split(' '), function (singleEventName) {
+    var eventNames = splitBySpaces(eventName);
+    forEach(eventNames, function (singleEventName) {
       bind(element, singleEventName, eventHandler, customData, multiBindCustomData);
     });
     return;
@@ -907,7 +983,7 @@ var focusElement = function (
       element.focus();
     }
   };
-  if (typeof delay == 'undefined') {
+  if (isUndefined(delay)) {
     focus();
   }
   else {
@@ -938,12 +1014,12 @@ var addTimeout = function (
   callback,
   delay
 ) {
-  var isString = (typeof elementOrString == 'string');
-  var object = isString ? addTimeout : elementOrString;
-  var key = isString ? elementOrString : 'T';
+  var usingString = isString(elementOrString);
+  var object = usingString ? addTimeout : elementOrString;
+  var key = usingString ? elementOrString : 'T';
   clearTimeout(object[key]);
   if (callback) {
-    if (typeof delay == 'undefined') {
+    if (isUndefined(delay)) {
       delay = 9;
     }
     object[key] = setTimeout(callback, delay);
@@ -959,43 +1035,70 @@ var removeTimeout = function (
   addTimeout(elementOrString, false);
 };
 /**
- * Get or set the value of a form element.
+ * Get the value of a form element.
  */
-var valueOf = function (
+var getValue = function (
+  input
+) {
+  input = getElement(input);
+  if (input) {
+    var type = input.type[0];
+    var value = input.value;
+    var checked = input.checked;
+    var options = input.options;
+    if (isBoolean(checked)) {
+      value = checked ? value : null;
+    }
+    else if (input.multiple) {
+      value = [];
+      forEach(options, function (option) {
+        if (option.selected) {
+          pushItem(value, option.value);
+        }
+      });
+    }
+    else if (type == 's') {
+      value = options[input.selectedIndex].value;
+    }
+  }
+  return value;
+};
+
+/**
+ * Set the value of a form element.
+ */
+var setValue = function (
   input,
   value
 ) {
   input = getElement(input);
-  var type = input.type;
-  var isCheckbox = type == 'checkbox';
-  var isRadio = type == 'radio';
-  var isSelect = /select/.test(type);
-
-  if (typeof value == 'undefined') {
-    value = input.value;
-    if (isCheckbox) {
-      return input.checked ? value : null;
-    }
-    else if (isSelect) {
-      return input.options[input.selectedIndex].value;
-    }
-  }
-  else {
-    if (isCheckbox) {
+  if (input) {
+    var type = input.type[0];
+    if (type == 'c' || type == 'r') {
       input.checked = value ? true : false;
     }
-    else if (isSelect) {
-      forEach(input.options, function (option, index) {
-        if (option.value == value) {
-          input.selectedIndex = index;
+    else if (type == 's') {
+      var selected = {};
+      if (input.multiple) {
+        if (!isArray(value)) {
+          value = splitByCommas(value);
         }
+        forEach(value, function (val) {
+          selected[val] = true;
+        });
+      }
+      else {
+        selected[value] = true;
+      }
+      value = isArray(value) ? value : [value];
+      forEach(input.options, function (option) {
+        option.selected = !!selected[option.value];
       });
     }
     else {
       input.value = value;
     }
   }
-  return input.value;
 };
 /**
  * Return a history object.
@@ -1045,25 +1148,52 @@ var popHistory = function (
 /**
  * Log values to the console, if it's available.
  */
-var log = function (
-  message,
-  object
-) {
-    if (window.console && console.log) {
-        // Prefix the first argument (hopefully a string) with the marker.
-        if (typeof object == 'undefined') {
-            console.log(message);
-        }
-        else {
-            console.log(message, object);
-        }
-    }
+var error = function () {
+  ifConsole('error', arguments);
+};
+
+/**
+ * Log values to the console, if it's available.
+ */
+var warn = function () {
+  ifConsole('warn', arguments);
+};
+
+/**
+ * Log values to the console, if it's available.
+ */
+var info = function () {
+  ifConsole('info', arguments);
+};
+
+/**
+ * Log values to the console, if it's available.
+ */
+var log = function () {
+  ifConsole('log', arguments);
+};
+
+/**
+ * Log values to the console, if it's available.
+ */
+var trace = function () {
+  ifConsole('trace', arguments);
+};
+
+/**
+ * Log values to the console, if it's available.
+ */
+var ifConsole = function (method, arguments) {
+  var console = window.console;
+  if (console && console[method]) {
+    console[method].apply(console, arguments);
+  }
 };
 /**
  * If the argument is numeric, return a number, otherwise return zero.
- * @param {Object} n
+ * @param Object n
  */
-var forceNumber = function (
+var ensureNumber = function (
   number,
   defaultNumber
 ) {
@@ -1071,14 +1201,13 @@ var forceNumber = function (
   number *= 1;
   return isNaN(number) ? defaultNumber : number;
 };
-
 /**
- * Return true if it's a string.
+ * Ensure a value is a string.
  */
-var isString = function (
-  object
+var ensureString = function (
+  value
 ) {
-    return typeof object == 'string';
+  return isString(value) ? value : '' + value;
 };
 
 /**
@@ -1088,7 +1217,7 @@ var containsString = function (
   string,
   substring
 ) {
-    return ('' + string).indexOf(substring) > -1;
+  return ensureString(string).indexOf(substring) > -1;
 };
 
 /**
@@ -1097,7 +1226,25 @@ var containsString = function (
 var trimString = function (
   string
 ) {
-  return ('' + string).replace(/^\s+|\s+$/g, '');
+  return ensureString(string).replace(/^\s+|\s+$/g, '');
+};
+
+/**
+ * Split a string by commas.
+ */
+var splitByCommas = function (
+  string
+) {
+  return ensureString(string).split(',');
+};
+
+/**
+ * Split a string by spaces.
+ */
+var splitBySpaces = function (
+  string
+) {
+  return ensureString(string).split(' ');
 };
 
 /**
@@ -1107,11 +1254,11 @@ var decorateString = function (
   string,
   replacements
 ) {
-    string = '' + string;
-    forEach(replacements, function(replacement) {
-        string = string.replace('*', replacement);
-    });
-    return string;
+  string = ensureString(string);
+  forEach(replacements, function(replacement) {
+    string = string.replace('*', replacement);
+  });
+  return string;
 };
 
 /**
@@ -1120,7 +1267,7 @@ var decorateString = function (
 var extractLetters = function (
   string
 ) {
-    return ('' + string).replace(/[^a-z]/ig, '');
+  return ensureString(string).replace(/[^a-z]/ig, '');
 };
 
 /**
@@ -1129,7 +1276,7 @@ var extractLetters = function (
 var extractNumbers = function (
   string
 ) {
-    return ('' + string).replace(/[^0-9]/g, '');
+  return ensureString(string).replace(/[^0-9]/g, '');
 };
 
 /**
@@ -1151,10 +1298,94 @@ var buildQueryString = function (
 var getBrowserVersionOrZero = function (
   browserName
 ) {
-    var match = new RegExp(browserName + '[ /](\\d+(\\.\\d+)?)', 'i').exec(navigator.userAgent);
-    return match ? +match[1] : 0;
+  var match = new RegExp(browserName + '[ /](\\d+(\\.\\d+)?)', 'i').exec(navigator.userAgent);
+  return match ? +match[1] : 0;
+};
+// Make an undefined value available.
+var undefined = window.undefined;
+
+/**
+ * Return true if a variable is a given type.
+ */
+var isType = function (
+  value, // mixed:  The variable to check.
+  type   // string: The type we're checking for.
+) {
+  return typeof value == type;
 };
 
+/**
+ * Return true if a variable is undefined.
+ */
+var isUndefined = function (
+  value // mixed:  The variable to check.
+) {
+  return isType(value, 'undefined');
+};
+
+/**
+ * Return true if a variable is boolean.
+ */
+var isBoolean = function (
+  value // mixed:  The variable to check.
+) {
+  return isType(value, 'boolean');
+};
+
+/**
+ * Return true if a variable is a number.
+ */
+var isNumber = function (
+  value // mixed:  The variable to check.
+) {
+  return isType(value, 'number');
+};
+
+/**
+ * Return true if a variable is a string.
+ */
+var isString = function (
+  value // mixed:  The variable to check.
+) {
+  return isType(value, 'string');
+};
+
+/**
+ * Return true if a variable is a function.
+ */
+var isFunction = function (
+  value // mixed:  The variable to check.
+) {
+  return isType(value, 'function');
+};
+
+/**
+ * Return true if a variable is an object.
+ */
+var isObject = function (
+  value // mixed:  The variable to check.
+) {
+  return isType(value, 'object');
+};
+
+/**
+ * Return true if a variable is an instance of a class.
+ */
+var isInstance = function (
+  value,     // mixed:  The variable to check.
+  protoClass // Class|: The class we'ere checking for.
+) {
+  return value instanceof (protoClass || Object);
+};
+
+/**
+ * Return true if a variable is an array.
+ */
+var isArray = function (
+  value // mixed:  The variable to check.
+) {
+  return isInstance(value, Array);
+};
 /**
  * Get the current location host.
  */
@@ -1197,4 +1428,3 @@ var getHashParams = function (
   hash = (hash || location.hash).replace(/^#/, '');
   return hash ? getQueryParams(hash) : {};
 };
-

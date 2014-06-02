@@ -1,10 +1,10 @@
 /**
- * Return true if it's a string.
+ * Ensure a value is a string.
  */
-var isString = function (
-  object
+var ensureString = function (
+  value
 ) {
-    return typeof object == 'string';
+  return isString(value) ? value : '' + value;
 };
 
 /**
@@ -14,7 +14,7 @@ var containsString = function (
   string,
   substring
 ) {
-    return ('' + string).indexOf(substring) > -1;
+  return ensureString(string).indexOf(substring) > -1;
 };
 
 /**
@@ -23,7 +23,25 @@ var containsString = function (
 var trimString = function (
   string
 ) {
-  return ('' + string).replace(/^\s+|\s+$/g, '');
+  return ensureString(string).replace(/^\s+|\s+$/g, '');
+};
+
+/**
+ * Split a string by commas.
+ */
+var splitByCommas = function (
+  string
+) {
+  return ensureString(string).split(',');
+};
+
+/**
+ * Split a string by spaces.
+ */
+var splitBySpaces = function (
+  string
+) {
+  return ensureString(string).split(' ');
 };
 
 /**
@@ -33,11 +51,11 @@ var decorateString = function (
   string,
   replacements
 ) {
-    string = '' + string;
-    forEach(replacements, function(replacement) {
-        string = string.replace('*', replacement);
-    });
-    return string;
+  string = ensureString(string);
+  forEach(replacements, function(replacement) {
+    string = string.replace('*', replacement);
+  });
+  return string;
 };
 
 /**
@@ -46,7 +64,7 @@ var decorateString = function (
 var extractLetters = function (
   string
 ) {
-    return ('' + string).replace(/[^a-z]/ig, '');
+  return ensureString(string).replace(/[^a-z]/ig, '');
 };
 
 /**
@@ -55,7 +73,7 @@ var extractLetters = function (
 var extractNumbers = function (
   string
 ) {
-    return ('' + string).replace(/[^0-9]/g, '');
+  return ensureString(string).replace(/[^0-9]/g, '');
 };
 
 /**
@@ -77,7 +95,6 @@ var buildQueryString = function (
 var getBrowserVersionOrZero = function (
   browserName
 ) {
-    var match = new RegExp(browserName + '[ /](\\d+(\\.\\d+)?)', 'i').exec(navigator.userAgent);
-    return match ? +match[1] : 0;
+  var match = new RegExp(browserName + '[ /](\\d+(\\.\\d+)?)', 'i').exec(navigator.userAgent);
+  return match ? +match[1] : 0;
 };
-

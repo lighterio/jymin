@@ -18,7 +18,7 @@ require('figlet').text('Jymin v' + exports.version, {font: 'Standard'}, function
       });
       asset.setContent(
         "/**\n" +
-        " *" + figlet + "\n" +
+        " *" + (figlet + "\n").replace(/ +\n/g, '\n') +
         " *\n" +
         " * http://lighter.io/jymin\n" +
         " * MIT License\n" +
@@ -47,4 +47,3 @@ function addEval(code) {
     /([$_a-z]+) ?= ?JSON\.parse\(([$_a-z]+)\)/i,
     'eval("eval.J="+$2);$1=eval.J');
 }
-
