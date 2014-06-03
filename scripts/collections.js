@@ -48,6 +48,21 @@ var decorateObject = function (
 };
 
 /**
+ * Ensure that a property exists by creating it if it doesn't.
+ */
+var ensureProperty = function (
+  object,
+  property,
+  defaultValue
+) {
+  var value = object[property];
+  if (!value) {
+    value = object[property] = defaultValue;
+  }
+  return value;
+};
+
+/**
  * Get the length of an array.
  * @return number: Array length.
  */

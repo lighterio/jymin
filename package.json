@@ -1,6 +1,6 @@
 {
   "name": "jymin",
-  "description": "jymin is a Zerious module",
+  "description": "Minifier-friendly JavaScript for the real-time world",
   "keywords": [
     "jymin",
     "javascript",
@@ -12,7 +12,7 @@
     "zepto",
     "alternative"
   ],
-  "version": "0.1.10",
+  "version": "0.1.11",
   "main": "chug/chug.js",
   "homepage": "http://lighter.io/jymin",
   "repository": "http://github.com/zerious/jymin.git",

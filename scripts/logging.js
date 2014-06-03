@@ -36,9 +36,9 @@ var trace = function () {
 /**
  * Log values to the console, if it's available.
  */
-var ifConsole = function (method, arguments) {
+var ifConsole = function (method, args) {
   var console = window.console;
   if (console && console[method]) {
-    console[method].apply(console, arguments);
+    console[method].apply(console, args);
   }
 };

@@ -57,13 +57,22 @@ var bind = function (
 /**
  * Stop event bubbling.
  */
-var stopEvent = function (
-  event // object*: Event to be canceled.
+var stopPropagation = function (
+  event // object: Event to be canceled.
 ) {
   event.cancelBubble = true;
   if (event.stopPropagation) {
     event.stopPropagation();
   }
+};
+
+/**
+ * Prevent the default action for this event.
+ */
+var preventDefault = function (
+  event // object: Event to prevent from doing its default action.
+) {
+  event.preventDefault();
 };
 
 /**

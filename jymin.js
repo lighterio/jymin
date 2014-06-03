@@ -1,9 +1,9 @@
 /**
- *      _                 _                ___   _   _  ___
- *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ / | / |/ _ \
- *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | || | | | | | |
- * | |_| | |_| | | | | | | | | | |  \ V /| |_| || |_| | |_| |
- *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_(_)_|\___/
+ *      _                 _                ___   _   _ _
+ *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ / | / / |
+ *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | || | | | |
+ * | |_| | |_| | | | | | | | | | |  \ V /| |_| || |_| | |
+ *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_(_)_|_|
  *        |___/
  *
  * http://lighter.io/jymin
@@ -23,13 +23,14 @@
  *   https://github.com/zerious/jymin/blob/master/scripts/history.js
  *   https://github.com/zerious/jymin/blob/master/scripts/logging.js
  *   https://github.com/zerious/jymin/blob/master/scripts/numbers.js
+ *   https://github.com/zerious/jymin/blob/master/scripts/ready.js
  *   https://github.com/zerious/jymin/blob/master/scripts/strings.js
  *   https://github.com/zerious/jymin/blob/master/scripts/types.js
  *   https://github.com/zerious/jymin/blob/master/scripts/url.js
  */
 
 
-this.jymin = {version: '0.1.10'};
+this.jymin = {version: '0.1.11'};
 
 /**
  * Empty handler.
@@ -67,23 +68,28 @@ var getResponse = function (
   if (request) {
     request.onreadystatechange = function() {
       if (request.readyState == 4) {
+        --getResponse._WAITING;
         var isSuccess = (request.status == 200);
         var callback = isSuccess ?
           onSuccess || globalResponseSuccessHandler :
           onFailure || globalResponseFailureHandler;
         var response = request.responseText;
-        if (isSuccess && evalJson) {
+        if (evalJson) {
+          var object;
           try {
             // Trick Uglify into thinking there's no eval.
             var e = window.eval;
             e('eval.J=' + response);
-            response = e.J;
+            object = e.J;
           }
           catch (e) {
             //+env:dev
-            log('ERROR: Could not parse JSON: "' + response + '"');
+            error('Could not parse JSON: "' + response + '"');
             //-env:dev
+            object = {_ERROR: 'Invalid JSON', _TEXT: response};
           }
+          object.request = request;
+          response = object;
         }
         callback(response, request);
       }
@@ -93,6 +99,7 @@ var getResponse = function (
     if (data) {
       request.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
     }
+    getResponse._WAITING = (getResponse._WAITING || 0) + 1;
     request.send(data || null);
   }
   return true;
@@ -213,6 +220,21 @@ var decorateObject = function (
     });
     }
     return object;
+};
+
+/**
+ * Ensure that a property exists by creating it if it doesn't.
+ */
+var ensureProperty = function (
+  object,
+  property,
+  defaultValue
+) {
+  var value = object[property];
+  if (!value) {
+    value = object[property] = defaultValue;
+  }
+  return value;
 };
 
 /**
@@ -467,8 +489,8 @@ var createElement = function (
     attributes = attributes.split('&');
     forEach(attributes, function (attribute) {
       var keyAndValue = attribute.split('=');
-      var key = keyAndValue[0];
-      var value = keyAndValue[1];
+      var key = unescape(keyAndValue[0]);
+      var value = unescape(keyAndValue[1]);
       element[key] = value;
       element.setAttribute(key, value);
     });
@@ -781,7 +803,7 @@ var insertScript = function (
   callback
 ) {
   var head = getElementsByTagName('head')[0];
-  var script = addElement(0, 'script');
+  var script = addElement(head, 'script');
   if (callback) {
     script.onload = callback;
     script.onreadystatechange = function() {
@@ -851,13 +873,22 @@ var bind = function (
 /**
  * Stop event bubbling.
  */
-var stopEvent = function (
-  event // object*: Event to be canceled.
+var stopPropagation = function (
+  event // object: Event to be canceled.
 ) {
   event.cancelBubble = true;
   if (event.stopPropagation) {
     event.stopPropagation();
   }
+};
+
+/**
+ * Prevent the default action for this event.
+ */
+var preventDefault = function (
+  event // object: Event to prevent from doing its default action.
+) {
+  event.preventDefault();
 };
 
 /**
@@ -1130,7 +1161,7 @@ var pushHistory = function (
 };
 
 /**
- * Push an item into the history.
+ * Replace the current item in the history.
  */
 var replaceHistory = function (
   href
@@ -1147,6 +1178,14 @@ var popHistory = function (
   getHistory().back();
 };
 
+/**
+ * Listen for a history change.
+ */
+var onHistoryPop = function (
+  callback
+) {
+  bind(window, 'popstate', callback);
+};
 /**
  * Log values to the console, if it's available.
  */
@@ -1185,10 +1224,10 @@ var trace = function () {
 /**
  * Log values to the console, if it's available.
  */
-var ifConsole = function (method, arguments) {
+var ifConsole = function (method, args) {
   var console = window.console;
   if (console && console[method]) {
-    console[method].apply(console, arguments);
+    console[method].apply(console, args);
   }
 };
 /**
@@ -1202,6 +1241,36 @@ var ensureNumber = function (
   defaultNumber = defaultNumber || 0;
   number *= 1;
   return isNaN(number) ? defaultNumber : number;
+};
+/**
+ * Execute a callback when the page loads.
+ */
+var onReady = window.onReady = function (
+  callback
+) {
+  // If there's no queue, create it as a property of this function.
+  var queue = ensureProperty(onReady, '_QUEUE', []);
+
+  // If there's a callback, push it into the queue.
+  if (callback) {
+
+    // The first item in the queue causes onReady to be triggered.
+    if (!getLength(queue)) {
+      setTimeout(function () {
+        onReady()
+      }, 1);
+    }
+
+    // Put an item in the queue and wait.
+    pushItem(queue, callback);
+  }
+
+  // If there's no callback, onReady has been triggered, so run callbacks.
+  else {
+    forEach(queue, function (callback) {
+      callback();
+    });
+  }
 };
 /**
  * Ensure a value is a string.
@@ -1220,6 +1289,16 @@ var containsString = function (
   substring
 ) {
   return ensureString(string).indexOf(substring) > -1;
+};
+
+/**
+ * Return true if the string starts with the given substring.
+ */
+var startsWith = function (
+  string,
+  substring
+) {
+  return ensureString(string).indexOf(substring) == 0;
 };
 
 /**
@@ -1261,6 +1340,20 @@ var decorateString = function (
     string = string.replace('*', replacement);
   });
   return string;
+};
+
+/**
+ * Perform a RegExp match, and call a callback on the result;
+  */
+var match = function (
+  string,
+  pattern,
+  callback
+) {
+  var result = string.match(pattern);
+  if (result) {
+    callback.apply(string, result);
+  }
 };
 
 /**

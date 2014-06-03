@@ -34,23 +34,28 @@ var getResponse = function (
   if (request) {
     request.onreadystatechange = function() {
       if (request.readyState == 4) {
+        --getResponse._WAITING;
         var isSuccess = (request.status == 200);
         var callback = isSuccess ?
           onSuccess || globalResponseSuccessHandler :
           onFailure || globalResponseFailureHandler;
         var response = request.responseText;
-        if (isSuccess && evalJson) {
+        if (evalJson) {
+          var object;
           try {
             // Trick Uglify into thinking there's no eval.
             var e = window.eval;
             e('eval.J=' + response);
-            response = e.J;
+            object = e.J;
           }
           catch (e) {
             //+env:dev
-            log('ERROR: Could not parse JSON: "' + response + '"');
+            error('Could not parse JSON: "' + response + '"');
             //-env:dev
+            object = {_ERROR: 'Invalid JSON', _TEXT: response};
           }
+          object.request = request;
+          response = object;
         }
         callback(response, request);
       }
@@ -60,6 +65,7 @@ var getResponse = function (
     if (data) {
       request.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
     }
+    getResponse._WAITING = (getResponse._WAITING || 0) + 1;
     request.send(data || null);
   }
   return true;

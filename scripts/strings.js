@@ -18,6 +18,16 @@ var containsString = function (
 };
 
 /**
+ * Return true if the string starts with the given substring.
+ */
+var startsWith = function (
+  string,
+  substring
+) {
+  return ensureString(string).indexOf(substring) == 0;
+};
+
+/**
  * Trim the whitespace from a string.
  */
 var trimString = function (
@@ -56,6 +66,20 @@ var decorateString = function (
     string = string.replace('*', replacement);
   });
   return string;
+};
+
+/**
+ * Perform a RegExp match, and call a callback on the result;
+  */
+var match = function (
+  string,
+  pattern,
+  callback
+) {
+  var result = string.match(pattern);
+  if (result) {
+    callback.apply(string, result);
+  }
 };
 
 /**

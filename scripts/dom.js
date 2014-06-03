@@ -103,8 +103,8 @@ var createElement = function (
     attributes = attributes.split('&');
     forEach(attributes, function (attribute) {
       var keyAndValue = attribute.split('=');
-      var key = keyAndValue[0];
-      var value = keyAndValue[1];
+      var key = unescape(keyAndValue[0]);
+      var value = unescape(keyAndValue[1]);
       element[key] = value;
       element.setAttribute(key, value);
     });
@@ -417,7 +417,7 @@ var insertScript = function (
   callback
 ) {
   var head = getElementsByTagName('head')[0];
-  var script = addElement(0, 'script');
+  var script = addElement(head, 'script');
   if (callback) {
     script.onload = callback;
     script.onreadystatechange = function() {

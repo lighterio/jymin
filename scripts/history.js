@@ -26,7 +26,7 @@ var pushHistory = function (
 };
 
 /**
- * Push an item into the history.
+ * Replace the current item in the history.
  */
 var replaceHistory = function (
   href
@@ -43,3 +43,11 @@ var popHistory = function (
   getHistory().back();
 };
 
+/**
+ * Listen for a history change.
+ */
+var onHistoryPop = function (
+  callback
+) {
+  bind(window, 'popstate', callback);
+};
