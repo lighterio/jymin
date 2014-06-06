@@ -128,7 +128,7 @@ var addElement = function (
 };
 
 /**
- * Create a DOM element, and prepend it to a parent element.
+ * Create a DOM element, and append it to a parent element.
  */
 var appendElement = function (
   parentElement,
@@ -406,7 +406,13 @@ var toggleClass = function (
   element,
   className
 ) {
-  flipClass(element, className, !hasClass(element, className));
+  var turnOn = false;
+  element = getElement(element);
+  if (element) {
+    turnOn = !hasClass(element, className);
+    flipClass(element, className, turnOn);
+  }
+  return turnOn;
 };
 
 /**
@@ -427,4 +433,28 @@ var insertScript = function (
     };
   }
   script.src = src;
+};
+
+/**
+ * Run a callback on each element with a given tag and class.
+ */
+var forElements = function (
+  tagAndClass,
+  callback
+) {
+  var elements = getElementsByTagAndClass(tagAndClass);
+  forEach(elements, callback);
+};
+
+/**
+ * Run a callback on an element with a given id.
+ */
+var forElement = function (
+  id,
+  callback
+) {
+  var element = getElement(id);
+  if (element) {
+    callback(element);
+  }
 };

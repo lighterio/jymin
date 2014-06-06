@@ -1,9 +1,9 @@
 /**
- *      _                 _                ___   _   _ _
- *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ / | / / |
- *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | || | | | |
- * | |_| | |_| | | | | | | | | | |  \ V /| |_| || |_| | |
- *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_(_)_|_|
+ *      _                 _                ___   _   _ ____
+ *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ / | / |___ \
+ *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | || | | | __) |
+ * | |_| | |_| | | | | | | | | | |  \ V /| |_| || |_| |/ __/
+ *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_(_)_|_____|
  *        |___/
  *
  * http://lighter.io/jymin
@@ -30,7 +30,7 @@
  */
 
 
-this.jymin = {version: '0.1.11'};
+this.jymin = {version: '0.1.12'};
 
 /**
  * Empty handler.
@@ -514,7 +514,7 @@ var addElement = function (
 };
 
 /**
- * Create a DOM element, and prepend it to a parent element.
+ * Create a DOM element, and append it to a parent element.
  */
 var appendElement = function (
   parentElement,
@@ -792,7 +792,13 @@ var toggleClass = function (
   element,
   className
 ) {
-  flipClass(element, className, !hasClass(element, className));
+  var turnOn = false;
+  element = getElement(element);
+  if (element) {
+    turnOn = !hasClass(element, className);
+    flipClass(element, className, turnOn);
+  }
+  return turnOn;
 };
 
 /**
@@ -813,6 +819,30 @@ var insertScript = function (
     };
   }
   script.src = src;
+};
+
+/**
+ * Run a callback on each element with a given tag and class.
+ */
+var forElements = function (
+  tagAndClass,
+  callback
+) {
+  var elements = getElementsByTagAndClass(tagAndClass);
+  forEach(elements, callback);
+};
+
+/**
+ * Run a callback on an element with a given id.
+ */
+var forElement = function (
+  id,
+  callback
+) {
+  var element = getElement(id);
+  if (element) {
+    callback(element);
+  }
 };
 /**
  * Bind a handler to listen for a particular event on an element.
