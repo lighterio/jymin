@@ -1,9 +1,9 @@
 /**
- *      _                 _                ___   _   _ ____
- *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ / | / |___ \
- *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | || | | | __) |
- * | |_| | |_| | | | | | | | | | |  \ V /| |_| || |_| |/ __/
- *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_(_)_|_____|
+ *      _                 _                ___   _   _ _____
+ *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ / | / |___ /
+ *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | || | | | |_ \
+ * | |_| | |_| | | | | | | | | | |  \ V /| |_| || |_| |___) |
+ *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_(_)_|____/
  *        |___/
  *
  * http://lighter.io/jymin
@@ -30,7 +30,7 @@
  */
 
 
-this.jymin = {version: '0.1.12'};
+this.jymin = {version: '0.1.13'};
 
 /**
  * Empty handler.
@@ -281,7 +281,7 @@ var hasMany = function (
  * Push an item into an array.
  * @return mixed: Pushed item.
  */
-var pushItem = function (
+var push = function (
   array, // Array: The array to push the item into.
   item   // mixed: The item to push.
 ) {
@@ -291,11 +291,24 @@ var pushItem = function (
   return item;
 };
 
+var merge = function (
+  array, // Array:  The array to merge into.
+  items  // mixed+: The items to merge into the array.
+) {
+  for (var i = 1, l = arguments.length; i < l; i++) {
+    items = arguments[i];
+    // TODO: Use splice instead of push to get better performance?
+    forEach(items, function (item) {
+      array.push(item);
+    });
+  }
+};
+
 /**
  * Push padding values onto an array up to a specified length.
  * @return number: The number of padding values that were added.
  */
-var padArray = function (
+var pad = function (
   array,       // Array:  The array to check for items.
   padToLength, // number: The minimum number of items in the array.
   paddingValue // mixed|: The value to use as padding.
@@ -390,46 +403,57 @@ var getTime = function (
  * This can be used to ensure that you have a DOM element.
  */
 var getElement = function (
-  id,           // string|DOMElement*: DOM element or ID of a DOM element.
-  parentElement // DOMElement:         Document or DOM element for getElementById. (Default: document)
+  parentElement, // DOMElement|:       Document or DOM element for getElementById. (Default: document)
+  id             // string|DOMElement: DOM element or ID of a DOM element.
 ) {
+  if (getLength(arguments) < 2) {
+    id = parentElement;
+    parentElement = document;
+  }
   // If the argument is not a string, just assume it's already an element reference, and return it.
-  return isString(id) ? (parentElement || document).getElementById(id) : id;
+  return isString(id) ? parentElement.getElementById(id) : id;
 };
 
 /**
  * Get DOM elements that have a specified tag name.
  */
 var getElementsByTagName = function (
-  tagName,      // string:     Name of the tag to look for. (Default: "*")
-  parentElement // DOMElement: Document or DOM element for getElementsByTagName. (Default: document)
+  parentElement, // DOMElement|: Document or DOM element for getElementsByTagName. (Default: document)
+  tagName        // string|:     Name of the tag to look for. (Default: "*")
 ) {
-  parentElement = getElement(parentElement || document);
-  return parentElement ? parentElement.getElementsByTagName(tagName || '*') : [];
+  if (getLength(arguments) < 2) {
+    tagName = parentElement;
+    parentElement = document;
+  }
+  return parentElement.getElementsByTagName(tagName || '*');
 };
 
 /**
  * Get DOM elements that have a specified tag and class.
  */
 var getElementsByTagAndClass = function (
-  tagAndClass,
-  parentElement
+  parentElement,
+  tagAndClass
 ) {
+  if (getLength(arguments) < 2) {
+    tagAndClass = parentElement;
+    parentElement = document;
+  }
   tagAndClass = tagAndClass.split('.');
   var tagName = (tagAndClass[0] || '*').toUpperCase();
   var className = tagAndClass[1];
+  var anyTag = (tagName == '*');
   if (className) {
-    parentElement = getElement(parentElement || document);
     var elements = [];
     if (parentElement.getElementsByClassName) {
       forEach(parentElement.getElementsByClassName(className), function(element) {
-        if (element.tagName == tagName) {
+        if (anyTag || (element.tagName == tagName)) {
           elements.push(element);
         }
       });
     }
     else {
-      forEach(getElementsByTagName(tagName), function(element) {
+      forEach(getElementsByTagName(parentElement, tagName), function(element) {
         if (hasClass(element, className)) {
           elements.push(element);
         }
@@ -437,7 +461,7 @@ var getElementsByTagAndClass = function (
     }
   }
   else {
-    elements = getElementsByTagName(tagName, parentElement);
+    elements = getElementsByTagName(parentElement, tagName);
   }
   return elements;
 };
@@ -451,10 +475,8 @@ var getParent = function (
 ) {
   var parentElement = (getElement(element) || {}).parentNode;
   // If a tag name is specified, keep walking up.
-  if (tagName && parentElement) {
-    if (parentElement.tagName != tagName) {
-      parentElement = getParent(parentElement, tagName);
-    }
+  if (tagName && parentElement && parentElement.tagName != tagName) {
+    parentElement = getParent(parentElement, tagName);
   }
   return parentElement;
 };
@@ -822,40 +844,63 @@ var insertScript = function (
 };
 
 /**
- * Run a callback on each element with a given tag and class.
+ * Run a callback on each element matching a given selector.
  */
-var forElements = function (
-  tagAndClass,
+var all = function (
+  parentElement,
+  selector,
   callback
 ) {
-  var elements = getElementsByTagAndClass(tagAndClass);
-  forEach(elements, callback);
-};
-
-/**
- * Run a callback on an element with a given id.
- */
-var forElement = function (
-  id,
-  callback
-) {
-  var element = getElement(id);
-  if (element) {
-    callback(element);
+  if (!selector || isFunction(selector)) {
+    callback = selector;
+    selector = parentElement
+    parentElement = document;
   }
+  var elements;
+  if (contains(selector, ',')) {
+    elements = [];
+    var selectors = splitByCommas(selector);
+    forEach(selectors, function (piece) {
+      var more = all(parentElement, piece);
+      if (getLength(more)) {
+        merge(elements, more);
+      }
+    });
+  }
+  else if (contains(selector, ' ')) {
+    var pos = selector.indexOf(' ');
+    var preSelector = selector.substr(0, pos);
+    var postSelector = selector.substr(pos + 1);
+    elements = [];
+    all(parentElement, preSelector, function (element) {
+      var children = all(element, postSelector);
+      merge(elements, children);
+    });
+  }
+  else if (selector[0] == '#') {
+    var element = getElement(parentElement, selector.substr(1));
+    elements = element ? [element] : [];
+  }
+  else {
+    elements = getElementsByTagAndClass(parentElement, selector);
+  }
+  if (callback) {
+    forEach(elements, callback);
+  }
+  return elements;
 };
 /**
  * Bind a handler to listen for a particular event on an element.
  */
 var bind = function (
-  element,            // DOMElement|string*: Element or ID of element to bind to.
-  eventName,          // string*:            Name of event (e.g. "click", "mouseover", "keyup").
-  eventHandler,       // function*:          Function to run when the event is triggered. `eventHandler(element, event, target, customData)`
-  customData,         // object:             Custom data to pass through to the event handler when it's triggered.
+  element,            // DOMElement|string: Element or ID of element to bind to.
+  eventName,          // string:            Name of event (e.g. "click", "mouseover", "keyup").
+  eventHandler,       // function:          Function to run when the event is triggered. `eventHandler(element, event, target, customData)`
+  customData,         // object|:           Custom data to pass through to the event handler when it's triggered.
   multiBindCustomData
 ) {
   // Allow multiple events to be bound at once using a space-delimited string.
-  if (containsString(eventName, ' ')) {
+  if (contains(eventName, ' ')) {
     var eventNames = splitBySpaces(eventName);
     forEach(eventNames, function (singleEventName) {
       bind(element, singleEventName, eventHandler, customData, multiBindCustomData);
@@ -896,6 +941,40 @@ var bind = function (
     }
     else {
       element['on' + eventName] = callback;
+    }
+
+    var handlers = (element._HANDLERS = element._HANDLERS || {});
+    var queue = (handlers[eventName] = handlers[eventName] || []);
+    push(queue, eventHandler);
+  }
+};
+
+/**
+ * Trigger an element event.
+ */
+var trigger = function (
+  element,   // object:        Element to trigger an event on.
+  event,     // object|String: Event to trigger.
+  target,    // object|:       Fake target.
+  customData // object|:       Custom data to pass to handlers.
+) {
+  if (isString(event)) {
+    event = {type: event};
+  }
+  if (!target) {
+    target = element;
+  }
+  var handlers = element._HANDLERS;
+  if (handlers) {
+    var queue = handlers[event.type];
+    forEach(queue, function (callback) {
+      callback(element, event, target, customData);
+    });
+  }
+  if (!event.cancelBubble) {
+    element = getParent(element);
+    if (element) {
+      trigger(element, event, target, customData);
     }
   }
 };
@@ -1109,14 +1188,14 @@ var getValue = function (
     var value = input.value;
     var checked = input.checked;
     var options = input.options;
-    if (isBoolean(checked)) {
+    if (type == 'c' || type == 'r') {
       value = checked ? value : null;
     }
     else if (input.multiple) {
       value = [];
       forEach(options, function (option) {
         if (option.selected) {
-          pushItem(value, option.value);
+          push(value, option.value);
         }
       });
     }
@@ -1292,7 +1371,7 @@ var onReady = window.onReady = function (
     }
 
     // Put an item in the queue and wait.
-    pushItem(queue, callback);
+    push(queue, callback);
   }
 
   // If there's no callback, onReady has been triggered, so run callbacks.
@@ -1314,7 +1393,7 @@ var ensureString = function (
 /**
  * Return true if the string contains the given substring.
  */
-var containsString = function (
+var contains = function (
   string,
   substring
 ) {
@@ -1334,7 +1413,7 @@ var startsWith = function (
 /**
  * Trim the whitespace from a string.
  */
-var trimString = function (
+var trim = function (
   string
 ) {
   return ensureString(string).replace(/^\s+|\s+$/g, '');
@@ -1418,6 +1497,37 @@ var buildQueryString = function (
 };
 
 /**
+ * Returns a lowercase string.
+ */
+var lower = function (
+  object
+) {
+  return ensureString(object).toLowerCase();
+};
+
+/**
+ * Returns an uppercase string.
+ */
+var upper = function (
+  object
+) {
+  return ensureString(object).toUpperCase();
+};
+
+/**
+ * Returns a query string generated by serializing an object and joined using a delimiter (defaults to '&')
+ */
+var buildQueryString = function (
+  object
+) {
+  var queryParams = [];
+  forIn(object, function(value, key) {
+    queryParams.push(escape(key) + '=' + escape(value));
+  });
+  return queryParams.join('&');
+};
+
+/**
  * Return the browser version if the browser name matches or zero if it doesn't.
  */
 var getBrowserVersionOrZero = function (
@@ -1426,9 +1536,6 @@ var getBrowserVersionOrZero = function (
   var match = new RegExp(browserName + '[ /](\\d+(\\.\\d+)?)', 'i').exec(navigator.userAgent);
   return match ? +match[1] : 0;
 };
-// Make an undefined value available.
-var undefined = window.undefined;
-
 /**
  * Return true if a variable is a given type.
  */

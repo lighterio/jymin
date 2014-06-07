@@ -39,7 +39,6 @@ require('figlet').text('Jymin v' + exports.version, {font: 'Standard'}, function
     })
     .write(cwd, 'jymin.js')
     .write(cwd, 'jymin.min.js', 'minified');
-
 });
 
 function addEval(code) {

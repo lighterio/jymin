@@ -1,6 +1,3 @@
-// Make an undefined value available.
-var undefined = window.undefined;
-
 /**
  * Return true if a variable is a given type.
  */

@@ -18,7 +18,7 @@ var onReady = window.onReady = function (
     }
 
     // Put an item in the queue and wait.
-    pushItem(queue, callback);
+    push(queue, callback);
   }
 
   // If there's no callback, onReady has been triggered, so run callbacks.

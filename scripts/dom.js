@@ -4,46 +4,57 @@
  * This can be used to ensure that you have a DOM element.
  */
 var getElement = function (
-  id,           // string|DOMElement*: DOM element or ID of a DOM element.
-  parentElement // DOMElement:         Document or DOM element for getElementById. (Default: document)
+  parentElement, // DOMElement|:       Document or DOM element for getElementById. (Default: document)
+  id             // string|DOMElement: DOM element or ID of a DOM element.
 ) {
+  if (getLength(arguments) < 2) {
+    id = parentElement;
+    parentElement = document;
+  }
   // If the argument is not a string, just assume it's already an element reference, and return it.
-  return isString(id) ? (parentElement || document).getElementById(id) : id;
+  return isString(id) ? parentElement.getElementById(id) : id;
 };
 
 /**
  * Get DOM elements that have a specified tag name.
  */
 var getElementsByTagName = function (
-  tagName,      // string:     Name of the tag to look for. (Default: "*")
-  parentElement // DOMElement: Document or DOM element for getElementsByTagName. (Default: document)
+  parentElement, // DOMElement|: Document or DOM element for getElementsByTagName. (Default: document)
+  tagName        // string|:     Name of the tag to look for. (Default: "*")
 ) {
-  parentElement = getElement(parentElement || document);
-  return parentElement ? parentElement.getElementsByTagName(tagName || '*') : [];
+  if (getLength(arguments) < 2) {
+    tagName = parentElement;
+    parentElement = document;
+  }
+  return parentElement.getElementsByTagName(tagName || '*');
 };
 
 /**
  * Get DOM elements that have a specified tag and class.
  */
 var getElementsByTagAndClass = function (
-  tagAndClass,
-  parentElement
+  parentElement,
+  tagAndClass
 ) {
+  if (getLength(arguments) < 2) {
+    tagAndClass = parentElement;
+    parentElement = document;
+  }
   tagAndClass = tagAndClass.split('.');
   var tagName = (tagAndClass[0] || '*').toUpperCase();
   var className = tagAndClass[1];
+  var anyTag = (tagName == '*');
   if (className) {
-    parentElement = getElement(parentElement || document);
     var elements = [];
     if (parentElement.getElementsByClassName) {
       forEach(parentElement.getElementsByClassName(className), function(element) {
-        if (element.tagName == tagName) {
+        if (anyTag || (element.tagName == tagName)) {
           elements.push(element);
         }
       });
     }
     else {
-      forEach(getElementsByTagName(tagName), function(element) {
+      forEach(getElementsByTagName(parentElement, tagName), function(element) {
         if (hasClass(element, className)) {
           elements.push(element);
         }
@@ -51,7 +62,7 @@ var getElementsByTagAndClass = function (
     }
   }
   else {
-    elements = getElementsByTagName(tagName, parentElement);
+    elements = getElementsByTagName(parentElement, tagName);
   }
   return elements;
 };
@@ -65,10 +76,8 @@ var getParent = function (
 ) {
   var parentElement = (getElement(element) || {}).parentNode;
   // If a tag name is specified, keep walking up.
-  if (tagName && parentElement) {
-    if (parentElement.tagName != tagName) {
-      parentElement = getParent(parentElement, tagName);
-    }
+  if (tagName && parentElement && parentElement.tagName != tagName) {
+    parentElement = getParent(parentElement, tagName);
   }
   return parentElement;
 };
@@ -436,25 +445,48 @@ var insertScript = function (
 };
 
 /**
- * Run a callback on each element with a given tag and class.
+ * Run a callback on each element matching a given selector.
  */
-var forElements = function (
-  tagAndClass,
+var all = function (
+  parentElement,
+  selector,
   callback
 ) {
-  var elements = getElementsByTagAndClass(tagAndClass);
-  forEach(elements, callback);
-};
-
-/**
- * Run a callback on an element with a given id.
- */
-var forElement = function (
-  id,
-  callback
-) {
-  var element = getElement(id);
-  if (element) {
-    callback(element);
+  if (!selector || isFunction(selector)) {
+    callback = selector;
+    selector = parentElement
+    parentElement = document;
   }
+  var elements;
+  if (contains(selector, ',')) {
+    elements = [];
+    var selectors = splitByCommas(selector);
+    forEach(selectors, function (piece) {
+      var more = all(parentElement, piece);
+      if (getLength(more)) {
+        merge(elements, more);
+      }
+    });
+  }
+  else if (contains(selector, ' ')) {
+    var pos = selector.indexOf(' ');
+    var preSelector = selector.substr(0, pos);
+    var postSelector = selector.substr(pos + 1);
+    elements = [];
+    all(parentElement, preSelector, function (element) {
+      var children = all(element, postSelector);
+      merge(elements, children);
+    });
+  }
+  else if (selector[0] == '#') {
+    var element = getElement(parentElement, selector.substr(1));
+    elements = element ? [element] : [];
+  }
+  else {
+    elements = getElementsByTagAndClass(parentElement, selector);
+  }
+  if (callback) {
+    forEach(elements, callback);
+  }
+  return elements;
 };

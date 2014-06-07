@@ -2,14 +2,14 @@
  * Bind a handler to listen for a particular event on an element.
  */
 var bind = function (
-  element,            // DOMElement|string*: Element or ID of element to bind to.
-  eventName,          // string*:            Name of event (e.g. "click", "mouseover", "keyup").
-  eventHandler,       // function*:          Function to run when the event is triggered. `eventHandler(element, event, target, customData)`
-  customData,         // object:             Custom data to pass through to the event handler when it's triggered.
+  element,            // DOMElement|string: Element or ID of element to bind to.
+  eventName,          // string:            Name of event (e.g. "click", "mouseover", "keyup").
+  eventHandler,       // function:          Function to run when the event is triggered. `eventHandler(element, event, target, customData)`
+  customData,         // object|:           Custom data to pass through to the event handler when it's triggered.
   multiBindCustomData
 ) {
   // Allow multiple events to be bound at once using a space-delimited string.
-  if (containsString(eventName, ' ')) {
+  if (contains(eventName, ' ')) {
     var eventNames = splitBySpaces(eventName);
     forEach(eventNames, function (singleEventName) {
       bind(element, singleEventName, eventHandler, customData, multiBindCustomData);
@@ -50,6 +50,40 @@ var bind = function (
     }
     else {
       element['on' + eventName] = callback;
+    }
+
+    var handlers = (element._HANDLERS = element._HANDLERS || {});
+    var queue = (handlers[eventName] = handlers[eventName] || []);
+    push(queue, eventHandler);
+  }
+};
+
+/**
+ * Trigger an element event.
+ */
+var trigger = function (
+  element,   // object:        Element to trigger an event on.
+  event,     // object|String: Event to trigger.
+  target,    // object|:       Fake target.
+  customData // object|:       Custom data to pass to handlers.
+) {
+  if (isString(event)) {
+    event = {type: event};
+  }
+  if (!target) {
+    target = element;
+  }
+  var handlers = element._HANDLERS;
+  if (handlers) {
+    var queue = handlers[event.type];
+    forEach(queue, function (callback) {
+      callback(element, event, target, customData);
+    });
+  }
+  if (!event.cancelBubble) {
+    element = getParent(element);
+    if (element) {
+      trigger(element, event, target, customData);
     }
   }
 };

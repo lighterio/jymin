@@ -106,7 +106,7 @@ var hasMany = function (
  * Push an item into an array.
  * @return mixed: Pushed item.
  */
-var pushItem = function (
+var push = function (
   array, // Array: The array to push the item into.
   item   // mixed: The item to push.
 ) {
@@ -116,11 +116,24 @@ var pushItem = function (
   return item;
 };
 
+var merge = function (
+  array, // Array:  The array to merge into.
+  items  // mixed+: The items to merge into the array.
+) {
+  for (var i = 1, l = arguments.length; i < l; i++) {
+    items = arguments[i];
+    // TODO: Use splice instead of push to get better performance?
+    forEach(items, function (item) {
+      array.push(item);
+    });
+  }
+};
+
 /**
  * Push padding values onto an array up to a specified length.
  * @return number: The number of padding values that were added.
  */
-var padArray = function (
+var pad = function (
   array,       // Array:  The array to check for items.
   padToLength, // number: The minimum number of items in the array.
   paddingValue // mixed|: The value to use as padding.

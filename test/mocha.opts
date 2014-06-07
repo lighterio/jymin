@@ -1,3 +1,4 @@
 --require assert-plus
+--require dumbdom
 --reporter spec
 --ui bdd

@@ -10,14 +10,14 @@ var getValue = function (
     var value = input.value;
     var checked = input.checked;
     var options = input.options;
-    if (isBoolean(checked)) {
+    if (type == 'c' || type == 'r') {
       value = checked ? value : null;
     }
     else if (input.multiple) {
       value = [];
       forEach(options, function (option) {
         if (option.selected) {
-          pushItem(value, option.value);
+          push(value, option.value);
         }
       });
     }
