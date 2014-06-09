@@ -1,9 +1,9 @@
 /**
- *      _                 _                ___   _   _ _____
- *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ / | / |___ /
- *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | || | | | |_ \
- * | |_| | |_| | | | | | | | | | |  \ V /| |_| || |_| |___) |
- *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_(_)_|____/
+ *      _                 _                ___   ____    ___
+ *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ \  / _ \
+ *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  __) || | | |
+ * | |_| | |_| | | | | | | | | | |  \ V /| |_| | / __/ | |_| |
+ *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_____(_)___/
  *        |___/
  *
  * http://lighter.io/jymin
@@ -30,7 +30,7 @@
  */
 
 
-this.jymin = {version: '0.1.13'};
+this.jymin = {version: '0.2.0'};
 
 /**
  * Empty handler.
@@ -111,10 +111,11 @@ var getResponse = function (
  */
 var getJson = function (
   url,       // string:    The URL to request data from.
+  data,      // object|:   Data to post. The method is automagically "POST" if data is truey, otherwise "GET".
   onSuccess, // function|: Callback to run on success. `onSuccess(response, request)`.
   onFailure  // function|: Callback to run on failure. `onFailure(response, request)`.
 ) {
-  return getResponse(url, onSuccess, onFailure, true);
+  return getResponse(url, data, onSuccess, onFailure, true);
 };
 var DEFAULT_ANIMATION_FRAME_COUNT = 40;
 var DEFAULT_ANIMATION_FRAME_DELAY = 20;
