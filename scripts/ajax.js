@@ -77,8 +77,9 @@ var getResponse = function (
  */
 var getJson = function (
   url,       // string:    The URL to request data from.
+  data,      // object|:   Data to post. The method is automagically "POST" if data is truey, otherwise "GET".
   onSuccess, // function|: Callback to run on success. `onSuccess(response, request)`.
   onFailure  // function|: Callback to run on failure. `onFailure(response, request)`.
 ) {
-  return getResponse(url, onSuccess, onFailure, true);
+  return getResponse(url, data, onSuccess, onFailure, true);
 };
