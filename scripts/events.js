@@ -18,7 +18,8 @@ var bind = function (
   }
 
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
 
     // Invoke the event handler with the event information and the target element.
     var callback = function(event) {
@@ -32,7 +33,7 @@ var bind = function (
       }
       var relatedTarget = event.relatedTarget || event.toElement;
       if (eventName == 'mouseout') {
-        while (relatedTarget = getParent(relatedTarget)) {
+        while (relatedTarget = getParent(relatedTarget)) { // jshint ignore:line
           if (relatedTarget == target) {
             return;
           }
@@ -157,7 +158,8 @@ var on = function (
       }
     }
     // Bubble up to find a tagAndClass match because we didn't find one this time.
-    if (target = getParent(target)) {
+    target = getParent(target);
+    if (target) {
       onHandler(element, event, target, customData);
     }
   };

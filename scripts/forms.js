@@ -24,8 +24,8 @@ var getValue = function (
     else if (type == 's') {
       value = options[input.selectedIndex].value;
     }
+    return value;
   }
-  return value;
 };
 
 /**

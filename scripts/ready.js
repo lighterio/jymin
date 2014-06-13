@@ -13,7 +13,7 @@ var onReady = window.onReady = function (
     // The first item in the queue causes onReady to be triggered.
     if (!getLength(queue)) {
       setTimeout(function () {
-        onReady()
+        onReady();
       }, 1);
     }
 

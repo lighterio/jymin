@@ -5,14 +5,14 @@ var forEach = function (
   array,   // Array*:    The array to iterate over.
   callback // Function*: The function to call on each item. `callback(item, index, array)`
 ) {
-    if (array) {
-        for (var index = 0, length = getLength(array); index < length; index++) {
-            var result = callback(array[index], index, array);
-            if (result === false) {
-                break;
-            }
-        }
+  if (array) {
+    for (var index = 0, length = getLength(array); index < length; index++) {
+      var result = callback(array[index], index, array);
+      if (result === false) {
+        break;
+      }
     }
+  }
 };
 
 /**
@@ -22,14 +22,14 @@ var forIn = function (
   object,  // Object*:   The object to iterate over.
   callback // Function*: The function to call on each pair. `callback(value, key, object)`
 ) {
-    if (object) {
-        for (var key in object) {
-            var result = callback(object[key], key, object);
-            if (result === false) {
-                break;
-            }
-        }
+  if (object) {
+    for (var key in object) {
+      var result = callback(object[key], key, object);
+      if (result === false) {
+        break;
+      }
     }
+  }
 };
 
 /**
@@ -120,12 +120,12 @@ var merge = function (
   array, // Array:  The array to merge into.
   items  // mixed+: The items to merge into the array.
 ) {
+  // TODO: Use splice instead of pushes to get better performance?
+  var addToFirstArray = function (item) {
+    array.push(item);
+  };
   for (var i = 1, l = arguments.length; i < l; i++) {
-    items = arguments[i];
-    // TODO: Use splice instead of push to get better performance?
-    forEach(items, function (item) {
-      array.push(item);
-    });
+    forEach(arguments[i], addToFirstArray);
   }
 };
 
@@ -142,7 +142,7 @@ var pad = function (
   if (isArray(array)) {
     var startingLength = getLength(array);
     if (startingLength < length) {
-      paddingValue = isDefined(paddingValue) ? paddingValue : '';
+      paddingValue = isUndefined(paddingValue) ? '' : paddingValue;
       for (var index = startingLength; index < length; index++) {
         array.push(paddingValue);
         countAdded++;

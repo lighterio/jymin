@@ -12,7 +12,7 @@
     "zepto",
     "alternative"
   ],
-  "version": "0.2.2",
+  "version": "0.2.3",
   "main": "chug/chug.js",
   "homepage": "http://lighter.io/jymin",
   "repository": "http://github.com/zerious/jymin.git",
@@ -49,9 +49,9 @@
     "zeriousify": "0.1.5",
     "assert-plus": "0.1.5",
     "mocha": "1.20.1",
-    "istanbul": "0.2.10",
+    "istanbul": "0.2.11",
     "coveralls": "2.10.0",
-    "chug": "0.1.26",
-    "figlet": "1.0.8"
+    "chug": "0.1.27",
+    "figlet": "1.0.9"
   }
 }

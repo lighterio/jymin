@@ -26,9 +26,11 @@ var getResponse = function (
   var request;
   if (window.XMLHttpRequest) {
     request = new XMLHttpRequest();
-  } else if (window.ActiveXObject) {
-    request = new ActiveXObject('Microsoft.XMLHTTP');
-  } else {
+  }
+  else if (window.ActiveXObject) {
+    request = new ActiveXObject('Microsoft.XMLHTTP'); // jshint ignore:line
+  }
+  else {
     return false;
   }
   if (request) {
@@ -45,15 +47,15 @@ var getResponse = function (
           var object;
           if (status) {
             try {
-              // Trick Uglify into thinking there's no eval.
-              var e = window.eval;
-              e('eval.J=' + response);
-              object = e.J;
+              // Trick UglifyJS into thinking there's no eval.
+              var evil = window.eval; // jshint ignore:line
+              evil('eval.J=' + response);
+              object = evil.J;
             }
             catch (e) {
-              //+env:dev
-              error('Could not parse JSON: "' + response + '"');
-              //-env:dev
+              //+env:debug,dev
+              error('Jymin: Could not parse JSON: "' + response + '"');
+              //-env:debug,dev
               object = {_ERROR: '_BAD_JSON', _TEXT: response};
             }
           }

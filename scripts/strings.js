@@ -24,7 +24,7 @@ var startsWith = function (
   string,
   substring
 ) {
-  return ensureString(string).indexOf(substring) == 0;
+  return ensureString(string).indexOf(substring) == 0; // jshint ignore:line
 };
 
 /**
@@ -129,6 +129,20 @@ var upper = function (
   object
 ) {
   return ensureString(object).toUpperCase();
+};
+
+/**
+ * Return an escaped value for URLs.
+ */
+var escape = function (value) {
+  return encodeURIComponent(value);
+};
+
+/**
+ * Return an unescaped value from an escaped URL.
+ */
+var unescape = function (value) {
+  return decodeURIComponent(value);
 };
 
 /**

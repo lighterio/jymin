@@ -3,15 +3,14 @@
  * @return object: Cookie names and values.
  */
 var getAllCookies = function () {
-  var str = document.cookie;
-  var decode = decodeURIComponent;
   var obj = {};
-  var pairs = str.split(/ *; */);
-  var pair;
-  if ('' == pairs[0]) return obj;
-  for (var i = 0; i < pairs.length; ++i) {
-    pair = pairs[i].split('=');
-    obj[decode(pair[0])] = decode(pair[1]);
+  var documentCookie = trim(document.cookie);
+  if (documentCookie) {
+    var cookies = documentCookie.split(/\s*;\s*/);
+    forEach(cookies, function (cookie) {
+      var pair = cookie.split(/\s*=\s*/);
+      obj[unescape(pair[0])] = unescape(pair[1]);
+    });
   }
   return obj;
 };
@@ -35,19 +34,18 @@ var setCookie = function (
   options // object|: Name/value pairs for options including "maxage", "expires", "path", "domain" and "secure".
 ) {
   options = options || {};
-  var encode = encodeURIComponent;
-  var str = encode(name) + '=' + encode(value);
-  if (null == value) {
+  var str = escape(name) + '=' + unescape(value);
+  if (null === value) {
     options.maxage = -1;
   }
   if (options.maxage) {
-    options.expires = new Date(+new Date + options.maxage);
+    options.expires = new Date(+new Date() + options.maxage);
   }
-  if (options.path) str += ';path=' + options.path;
-  if (options.domain) str += ';domain=' + options.domain;
-  if (options.expires) str += ';expires=' + options.expires.toUTCString();
-  if (options.secure) str += ';secure';
-  document.cookie = str;
+  document.cookie = str +
+    (options.path ? ';path=' + options.path : '') +
+    (options.domain ? ';domain=' + options.domain : '') +
+    (options.expires ? ';expires=' + options.expires.toUTCString() : '') +
+    (options.secure ? ';secure' : '');
 };
 
 /**

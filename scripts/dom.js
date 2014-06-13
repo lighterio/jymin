@@ -44,8 +44,9 @@ var getElementsByTagAndClass = function (
   var tagName = (tagAndClass[0] || '*').toUpperCase();
   var className = tagAndClass[1];
   var anyTag = (tagName == '*');
+  var elements;
   if (className) {
-    var elements = [];
+    elements = [];
     if (parentElement.getElementsByClassName) {
       forEach(parentElement.getElementsByClassName(className), function(element) {
         if (anyTag || (element.tagName == tagName)) {
@@ -83,8 +84,8 @@ var getParent = function (
 };
 
 /**
-* Create a DOM element.
-*/
+ * Create a DOM element.
+ */
 var createElement = function (
   tagIdentifier
 ) {
@@ -99,7 +100,7 @@ var createElement = function (
   var tagName = tagAndId[0] || 'div';
   var id = tagAndId[1];
   var attributes = tagAndAttributes[1];
-  var cachedElement = addElement[tagName] || (addElement[tagName] = document.createElement(tagName));
+  var cachedElement = createElement[tagName] || (createElement[tagName] = document.createElement(tagName));
   var element = cachedElement.cloneNode(true);
   if (id) {
     element.id = id;
@@ -185,13 +186,13 @@ var getChildren = function (
 var getIndex = function (
   element
 ) {
-  if (element = getElement(element)) {
-    var index = 0;
-    while (element = element.previousSibling) {
-      ++index;
-    }
-    return index;
+  element = getElement(element);
+  var index = -1;
+  while (element) {
+    ++index;
+    element = element.previousSibling;
   }
+  return index;
 };
 
 /**
@@ -216,13 +217,39 @@ var insertElement = function (
 };
 
 /**
+ * Insert a DOM element after another.
+ */
+var insertBefore = function (
+  element,
+  childElement
+) {
+  element = getElement(element);
+  var parentElement = getParent(element);
+  addElement(parentElement, childElement, element);
+};
+
+/**
+ * Insert a DOM element after another.
+ */
+var insertAfter = function (
+  element,
+  childElement
+) {
+  element = getElement(element);
+  var parentElement = getParent(element);
+  var beforeElement = getNextSibling(element);
+  addElement(parentElement, childElement, beforeElement);
+};
+
+/**
  * Remove a DOM element from its parent.
  */
 var removeElement = function (
   element
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     // Remove the element from its parent, provided that its parent still exists.
     var parentElement = getParent(element);
     if (parentElement) {
@@ -247,7 +274,8 @@ var getHtml = function (
   element
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     return element.innerHTML;
   }
 };
@@ -260,7 +288,8 @@ var setHtml = function (
   html
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     // Set the element's innerHTML.
     element.innerHTML = html;
   }
@@ -273,7 +302,8 @@ var getText = function (
   element
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     return element.innerText;
   }
 };
@@ -286,7 +316,8 @@ var setText = function (
   text
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     // Set the element's innerText.
     element.innerHTML = text;
   }
@@ -299,7 +330,8 @@ var getClass = function (
   element
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     return element.className;
   }
 };
@@ -312,7 +344,8 @@ var setClass = function (
   className
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     // Set the element's innerText.
     element.className = className;
   }
@@ -325,7 +358,8 @@ var getFirstChild = function (
   element
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     return element.firstChild;
   }
 };
@@ -337,7 +371,8 @@ var getPreviousSibling = function (
   element
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     return element.previousSibling;
   }
 };
@@ -349,7 +384,8 @@ var getNextSibling = function (
   element
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     return element.nextSibling;
   }
 };
@@ -372,7 +408,8 @@ var addClass = function (
   element,
   className
 ) {
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     element.className += ' ' + className;
   }
 };
@@ -384,7 +421,8 @@ var removeClass = function (
   element,
   className
 ) {
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     var tokens = getClass(element).split(/\s/);
     var ok = [];
     forEach(tokens, function (token) {
@@ -445,16 +483,17 @@ var insertScript = function (
 };
 
 /**
- * Run a callback on each element matching a given selector.
+ * Finds elements matching a selector, and return or run a callback on them.
  */
 var all = function (
   parentElement,
   selector,
   callback
 ) {
+  // TODO: Better argument collapsing.
   if (!selector || isFunction(selector)) {
     callback = selector;
-    selector = parentElement
+    selector = parentElement;
     parentElement = document;
   }
   var elements;
@@ -489,4 +528,15 @@ var all = function (
     forEach(elements, callback);
   }
   return elements;
+};
+
+/**
+ * Finds elements matching a selector, and return or run a callback on them.
+ */
+var one = function (
+  parentElement,
+  selector,
+  callback
+) {
+  return all(parentElement, selector, callback)[0];
 };

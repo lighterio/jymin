@@ -1,9 +1,9 @@
 /**
- *      _                 _                ___   ____    ____
- *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ \  |___ \
- *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  __) |   __) |
- * | |_| | |_| | | | | | | | | | |  \ V /| |_| | / __/ _ / __/
- *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_____(_)_____|
+ *      _                 _                ___   ____    _____
+ *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ \  |___ /
+ *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  __) |   |_ \
+ * | |_| | |_| | | | | | | | | | |  \ V /| |_| | / __/ _ ___) |
+ *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_____(_)____/
  *        |___/
  *
  * http://lighter.io/jymin
@@ -13,7 +13,6 @@
  *
  * Source files:
  *   https://github.com/zerious/jymin/blob/master/scripts/ajax.js
- *   https://github.com/zerious/jymin/blob/master/scripts/animation.js
  *   https://github.com/zerious/jymin/blob/master/scripts/collections.js
  *   https://github.com/zerious/jymin/blob/master/scripts/cookies.js
  *   https://github.com/zerious/jymin/blob/master/scripts/dates.js
@@ -30,7 +29,7 @@
  */
 
 
-this.jymin = {version: '0.2.2'};
+this.jymin = {version: '0.2.3'};
 
 /**
  * Empty handler.
@@ -60,9 +59,11 @@ var getResponse = function (
   var request;
   if (window.XMLHttpRequest) {
     request = new XMLHttpRequest();
-  } else if (window.ActiveXObject) {
-    request = new ActiveXObject('Microsoft.XMLHTTP');
-  } else {
+  }
+  else if (window.ActiveXObject) {
+    request = new ActiveXObject('Microsoft.XMLHTTP'); // jshint ignore:line
+  }
+  else {
     return false;
   }
   if (request) {
@@ -79,15 +80,15 @@ var getResponse = function (
           var object;
           if (status) {
             try {
-              // Trick Uglify into thinking there's no eval.
-              var e = window.eval;
-              e('eval.J=' + response);
-              object = e.J;
+              // Trick UglifyJS into thinking there's no eval.
+              var evil = window.eval; // jshint ignore:line
+              evil('eval.J=' + response);
+              object = evil.J;
             }
             catch (e) {
-              //+env:dev
-              error('Could not parse JSON: "' + response + '"');
-              //-env:dev
+              //+env:debug,dev
+              error('Jymin: Could not parse JSON: "' + response + '"');
+              //-env:debug,dev
               object = {_ERROR: '_BAD_JSON', _TEXT: response};
             }
           }
@@ -137,63 +138,6 @@ var getJson = function (
 ) {
   return getResponse(url, body, onSuccess, onFailure, true);
 };
-var DEFAULT_ANIMATION_FRAME_COUNT = 40;
-var DEFAULT_ANIMATION_FRAME_DELAY = 20;
-
-/**
- * Perform an animation.
- */
-var animate = function (
-  element,          // string|DOMElement: Element or ID of element to animate.
-  styleTransitions, // object:            cssText values to animate through.
-  onFinish,         // function|:         Callback to execute when animation is complete.
-  frameCount,       // integer|:          Number of frames to animate through. (Default: 40)
-  frameDelay,       // integer|:          Number of milliseconds between frames. (Default: 20ms)
-  frameIndex        // integer|:          Index of the frame to start on. (Default: 0)
-) {
-  if (element = getElement(element)) {
-    // Only allow one animation on an element at a time.
-    stopAnimation(element);
-    frameIndex = frameIndex || 0;
-    frameCount = frameCount || DEFAULT_ANIMATION_FRAME_COUNT;
-    frameDelay = frameDelay || DEFAULT_ANIMATION_FRAME_DELAY;
-    var scale = Math.atan(1.5) * 2;
-    var fraction = Math.atan(frameIndex / frameCount * 3 - 1.5) / scale + 0.5;
-    var styles = {};
-    forIn(styleTransitions, function(transition, key) {
-      var start = transition[0];
-      var end = transition[1];
-      var value;
-      if (isNaN(start)) {
-        value = frameIndex ? end : start;
-      }
-      else {
-        value = (1 - fraction) * start + fraction * end;
-      }
-      styles[key] = value;
-    });
-    extendStyle(element, styles);
-    if (frameIndex < frameCount) {
-      element.animation = setTimeout(function() {
-        animate(element, styleTransitions, onFinish, frameCount, frameDelay, frameIndex + 1);
-      });
-    }
-    else if (onFinish) {
-      onFinish(element);
-    }
-  }
-};
-
-/**
- * Stop an animation on a given DOM element.
- */
-var stopAnimation = function (
-  element // string|DOMElement: Element or ID of element to cancel the animation on.
-) {
-  if (element = getElement(element)) {
-    clearTimeout(element.animation);
-  }
-};
 /**
  * Iterate over an array, and call a function on each item.
  */
@@ -201,14 +145,14 @@ var forEach = function (
   array,   // Array*:    The array to iterate over.
   callback // Function*: The function to call on each item. `callback(item, index, array)`
 ) {
-    if (array) {
-        for (var index = 0, length = getLength(array); index < length; index++) {
-            var result = callback(array[index], index, array);
-            if (result === false) {
-                break;
-            }
-        }
+  if (array) {
+    for (var index = 0, length = getLength(array); index < length; index++) {
+      var result = callback(array[index], index, array);
+      if (result === false) {
+        break;
+      }
     }
+  }
 };
 
 /**
@@ -218,14 +162,14 @@ var forIn = function (
   object,  // Object*:   The object to iterate over.
   callback // Function*: The function to call on each pair. `callback(value, key, object)`
 ) {
-    if (object) {
-        for (var key in object) {
-            var result = callback(object[key], key, object);
-            if (result === false) {
-                break;
-            }
-        }
+  if (object) {
+    for (var key in object) {
+      var result = callback(object[key], key, object);
+      if (result === false) {
+        break;
+      }
     }
+  }
 };
 
 /**
@@ -316,12 +260,12 @@ var merge = function (
   array, // Array:  The array to merge into.
   items  // mixed+: The items to merge into the array.
 ) {
+  // TODO: Use splice instead of pushes to get better performance?
+  var addToFirstArray = function (item) {
+    array.push(item);
+  };
   for (var i = 1, l = arguments.length; i < l; i++) {
-    items = arguments[i];
-    // TODO: Use splice instead of push to get better performance?
-    forEach(items, function (item) {
-      array.push(item);
-    });
+    forEach(arguments[i], addToFirstArray);
   }
 };
 
@@ -338,7 +282,7 @@ var pad = function (
   if (isArray(array)) {
     var startingLength = getLength(array);
     if (startingLength < length) {
-      paddingValue = isDefined(paddingValue) ? paddingValue : '';
+      paddingValue = isUndefined(paddingValue) ? '' : paddingValue;
       for (var index = startingLength; index < length; index++) {
         array.push(paddingValue);
         countAdded++;
@@ -352,15 +296,14 @@ var pad = function (
  * @return object: Cookie names and values.
  */
 var getAllCookies = function () {
-  var str = document.cookie;
-  var decode = decodeURIComponent;
   var obj = {};
-  var pairs = str.split(/ *; */);
-  var pair;
-  if ('' == pairs[0]) return obj;
-  for (var i = 0; i < pairs.length; ++i) {
-    pair = pairs[i].split('=');
-    obj[decode(pair[0])] = decode(pair[1]);
+  var documentCookie = trim(document.cookie);
+  if (documentCookie) {
+    var cookies = documentCookie.split(/\s*;\s*/);
+    forEach(cookies, function (cookie) {
+      var pair = cookie.split(/\s*=\s*/);
+      obj[unescape(pair[0])] = unescape(pair[1]);
+    });
   }
   return obj;
 };
@@ -384,19 +327,18 @@ var setCookie = function (
   options // object|: Name/value pairs for options including "maxage", "expires", "path", "domain" and "secure".
 ) {
   options = options || {};
-  var encode = encodeURIComponent;
-  var str = encode(name) + '=' + encode(value);
-  if (null == value) {
+  var str = escape(name) + '=' + unescape(value);
+  if (null === value) {
     options.maxage = -1;
   }
   if (options.maxage) {
-    options.expires = new Date(+new Date + options.maxage);
+    options.expires = new Date(+new Date() + options.maxage);
   }
-  if (options.path) str += ';path=' + options.path;
-  if (options.domain) str += ';domain=' + options.domain;
-  if (options.expires) str += ';expires=' + options.expires.toUTCString();
-  if (options.secure) str += ';secure';
-  document.cookie = str;
+  document.cookie = str +
+    (options.path ? ';path=' + options.path : '') +
+    (options.domain ? ';domain=' + options.domain : '') +
+    (options.expires ? ';expires=' + options.expires.toUTCString() : '') +
+    (options.secure ? ';secure' : '');
 };
 
 /**
@@ -464,8 +406,9 @@ var getElementsByTagAndClass = function (
   var tagName = (tagAndClass[0] || '*').toUpperCase();
   var className = tagAndClass[1];
   var anyTag = (tagName == '*');
+  var elements;
   if (className) {
-    var elements = [];
+    elements = [];
     if (parentElement.getElementsByClassName) {
       forEach(parentElement.getElementsByClassName(className), function(element) {
         if (anyTag || (element.tagName == tagName)) {
@@ -503,8 +446,8 @@ var getParent = function (
 };
 
 /**
-* Create a DOM element.
-*/
+ * Create a DOM element.
+ */
 var createElement = function (
   tagIdentifier
 ) {
@@ -519,7 +462,7 @@ var createElement = function (
   var tagName = tagAndId[0] || 'div';
   var id = tagAndId[1];
   var attributes = tagAndAttributes[1];
-  var cachedElement = addElement[tagName] || (addElement[tagName] = document.createElement(tagName));
+  var cachedElement = createElement[tagName] || (createElement[tagName] = document.createElement(tagName));
   var element = cachedElement.cloneNode(true);
   if (id) {
     element.id = id;
@@ -605,13 +548,13 @@ var getChildren = function (
 var getIndex = function (
   element
 ) {
-  if (element = getElement(element)) {
-    var index = 0;
-    while (element = element.previousSibling) {
-      ++index;
-    }
-    return index;
+  element = getElement(element);
+  var index = -1;
+  while (element) {
+    ++index;
+    element = element.previousSibling;
   }
+  return index;
 };
 
 /**
@@ -636,13 +579,39 @@ var insertElement = function (
 };
 
 /**
+ * Insert a DOM element after another.
+ */
+var insertBefore = function (
+  element,
+  childElement
+) {
+  element = getElement(element);
+  var parentElement = getParent(element);
+  addElement(parentElement, childElement, element);
+};
+
+/**
+ * Insert a DOM element after another.
+ */
+var insertAfter = function (
+  element,
+  childElement
+) {
+  element = getElement(element);
+  var parentElement = getParent(element);
+  var beforeElement = getNextSibling(element);
+  addElement(parentElement, childElement, beforeElement);
+};
+
+/**
  * Remove a DOM element from its parent.
  */
 var removeElement = function (
   element
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     // Remove the element from its parent, provided that its parent still exists.
     var parentElement = getParent(element);
     if (parentElement) {
@@ -667,7 +636,8 @@ var getHtml = function (
   element
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     return element.innerHTML;
   }
 };
@@ -680,7 +650,8 @@ var setHtml = function (
   html
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     // Set the element's innerHTML.
     element.innerHTML = html;
   }
@@ -693,7 +664,8 @@ var getText = function (
   element
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     return element.innerText;
   }
 };
@@ -706,7 +678,8 @@ var setText = function (
   text
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     // Set the element's innerText.
     element.innerHTML = text;
   }
@@ -719,7 +692,8 @@ var getClass = function (
   element
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     return element.className;
   }
 };
@@ -732,7 +706,8 @@ var setClass = function (
   className
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     // Set the element's innerText.
     element.className = className;
   }
@@ -745,7 +720,8 @@ var getFirstChild = function (
   element
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     return element.firstChild;
   }
 };
@@ -757,7 +733,8 @@ var getPreviousSibling = function (
   element
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     return element.previousSibling;
   }
 };
@@ -769,7 +746,8 @@ var getNextSibling = function (
   element
 ) {
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     return element.nextSibling;
   }
 };
@@ -792,7 +770,8 @@ var addClass = function (
   element,
   className
 ) {
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     element.className += ' ' + className;
   }
 };
@@ -804,7 +783,8 @@ var removeClass = function (
   element,
   className
 ) {
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
     var tokens = getClass(element).split(/\s/);
     var ok = [];
     forEach(tokens, function (token) {
@@ -865,16 +845,17 @@ var insertScript = function (
 };
 
 /**
- * Run a callback on each element matching a given selector.
+ * Finds elements matching a selector, and return or run a callback on them.
  */
 var all = function (
   parentElement,
   selector,
   callback
 ) {
+  // TODO: Better argument collapsing.
   if (!selector || isFunction(selector)) {
     callback = selector;
-    selector = parentElement
+    selector = parentElement;
     parentElement = document;
   }
   var elements;
@@ -910,6 +891,17 @@ var all = function (
   }
   return elements;
 };
+
+/**
+ * Finds elements matching a selector, and return or run a callback on them.
+ */
+var one = function (
+  parentElement,
+  selector,
+  callback
+) {
+  return all(parentElement, selector, callback)[0];
+};
 /**
  * Bind a handler to listen for a particular event on an element.
  */
@@ -930,7 +922,8 @@ var bind = function (
   }
 
   // Ensure that we have an element, not just an ID.
-  if (element = getElement(element)) {
+  element = getElement(element);
+  if (element) {
 
     // Invoke the event handler with the event information and the target element.
     var callback = function(event) {
@@ -944,7 +937,7 @@ var bind = function (
       }
       var relatedTarget = event.relatedTarget || event.toElement;
       if (eventName == 'mouseout') {
-        while (relatedTarget = getParent(relatedTarget)) {
+        while (relatedTarget = getParent(relatedTarget)) { // jshint ignore:line
           if (relatedTarget == target) {
             return;
           }
@@ -1069,7 +1062,8 @@ var on = function (
       }
     }
     // Bubble up to find a tagAndClass match because we didn't find one this time.
-    if (target = getParent(target)) {
+    target = getParent(target);
+    if (target) {
       onHandler(element, event, target, customData);
     }
   };
@@ -1223,8 +1217,8 @@ var getValue = function (
     else if (type == 's') {
       value = options[input.selectedIndex].value;
     }
+    return value;
   }
-  return value;
 };
 
 /**
@@ -1387,7 +1381,7 @@ var onReady = window.onReady = function (
     // The first item in the queue causes onReady to be triggered.
     if (!getLength(queue)) {
       setTimeout(function () {
-        onReady()
+        onReady();
       }, 1);
     }
 
@@ -1428,7 +1422,7 @@ var startsWith = function (
   string,
   substring
 ) {
-  return ensureString(string).indexOf(substring) == 0;
+  return ensureString(string).indexOf(substring) == 0; // jshint ignore:line
 };
 
 /**
@@ -1533,6 +1527,20 @@ var upper = function (
   object
 ) {
   return ensureString(object).toUpperCase();
+};
+
+/**
+ * Return an escaped value for URLs.
+ */
+var escape = function (value) {
+  return encodeURIComponent(value);
+};
+
+/**
+ * Return an unescaped value from an escaped URL.
+ */
+var unescape = function (value) {
+  return decodeURIComponent(value);
 };
 
 /**
