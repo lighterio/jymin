@@ -1,9 +1,9 @@
 /**
- *      _                 _                ___   ____   _  _
- *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ \ | || |
- *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  __) || || |_
- * | |_| | |_| | | | | | | | | | |  \ V /| |_| | / __/ |__   _|
- *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_____(_) |_|
+ *      _                 _                ___   ____    ____
+ *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ \  | ___|
+ *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  __) | |___ \
+ * | |_| | |_| | | | | | | | | | |  \ V /| |_| | / __/ _ ___) |
+ *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_____(_)____/
  *        |___/
  *
  * http://lighter.io/jymin
@@ -20,6 +20,7 @@
  *   https://github.com/zerious/jymin/blob/master/scripts/events.js
  *   https://github.com/zerious/jymin/blob/master/scripts/forms.js
  *   https://github.com/zerious/jymin/blob/master/scripts/history.js
+ *   https://github.com/zerious/jymin/blob/master/scripts/json.js
  *   https://github.com/zerious/jymin/blob/master/scripts/logging.js
  *   https://github.com/zerious/jymin/blob/master/scripts/numbers.js
  *   https://github.com/zerious/jymin/blob/master/scripts/ready.js
@@ -29,7 +30,7 @@
  */
 
 
-this.jymin = {version: '0.2.4'};
+this.jymin = {version: '0.2.5'};
 
 /**
  * Empty handler.
@@ -249,7 +250,7 @@ var merge = function (
  * Push padding values onto an array up to a specified length.
  * @return number: The number of padding values that were added.
  */
-var pad = function (
+var padArray = function (
   array,       // Array:  The array to check for items.
   padToLength, // number: The minimum number of items in the array.
   paddingValue // mixed|: The value to use as padding.
@@ -340,28 +341,25 @@ var getTime = function (
  * Get Unix epoch milliseconds from a date.
  * @return integer: Epoch milliseconds.
  */
-var getUtcTimestamp = function (
+var getIsoDate = function (
   date // Date: Date object. (Default: now)
 ) {
-  var utcMonths = {
-    Jan: '01',
-    Feb: '02',
-    Mar: '03',
-    Apr: '04',
-    May: '05',
-    Jun: '06',
-    Jul: '07',
-    Aug: '08',
-    Sep: '09',
-    Oct: '10',
-    Nov: '11',
-    Dec: '12'
-  };
-  date = date || new Date();
-  var utcPattern = /^.*?(\d+) (\w+) (\d+) ([\d:]+).*?$/;
-  return date.toUTCString().replace(utcPattern, function (a, d, m, y, t) {
-    return y + '-' + utcMonths[m] + '-' + d + ' ' + t;
-  });
+  if (!date) {
+    date = new Date();
+  }
+  if (date.toISOString) {
+    date = date.toISOString();
+  }
+  else {
+    // Build an ISO date string manually in really old browsers.
+    var utcPattern = /^.*?(\d+) (\w+) (\d+) ([\d:]+).*?$/;
+    date = date.toUTCString().replace(utcPattern, function (a, d, m, y, t) {
+      m = zeroFill(date.getMonth(), 2);
+      t += '.' + zeroFill(date.getMilliseconds(), 3);
+      return y + '-' + m + '-' + d + 'T' + t + 'Z';
+    });
+  }
+  return date;
 };
 /**
  * Get a DOM element by its ID (if the argument is an ID).
@@ -1318,6 +1316,93 @@ var onHistoryPop = function (
   bind(window, 'popstate', callback);
 };
 /**
+ * Create JSON that doesn't necessarily have to be strict.
+ */
+var stringify = function (data, stack, strict) {
+  var reserved = /^(break|case|catch|continue|debugger|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|this|throw|try|typeof|var|void|while|with)$/;
+  if (data === null) {
+    data = 'null';
+  }
+  else if (isFunction(data)) {
+    if (strict) {
+      data = '[Function]';
+    }
+    else {
+      data = ensureString(data).replace(/^function \(/, 'function(');
+    }
+  }
+  else if (isDate(data)) {
+    if (strict) {
+      data = '"' + getIsoDate() + '"';
+    }
+    else {
+      data = 'new Date(' + getTime(data) + ')';
+    }
+  }
+  else if (isObject(data)) {
+    stack = stack || [];
+    var isCircular = false;
+    forEach(stack, function (item, index) {
+      if (item == data) {
+        isCircular = true;
+      }
+    });
+    if (isCircular) {
+      return null;
+    }
+    push(stack, data);
+    var parts = [];
+    if (isArray(data)) {
+      forEach(data, function (value) {
+        push(parts, stringify(value, stack, strict));
+      });
+    }
+    else {
+      forIn(data, function (key, value) {
+        if (strict || reserved.test(key)) {
+          key = '"' + key + '"';
+        }
+        push(parts, key + ':' + stringify(value, stack, strict));
+      });
+    }
+    pop(stack);
+    data = '{' + parts.join(',') + '}';
+  }
+  else if (isString(data) && stack) {
+    data = '"' + data.replace(/"/g, '\\"') + '"';
+  }
+  else {
+    data = '' + data;
+  }
+  return data;
+};
+
+/**
+ * Parse JavaScript.
+ */
+var parse = function (text) {
+  if (text[0] == '{' || text[0] == '[') {
+    try {
+      var evil = window.eval; // jshint ignore:line
+      evil('eval.J=' + text);
+      text = evil.J;
+    }
+    catch (e) {
+      //+env:debug
+      error('[Jymin] Could not parse JS: "' + text + '"');
+      //-env:debug
+    }
+  }
+  return text;
+};
+
+/**
+ * Execute JavaScript.
+ */
+var execute = function (text) {
+  parse('0;' + text);
+};
+/**
  * Log values to the console, if it's available.
  */
 var error = function () {
@@ -1372,6 +1457,19 @@ var ensureNumber = function (
   defaultNumber = defaultNumber || 0;
   number *= 1;
   return isNaN(number) ? defaultNumber : number;
+};
+
+/**
+ * Left-pad a number with zeros if it's shorter than the desired length.
+ */
+var zeroFill = function (
+  number,
+  length
+) {
+  number = ensureString(number);
+  // Repurpose the lenth variable to count how much padding we need.
+  length = Math.max(length - number.length, 0);
+  return (new Array(length + 1)).join('0') + number;
 };
 /**
  * Execute a callback when the page loads.
@@ -1649,84 +1747,6 @@ var isDate = function (
   value // mixed:  The variable to check.
 ) {
   return isInstance(value, Date);
-};
-
-/**
- * Create a not-strictly-JSON string.
- */
-var stringify = function (data, stack) {
-  var reserved = /^(break|case|catch|continue|debugger|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|this|throw|try|typeof|var|void|while|with)$/;
-  if (data === null) {
-    data = 'null';
-  }
-  else if (isFunction(data)) {
-    data = ensureString(data).replace(/^function \(/, 'function(');
-  }
-  else if (isDate(data)) {
-    data = 'new Date(' + getTime(data) + ')';
-  }
-  else if (isObject(data)) {
-    stack = stack || [];
-    var isCircular = false;
-    forEach(stack, function (item, index) {
-      if (item == data) {
-        isCircular = true;
-      }
-    });
-    if (isCircular) {
-      return null;
-    }
-    push(stack, data);
-    var parts = [];
-    if (isArray(data)) {
-      forEach(data, function (value) {
-        push(parts, stringify(value, stack));
-      });
-    }
-    else {
-      forIn(data, function (key, value) {
-        if (reserved.test(key)) {
-          key = '"' + key + '"';
-        }
-        push(parts, key + ':' + stringify(value, stack));
-      });
-    }
-    pop(stack);
-    data = '{' + parts.join(',') + '}';
-  }
-  else if (isString(data) && stack) {
-    data = '"' + data.replace(/"/g, '\\"') + '"';
-  }
-  else {
-    data = '' + data;
-  }
-  return data;
-};
-
-/**
- * Parse JavaScript.
- */
-var parse = function (text) {
-  if (text[0] == '{') {
-    try {
-      var evil = window.eval; // jshint ignore:line
-      evil('eval.J=' + text);
-      text = evil.J;
-    }
-    catch (e) {
-      //+env:debug
-      error('[Jymin] Could not parse JS: "' + text + '"');
-      //-env:debug
-    }
-  }
-  return text;
-};
-
-/**
- * Execute JavaScript.
- */
-var execute = function (text) {
-  parse('0;' + text);
 };
 /**
  * Get the current location host.

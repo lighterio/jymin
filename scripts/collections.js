@@ -145,7 +145,7 @@ var merge = function (
  * Push padding values onto an array up to a specified length.
  * @return number: The number of padding values that were added.
  */
-var pad = function (
+var padArray = function (
   array,       // Array:  The array to check for items.
   padToLength, // number: The minimum number of items in the array.
   paddingValue // mixed|: The value to use as padding.
