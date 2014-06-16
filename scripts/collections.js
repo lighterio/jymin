@@ -2,8 +2,8 @@
  * Iterate over an array, and call a function on each item.
  */
 var forEach = function (
-  array,   // Array*:    The array to iterate over.
-  callback // Function*: The function to call on each item. `callback(item, index, array)`
+  array,   // Array:    The array to iterate over.
+  callback // Function: The function to call on each item. `callback(item, index, array)`
 ) {
   if (array) {
     for (var index = 0, length = getLength(array); index < length; index++) {
@@ -24,7 +24,7 @@ var forIn = function (
 ) {
   if (object) {
     for (var key in object) {
-      var result = callback(object[key], key, object);
+      var result = callback(key, object[key], object);
       if (result === false) {
         break;
       }
@@ -40,7 +40,7 @@ var decorateObject = function (
   decorations // Object: The object to iterate over.
 ) {
     if (object && decorations) {
-    forIn(decorations, function (value, key) {
+    forIn(decorations, function (key, value) {
       object[key] = value;
     });
     }
@@ -114,6 +114,18 @@ var push = function (
     array.push(item);
   }
   return item;
+};
+
+/**
+ * Pop an item off an array.
+ * @return mixed: Popped item.
+ */
+var pop = function (
+  array // Array: The array to push the item into.
+) {
+  if (isArray(array)) {
+    return array.pop();
+  }
 };
 
 var merge = function (

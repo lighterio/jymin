@@ -1,9 +1,9 @@
 /**
- *      _                 _                ___   ____    _____
- *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ \  |___ /
- *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  __) |   |_ \
- * | |_| | |_| | | | | | | | | | |  \ V /| |_| | / __/ _ ___) |
- *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_____(_)____/
+ *      _                 _                ___   ____   _  _
+ *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ \ | || |
+ *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  __) || || |_
+ * | |_| | |_| | | | | | | | | | |  \ V /| |_| | / __/ |__   _|
+ *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_____(_) |_|
  *        |___/
  *
  * http://lighter.io/jymin
@@ -29,14 +29,23 @@
  */
 
 
-this.jymin = {version: '0.2.3'};
+this.jymin = {version: '0.2.4'};
 
 /**
  * Empty handler.
  */
 var doNothing = function () {};
-var globalResponseSuccessHandler = doNothing;
-var globalResponseFailureHandler = doNothing;
+var responseSuccessHandler = doNothing;
+var responseFailureHandler = doNothing;
+
+/**
+ * Get an XMLHttpRequest object.
+ */
+var getXhr = function () {
+  var Xhr = window.XMLHttpRequest;
+  var ActiveX = window.ActiveXObject;
+  return Xhr ? new Xhr() : (ActiveX ? new ActiveX('Microsoft.XMLHTTP') : false);
+};
 
 /**
  * Make an AJAX request, and handle it with success or failure.
@@ -46,26 +55,15 @@ var getResponse = function (
   url,       // string:    The URL to request a response from.
   body,      // object|:   Data to post. The method is automagically "POST" if body is truey, otherwise "GET".
   onSuccess, // function|: Callback to run on success. `onSuccess(response, request)`.
-  onFailure, // function|: Callback to run on failure. `onFailure(response, request)`.
-  evalJson   // boolean|:  Whether to evaluate the response as JSON.
+  onFailure  // function|: Callback to run on failure. `onFailure(response, request)`.
 ) {
   // If the optional body argument is omitted, shuffle it out.
   if (isFunction(body)) {
-    evalJson = onFailure;
     onFailure = onSuccess;
     onSuccess = body;
     body = 0;
   }
-  var request;
-  if (window.XMLHttpRequest) {
-    request = new XMLHttpRequest();
-  }
-  else if (window.ActiveXObject) {
-    request = new ActiveXObject('Microsoft.XMLHTTP'); // jshint ignore:line
-  }
-  else {
-    return false;
-  }
+  var request = getXhr();
   if (request) {
     request.onreadystatechange = function() {
       if (request.readyState == 4) {
@@ -73,33 +71,13 @@ var getResponse = function (
         var status = request.status;
         var isSuccess = (status == 200);
         var callback = isSuccess ?
-          onSuccess || globalResponseSuccessHandler :
-          onFailure || globalResponseFailureHandler;
-        var response = request.responseText;
-        if (evalJson) {
-          var object;
-          if (status) {
-            try {
-              // Trick UglifyJS into thinking there's no eval.
-              var evil = window.eval; // jshint ignore:line
-              evil('eval.J=' + response);
-              object = evil.J;
-            }
-            catch (e) {
-              //+env:debug,dev
-              error('Jymin: Could not parse JSON: "' + response + '"');
-              //-env:debug,dev
-              object = {_ERROR: '_BAD_JSON', _TEXT: response};
-            }
-          }
-          else {
-            object = {_ERROR: '_OFFLINE'};
-          }
-          object._STATUS = status;
-          object.request = request;
-          response = object;
-        }
-        callback(response, request);
+          onSuccess || responseSuccessHandler :
+          onFailure || responseFailureHandler;
+        var data = parse(request.responseText);
+        data._STATUS = status;
+        data._REQUEST = request;
+        data = data || {_ERROR: '_OFFLINE'};
+        callback(data);
       }
     };
     request.open(body ? 'POST' : 'GET', url, true);
@@ -110,40 +88,26 @@ var getResponse = function (
     getResponse._WAITING = (getResponse._WAITING || 0) + 1;
 
     // Record the original request URL.
-    request.url = url;
-
-    // TODO: Populate request.query with URL query params.
+    request._URL = url;
 
     // If it's a post, record the post body.
     if (body) {
-      request.body = body;
+      request._BODY = body;
     }
 
-    //
-    request._TIME = new Date();
+    // Record the time the request was made.
+    request._TIME = getTime();
+
     request.send(body || null);
   }
   return true;
-};
-
-/**
- * Request a JSON resource with a given URL.
- * @return boolean: True if AJAX is supported.
- */
-var getJson = function (
-  url,       // string:    The URL to request a response from.
-  body,      // object|:   Data to post. The method is automagically "POST" if body is truey, otherwise "GET".
-  onSuccess, // function|: Callback to run on success. `onSuccess(response, request)`.
-  onFailure  // function|: Callback to run on failure. `onFailure(response, request)`.
-) {
-  return getResponse(url, body, onSuccess, onFailure, true);
 };
 /**
  * Iterate over an array, and call a function on each item.
  */
 var forEach = function (
-  array,   // Array*:    The array to iterate over.
-  callback // Function*: The function to call on each item. `callback(item, index, array)`
+  array,   // Array:    The array to iterate over.
+  callback // Function: The function to call on each item. `callback(item, index, array)`
 ) {
   if (array) {
     for (var index = 0, length = getLength(array); index < length; index++) {
@@ -164,7 +128,7 @@ var forIn = function (
 ) {
   if (object) {
     for (var key in object) {
-      var result = callback(object[key], key, object);
+      var result = callback(key, object[key], object);
       if (result === false) {
         break;
       }
@@ -180,7 +144,7 @@ var decorateObject = function (
   decorations // Object: The object to iterate over.
 ) {
     if (object && decorations) {
-    forIn(decorations, function (value, key) {
+    forIn(decorations, function (key, value) {
       object[key] = value;
     });
     }
@@ -254,6 +218,18 @@ var push = function (
     array.push(item);
   }
   return item;
+};
+
+/**
+ * Pop an item off an array.
+ * @return mixed: Popped item.
+ */
+var pop = function (
+  array // Array: The array to push the item into.
+) {
+  if (isArray(array)) {
+    return array.pop();
+  }
 };
 
 var merge = function (
@@ -360,6 +336,33 @@ var getTime = function (
   return date.getTime();
 };
 
+/**
+ * Get Unix epoch milliseconds from a date.
+ * @return integer: Epoch milliseconds.
+ */
+var getUtcTimestamp = function (
+  date // Date: Date object. (Default: now)
+) {
+  var utcMonths = {
+    Jan: '01',
+    Feb: '02',
+    Mar: '03',
+    Apr: '04',
+    May: '05',
+    Jun: '06',
+    Jul: '07',
+    Aug: '08',
+    Sep: '09',
+    Oct: '10',
+    Nov: '11',
+    Dec: '12'
+  };
+  date = date || new Date();
+  var utcPattern = /^.*?(\d+) (\w+) (\d+) ([\d:]+).*?$/;
+  return date.toUTCString().replace(utcPattern, function (a, d, m, y, t) {
+    return y + '-' + utcMonths[m] + '-' + d + ' ' + t;
+  });
+};
 /**
  * Get a DOM element by its ID (if the argument is an ID).
  * If you pass in a DOM element, it just returns it.
@@ -1137,7 +1140,10 @@ var focusElement = function (
   var focus = function () {
     element = getElement(element);
     if (element) {
-      element.focus();
+      var focusMethod = element.focus;
+      if (focusMethod) {
+        focusMethod.call(element);
+      }
     }
   };
   if (isUndefined(delay)) {
@@ -1173,7 +1179,7 @@ var addTimeout = function (
 ) {
   var usingString = isString(elementOrString);
   var object = usingString ? addTimeout : elementOrString;
-  var key = usingString ? elementOrString : 'T';
+  var key = usingString ? elementOrString : '_TIMEOUT';
   clearTimeout(object[key]);
   if (callback) {
     if (isUndefined(delay)) {
@@ -1214,7 +1220,7 @@ var getValue = function (
         }
       });
     }
-    else if (type == 's') {
+    else if (options) {
       value = options[input.selectedIndex].value;
     }
     return value;
@@ -1231,10 +1237,11 @@ var setValue = function (
   input = getElement(input);
   if (input) {
     var type = input.type[0];
+    var options = input.options;
     if (type == 'c' || type == 'r') {
       input.checked = value ? true : false;
     }
-    else if (type == 's') {
+    else if (options) {
       var selected = {};
       if (input.multiple) {
         if (!isArray(value)) {
@@ -1248,7 +1255,7 @@ var setValue = function (
         selected[value] = true;
       }
       value = isArray(value) ? value : [value];
-      forEach(input.options, function (option) {
+      forEach(options, function (option) {
         option.selected = !!selected[option.value];
       });
     }
@@ -1499,19 +1506,6 @@ var extractNumbers = function (
 };
 
 /**
- * Returns a query string generated by serializing an object and joined using a delimiter (defaults to '&')
- */
-var buildQueryString = function (
-  object
-) {
-  var queryParams = [];
-  forIn(object, function(value, key) {
-    queryParams.push(escape(key) + '=' + escape(value));
-  });
-  return queryParams.join('&');
-};
-
-/**
  * Returns a lowercase string.
  */
 var lower = function (
@@ -1550,7 +1544,7 @@ var buildQueryString = function (
   object
 ) {
   var queryParams = [];
-  forIn(object, function(value, key) {
+  forIn(object, function(key, value) {
     queryParams.push(escape(key) + '=' + escape(value));
   });
   return queryParams.join('&');
@@ -1646,6 +1640,93 @@ var isArray = function (
   value // mixed:  The variable to check.
 ) {
   return isInstance(value, Array);
+};
+
+/**
+ * Return true if a variable is a date.
+ */
+var isDate = function (
+  value // mixed:  The variable to check.
+) {
+  return isInstance(value, Date);
+};
+
+/**
+ * Create a not-strictly-JSON string.
+ */
+var stringify = function (data, stack) {
+  var reserved = /^(break|case|catch|continue|debugger|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|this|throw|try|typeof|var|void|while|with)$/;
+  if (data === null) {
+    data = 'null';
+  }
+  else if (isFunction(data)) {
+    data = ensureString(data).replace(/^function \(/, 'function(');
+  }
+  else if (isDate(data)) {
+    data = 'new Date(' + getTime(data) + ')';
+  }
+  else if (isObject(data)) {
+    stack = stack || [];
+    var isCircular = false;
+    forEach(stack, function (item, index) {
+      if (item == data) {
+        isCircular = true;
+      }
+    });
+    if (isCircular) {
+      return null;
+    }
+    push(stack, data);
+    var parts = [];
+    if (isArray(data)) {
+      forEach(data, function (value) {
+        push(parts, stringify(value, stack));
+      });
+    }
+    else {
+      forIn(data, function (key, value) {
+        if (reserved.test(key)) {
+          key = '"' + key + '"';
+        }
+        push(parts, key + ':' + stringify(value, stack));
+      });
+    }
+    pop(stack);
+    data = '{' + parts.join(',') + '}';
+  }
+  else if (isString(data) && stack) {
+    data = '"' + data.replace(/"/g, '\\"') + '"';
+  }
+  else {
+    data = '' + data;
+  }
+  return data;
+};
+
+/**
+ * Parse JavaScript.
+ */
+var parse = function (text) {
+  if (text[0] == '{') {
+    try {
+      var evil = window.eval; // jshint ignore:line
+      evil('eval.J=' + text);
+      text = evil.J;
+    }
+    catch (e) {
+      //+env:debug
+      error('[Jymin] Could not parse JS: "' + text + '"');
+      //-env:debug
+    }
+  }
+  return text;
+};
+
+/**
+ * Execute JavaScript.
+ */
+var execute = function (text) {
+  parse('0;' + text);
 };
 /**
  * Get the current location host.

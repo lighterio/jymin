@@ -21,7 +21,7 @@ var getValue = function (
         }
       });
     }
-    else if (type == 's') {
+    else if (options) {
       value = options[input.selectedIndex].value;
     }
     return value;
@@ -38,10 +38,11 @@ var setValue = function (
   input = getElement(input);
   if (input) {
     var type = input.type[0];
+    var options = input.options;
     if (type == 'c' || type == 'r') {
       input.checked = value ? true : false;
     }
-    else if (type == 's') {
+    else if (options) {
       var selected = {};
       if (input.multiple) {
         if (!isArray(value)) {
@@ -55,7 +56,7 @@ var setValue = function (
         selected[value] = true;
       }
       value = isArray(value) ? value : [value];
-      forEach(input.options, function (option) {
+      forEach(options, function (option) {
         option.selected = !!selected[option.value];
       });
     }

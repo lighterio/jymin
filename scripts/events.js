@@ -233,7 +233,10 @@ var focusElement = function (
   var focus = function () {
     element = getElement(element);
     if (element) {
-      element.focus();
+      var focusMethod = element.focus;
+      if (focusMethod) {
+        focusMethod.call(element);
+      }
     }
   };
   if (isUndefined(delay)) {
@@ -269,7 +272,7 @@ var addTimeout = function (
 ) {
   var usingString = isString(elementOrString);
   var object = usingString ? addTimeout : elementOrString;
-  var key = usingString ? elementOrString : 'T';
+  var key = usingString ? elementOrString : '_TIMEOUT';
   clearTimeout(object[key]);
   if (callback) {
     if (isUndefined(delay)) {
