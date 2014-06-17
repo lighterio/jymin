@@ -43,7 +43,6 @@ var getResponse = function (
         var data = parse(request.responseText);
         data._STATUS = status;
         data._REQUEST = request;
-        data = data || {_ERROR: '_OFFLINE'};
         callback(data);
       }
     };
