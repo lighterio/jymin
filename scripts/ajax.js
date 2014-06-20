@@ -2,6 +2,8 @@
  * Empty handler.
  */
 var doNothing = function () {};
+
+// TODO: Enable multiple handlers using "bind" or perhaps middlewares.
 var responseSuccessHandler = doNothing;
 var responseFailureHandler = doNothing;
 
@@ -32,8 +34,13 @@ var getResponse = function (
   }
   var request = getXhr();
   if (request) {
+    onFailure = onFailure || responseFailureHandler;
+    onSuccess = onSuccess || responseSuccessHandler;
     request.onreadystatechange = function() {
       if (request.readyState == 4) {
+        //+env:debug
+        log('[Jymin] Received response from "' + url + '". (' + getResponse._WAITING + ' in progress).');
+        //-env:debug
         --getResponse._WAITING;
         var status = request.status;
         var isSuccess = (status == 200);
@@ -51,7 +58,6 @@ var getResponse = function (
     if (body) {
       request.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
     }
-    getResponse._WAITING = (getResponse._WAITING || 0) + 1;
 
     // Record the original request URL.
     request._URL = url;
@@ -64,7 +70,14 @@ var getResponse = function (
     // Record the time the request was made.
     request._TIME = getTime();
 
+    // Allow applications to back off when too many requests are in progress.
+    getResponse._WAITING = (getResponse._WAITING || 0) + 1;
+
+    //+env:debug
+    log('[Jymin] Sending request to "' + url + '". (' + getResponse._WAITING + ' in progress).');
+    //-env:debug
     request.send(body || null);
+
   }
   return true;
 };

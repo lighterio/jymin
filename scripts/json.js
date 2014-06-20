@@ -35,12 +35,17 @@ var stringify = function (data, stack, strict) {
     }
     push(stack, data);
     var parts = [];
+    var before, after;
     if (isArray(data)) {
+      before = '[';
+      after = ']';
       forEach(data, function (value) {
         push(parts, stringify(value, stack, strict));
       });
     }
     else {
+      before = '{';
+      after = '}';
       forIn(data, function (key, value) {
         if (strict || reserved.test(key)) {
           key = '"' + key + '"';
@@ -49,7 +54,7 @@ var stringify = function (data, stack, strict) {
       });
     }
     pop(stack);
-    data = '{' + parts.join(',') + '}';
+    data = before + parts.join(',') + after;
   }
   else if (isString(data) && stack) {
     data = '"' + data.replace(/"/g, '\\"') + '"';

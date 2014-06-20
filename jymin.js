@@ -1,9 +1,9 @@
 /**
- *      _                 _                ___   ____    __
- *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ \  / /_
- *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  __) || '_ \
- * | |_| | |_| | | | | | | | | | |  \ V /| |_| | / __/ | (_) |
- *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_____(_)___/
+ *      _                 _                ___   ____   _____
+ *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ \ |___  |
+ *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  __) |   / /
+ * | |_| | |_| | | | | | | | | | |  \ V /| |_| | / __/ _ / /
+ *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_____(_)_/
  *        |___/
  *
  * http://lighter.io/jymin
@@ -30,12 +30,14 @@
  */
 
 
-this.jymin = {version: '0.2.6'};
+this.jymin = {version: '0.2.7'};
 
 /**
  * Empty handler.
  */
 var doNothing = function () {};
+
+// TODO: Enable multiple handlers using "bind" or perhaps middlewares.
 var responseSuccessHandler = doNothing;
 var responseFailureHandler = doNothing;
 
@@ -66,8 +68,13 @@ var getResponse = function (
   }
   var request = getXhr();
   if (request) {
+    onFailure = onFailure || responseFailureHandler;
+    onSuccess = onSuccess || responseSuccessHandler;
     request.onreadystatechange = function() {
       if (request.readyState == 4) {
+        //+env:debug
+        log('[Jymin] Received response from "' + url + '". (' + getResponse._WAITING + ' in progress).');
+        //-env:debug
         --getResponse._WAITING;
         var status = request.status;
         var isSuccess = (status == 200);
@@ -85,7 +92,6 @@ var getResponse = function (
     if (body) {
       request.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
     }
-    getResponse._WAITING = (getResponse._WAITING || 0) + 1;
 
     // Record the original request URL.
     request._URL = url;
@@ -98,7 +104,14 @@ var getResponse = function (
     // Record the time the request was made.
     request._TIME = getTime();
 
+    // Allow applications to back off when too many requests are in progress.
+    getResponse._WAITING = (getResponse._WAITING || 0) + 1;
+
+    //+env:debug
+    log('[Jymin] Sending request to "' + url + '". (' + getResponse._WAITING + ' in progress).');
+    //-env:debug
     request.send(body || null);
+
   }
   return true;
 };
@@ -1351,12 +1364,17 @@ var stringify = function (data, stack, strict) {
     }
     push(stack, data);
     var parts = [];
+    var before, after;
     if (isArray(data)) {
+      before = '[';
+      after = ']';
       forEach(data, function (value) {
         push(parts, stringify(value, stack, strict));
       });
     }
     else {
+      before = '{';
+      after = '}';
       forIn(data, function (key, value) {
         if (strict || reserved.test(key)) {
           key = '"' + key + '"';
@@ -1365,7 +1383,7 @@ var stringify = function (data, stack, strict) {
       });
     }
     pop(stack);
-    data = '{' + parts.join(',') + '}';
+    data = before + parts.join(',') + after;
   }
   else if (isString(data) && stack) {
     data = '"' + data.replace(/"/g, '\\"') + '"';
