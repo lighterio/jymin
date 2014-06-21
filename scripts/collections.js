@@ -16,6 +16,23 @@ var forEach = function (
 };
 
 /**
+ * Iterate over an array, and call a callback with (index, value), as in jQuery.each
+ */
+var each = function (
+  array,   // Array:    The array to iterate over.
+  callback // Function: The function to call on each item. `callback(item, index, array)`
+) {
+  if (array) {
+    for (var index = 0, length = getLength(array); index < length; index++) {
+      var result = callback(index, array[index], array);
+      if (result === false) {
+        break;
+      }
+    }
+  }
+};
+
+/**
  * Iterate over an object's keys, and call a function on each key value pair.
  */
 var forIn = function (
@@ -25,6 +42,23 @@ var forIn = function (
   if (object) {
     for (var key in object) {
       var result = callback(key, object[key], object);
+      if (result === false) {
+        break;
+      }
+    }
+  }
+};
+
+/**
+ * Iterate over an object's keys, and call a function on each (value, key) pair.
+ */
+var forOf = function (
+  object,  // Object*:   The object to iterate over.
+  callback // Function*: The function to call on each pair. `callback(value, key, object)`
+) {
+  if (object) {
+    for (var key in object) {
+      var result = callback(object[key], key, object);
       if (result === false) {
         break;
       }

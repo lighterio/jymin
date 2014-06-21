@@ -1,14 +1,14 @@
 /**
  * Create JSON that doesn't necessarily have to be strict.
  */
-var stringify = function (data, stack, strict) {
+var stringify = function (data, strict, stack) {
   var reserved = /^(break|case|catch|continue|debugger|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|this|throw|try|typeof|var|void|while|with)$/;
   if (data === null) {
     data = 'null';
   }
   else if (isFunction(data)) {
     if (strict) {
-      data = '[Function]';
+      data = '-1';
     }
     else {
       data = ensureString(data).replace(/^function \(/, 'function(');
@@ -40,7 +40,7 @@ var stringify = function (data, stack, strict) {
       before = '[';
       after = ']';
       forEach(data, function (value) {
-        push(parts, stringify(value, stack, strict));
+        push(parts, stringify(value, strict, stack));
       });
     }
     else {
@@ -50,7 +50,7 @@ var stringify = function (data, stack, strict) {
         if (strict || reserved.test(key)) {
           key = '"' + key + '"';
         }
-        push(parts, key + ':' + stringify(value, stack, strict));
+        push(parts, key + ':' + stringify(value, strict, stack));
       });
     }
     pop(stack);

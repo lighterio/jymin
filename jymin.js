@@ -133,6 +133,23 @@ var forEach = function (
 };
 
 /**
+ * Iterate over an array, and call a callback with (index, value), as in jQuery.each
+ */
+var each = function (
+  array,   // Array:    The array to iterate over.
+  callback // Function: The function to call on each item. `callback(item, index, array)`
+) {
+  if (array) {
+    for (var index = 0, length = getLength(array); index < length; index++) {
+      var result = callback(index, array[index], array);
+      if (result === false) {
+        break;
+      }
+    }
+  }
+};
+
+/**
  * Iterate over an object's keys, and call a function on each key value pair.
  */
 var forIn = function (
@@ -142,6 +159,23 @@ var forIn = function (
   if (object) {
     for (var key in object) {
       var result = callback(key, object[key], object);
+      if (result === false) {
+        break;
+      }
+    }
+  }
+};
+
+/**
+ * Iterate over an object's keys, and call a function on each (value, key) pair.
+ */
+var forOf = function (
+  object,  // Object*:   The object to iterate over.
+  callback // Function*: The function to call on each pair. `callback(value, key, object)`
+) {
+  if (object) {
+    for (var key in object) {
+      var result = callback(object[key], key, object);
       if (result === false) {
         break;
       }
@@ -1330,14 +1364,14 @@ var onHistoryPop = function (
 /**
  * Create JSON that doesn't necessarily have to be strict.
  */
-var stringify = function (data, stack, strict) {
+var stringify = function (data, strict, stack) {
   var reserved = /^(break|case|catch|continue|debugger|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|this|throw|try|typeof|var|void|while|with)$/;
   if (data === null) {
     data = 'null';
   }
   else if (isFunction(data)) {
     if (strict) {
-      data = '[Function]';
+      data = '-1';
     }
     else {
       data = ensureString(data).replace(/^function \(/, 'function(');
@@ -1369,7 +1403,7 @@ var stringify = function (data, stack, strict) {
       before = '[';
       after = ']';
       forEach(data, function (value) {
-        push(parts, stringify(value, stack, strict));
+        push(parts, stringify(value, strict, stack));
       });
     }
     else {
@@ -1379,7 +1413,7 @@ var stringify = function (data, stack, strict) {
         if (strict || reserved.test(key)) {
           key = '"' + key + '"';
         }
-        push(parts, key + ':' + stringify(value, stack, strict));
+        push(parts, key + ':' + stringify(value, strict, stack));
       });
     }
     pop(stack);
@@ -1491,7 +1525,7 @@ var zeroFill = function (
 /**
  * Execute a callback when the page loads.
  */
-var onReady = window.onReady = function (
+var onReady = window._ON_READY = function (
   callback
 ) {
   // If there's no queue, create it as a property of this function.
@@ -1500,11 +1534,21 @@ var onReady = window.onReady = function (
   // If there's a callback, push it into the queue.
   if (callback) {
 
-    // The first item in the queue causes onReady to be triggered.
+    // The 1st callback makes schedules onReady, if not waiting for scripts.
     if (!getLength(queue)) {
-      setTimeout(function () {
-        onReady();
-      }, 1);
+
+      // In production, there should be a single script, therefore no wait.
+      var waitingForScripts = false;
+
+      // In development, individual scripts might still be loading.
+      //+env:dev,debug
+      waitingForScripts = window._WAITING_FOR_SCRIPTS;
+      //-env:dev,debug
+
+      if (!waitingForScripts) {
+        // At the next tick, we've excuted this whole script.
+        addTimeout(onReady, onReady, 1);
+      }
     }
 
     // Put an item in the queue and wait.

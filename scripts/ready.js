@@ -1,7 +1,7 @@
 /**
  * Execute a callback when the page loads.
  */
-var onReady = window.onReady = function (
+var onReady = window._ON_READY = function (
   callback
 ) {
   // If there's no queue, create it as a property of this function.
@@ -10,11 +10,21 @@ var onReady = window.onReady = function (
   // If there's a callback, push it into the queue.
   if (callback) {
 
-    // The first item in the queue causes onReady to be triggered.
+    // The 1st callback makes schedules onReady, if not waiting for scripts.
     if (!getLength(queue)) {
-      setTimeout(function () {
-        onReady();
-      }, 1);
+
+      // In production, there should be a single script, therefore no wait.
+      var waitingForScripts = false;
+
+      // In development, individual scripts might still be loading.
+      //+env:dev,debug
+      waitingForScripts = window._WAITING_FOR_SCRIPTS;
+      //-env:dev,debug
+
+      if (!waitingForScripts) {
+        // At the next tick, we've excuted this whole script.
+        addTimeout(onReady, onReady, 1);
+      }
     }
 
     // Put an item in the queue and wait.
