@@ -12,7 +12,7 @@
     "zepto",
     "alternative"
   ],
-  "version": "0.2.7",
+  "version": "0.2.8",
   "main": "chug/chug.js",
   "homepage": "http://lighter.io/jymin",
   "repository": "http://github.com/zerious/jymin.git",
