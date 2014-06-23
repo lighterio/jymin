@@ -733,6 +733,57 @@ var setText = function (
 };
 
 /**
+ * Get an attribute from a DOM element, if it can be found.
+ */
+var getAttribute = function (
+  element,
+  attributeName
+) {
+  // Ensure that we have an element, not just an ID.
+  element = getElement(element);
+  if (element) {
+    return element.getAttribute(attributeName);
+  }
+};
+
+/**
+ * Set an attribute on a DOM element, if it can be found.
+ */
+var setAttribute = function (
+  element,
+  attributeName,
+  value
+) {
+  // Ensure that we have an element, not just an ID.
+  element = getElement(element);
+  if (element) {
+    // Set the element's innerText.
+    element.setAttribute(attributeName, value);
+  }
+};
+
+/**
+ * Get a data attribute from a DOM element.
+ */
+var getData = function (
+  element,
+  dataKey
+) {
+  return getAttribute(element, 'data-' + dataKey);
+};
+
+/**
+ * Set a data attribute on a DOM element.
+ */
+var setData = function (
+  element,
+  dataKey,
+  value
+) {
+  setAttribute(element, 'data-' + dataKey, value);
+};
+
+/**
  * Get a DOM element's class name if the element can be found.
  */
 var getClass = function (
