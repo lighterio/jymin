@@ -79,6 +79,9 @@ var on = function (
     selector = element;
     element = document;
   }
+  if (!selector || selector == '*') {
+    selector = '';
+  }
   var parts = selector.split(',');
   var onHandler = function(element, event, target, customData) {
     forEach(parts, function (part) {
