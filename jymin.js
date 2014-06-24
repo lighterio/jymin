@@ -1,9 +1,9 @@
 /**
- *      _                 _                ___   ____    ___
- *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ \  ( _ )
- *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  __) | / _ \
- * | |_| | |_| | | | | | | | | | |  \ V /| |_| | / __/ | (_) |
- *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_____(_)___/
+ *      _                 _                ___   ____   ___
+ *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ \ / _ \
+ *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  __) | (_) |
+ * | |_| | |_| | | | | | | | | | |  \ V /| |_| | / __/ \__, |
+ *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_____(_)/_/
  *        |___/
  *
  * http://lighter.io/jymin
@@ -30,7 +30,7 @@
  */
 
 
-this.jymin = {version: '0.2.8'};
+this.jymin = {version: '0.2.9'};
 
 /**
  * Empty handler.
@@ -420,7 +420,6 @@ var getElement = function (
     id = parentElement;
     parentElement = document;
   }
-  // If the argument is not a string, just assume it's already an element reference, and return it.
   return isString(id) ? parentElement.getElementById(id) : id;
 };
 
@@ -978,8 +977,18 @@ var all = function (
     });
   }
   else if (selector[0] == '#') {
-    var element = getElement(parentElement, selector.substr(1));
-    elements = element ? [element] : [];
+    var id = selector.substr(1);
+    var child = getElement(parentElement.ownerDocument || document, id);
+    if (child) {
+      var parent = getParent(child);
+      while (parent) {
+        if (parent === parentElement) {
+          elements = [child];
+          break;
+        }
+        parent = getParent(parent);
+      }
+    }
   }
   else {
     elements = getElementsByTagAndClass(parentElement, selector);
@@ -987,7 +996,7 @@ var all = function (
   if (callback) {
     forEach(elements, callback);
   }
-  return elements;
+  return elements || [];
 };
 
 /**
@@ -1007,14 +1016,13 @@ var bind = function (
   element,            // DOMElement|string: Element or ID of element to bind to.
   eventName,          // string:            Name of event (e.g. "click", "mouseover", "keyup").
   eventHandler,       // function:          Function to run when the event is triggered. `eventHandler(element, event, target, customData)`
-  customData,         // object|:           Custom data to pass through to the event handler when it's triggered.
-  multiBindCustomData
+  customData          // object|:           Custom data to pass through to the event handler when it's triggered.
 ) {
   // Allow multiple events to be bound at once using a space-delimited string.
   if (contains(eventName, ' ')) {
     var eventNames = splitBySpaces(eventName);
     forEach(eventNames, function (singleEventName) {
-      bind(element, singleEventName, eventHandler, customData, multiBindCustomData);
+      bind(element, singleEventName, eventHandler, customData);
     });
     return;
   }
@@ -1041,7 +1049,10 @@ var bind = function (
           }
         }
       }
-      return eventHandler(element, event, target, multiBindCustomData || customData);
+      var result = eventHandler(element, event, target, customData);
+      if (result === false) {
+        preventDefault(event);
+      }
     };
 
     // Bind using whatever method we can use.
@@ -1062,6 +1073,57 @@ var bind = function (
 };
 
 /**
+ * Bind an event handler on an element that delegates to specified child elements.
+ */
+var on = function (
+  element,
+  selector, // Supports "tag.class,tag.class" but does not support nesting.
+  eventName,
+  eventHandler,
+  customData
+) {
+  // If there's no parent element, assume it's the document.
+  if (isFunction(eventName)) {
+    customData = eventHandler;
+    eventHandler = eventName;
+    eventName = selector;
+    selector = element;
+    element = document;
+  }
+  var parts = selector.split(',');
+  var onHandler = function(element, event, target, customData) {
+    forEach(parts, function (part) {
+      var found = false;
+      if ((part[0] == '#') && part == target.id) {
+        found = true;
+      }
+      else {
+        var tagAndClass = part.split('.');
+        var tagName = tagAndClass[0].toUpperCase();
+        var className = tagAndClass[1];
+        if (!tagName || (target.tagName == tagName)) {
+          if (!className || hasClass(target, className)) {
+            found = true;
+          }
+        }
+      }
+      if (found) {
+        var result = eventHandler(target, event, element, customData);
+        if (result === false) {
+          preventDefault(event);
+        }
+      }
+    });
+    // Bubble up to find a selector match because we didn't find one this time.
+    target = getParent(target);
+    if (target) {
+      onHandler(element, event, target, customData);
+    }
+  };
+  bind(element, eventName, onHandler, customData);
+};
+
+/**
  * Trigger an element event.
  */
 var trigger = function (
@@ -1074,13 +1136,17 @@ var trigger = function (
     event = {type: event};
   }
   if (!target) {
+    customData = target;
     target = element;
   }
+  customData = customData || {};
+  customData._TRIGGERED = true;
+
   var handlers = element._HANDLERS;
   if (handlers) {
     var queue = handlers[event.type];
-    forEach(queue, function (callback) {
-      callback(element, event, target, customData);
+    forEach(queue, function (handler) {
+      handler(element, event, target, customData);
     });
   }
   if (!event.cancelBubble) {
@@ -1097,10 +1163,17 @@ var trigger = function (
 var stopPropagation = function (
   event // object: Event to be canceled.
 ) {
-  event.cancelBubble = true;
-  if (event.stopPropagation) {
-    event.stopPropagation();
+  if (event) {
+    event.cancelBubble = true;
+    if (event.stopPropagation) {
+      event.stopPropagation();
+    }
   }
+  //+env:debug
+  else {
+    error('[Jymin] Called stopPropagation on a non-event.', event);
+  }
+  //-env:debug
 };
 
 /**
@@ -1109,7 +1182,16 @@ var stopPropagation = function (
 var preventDefault = function (
   event // object: Event to prevent from doing its default action.
 ) {
-  event.preventDefault();
+  if (event) {
+    if (event.preventDefault) {
+      event.preventDefault();
+    }
+  }
+  //+env:debug
+  else {
+    error('[Jymin] Called preventDefault on a non-event.', event);
+  }
+  //-env:debug
 };
 
 /**
@@ -1137,35 +1219,6 @@ var bindHover = function (
   var HOVER_OUT = 'mouse' + (ieVersion ? 'leave' : 'out');
   bind(element, HOVER_OVER, eventHandler, true, customData);
   bind(element, HOVER_OUT, eventHandler, false, customData);
-};
-
-/**
- * Bind an event handler on an element that delegates to specified child elements.
- */
-var on = function (
-  element,
-  tagAndClass,
-  eventName,
-  eventHandler,
-  customData,
-  multiBindCustomData
-) {
-  tagAndClass = tagAndClass.split('.');
-  var tagName = tagAndClass[0].toUpperCase();
-  var className = tagAndClass[1];
-  var onHandler = function(element, event, target, customData) {
-    if (!tagName || (target.tagName == tagName)) {
-      if (!className || hasClass(target, className)) {
-        return eventHandler(target, event, element, multiBindCustomData || customData);
-      }
-    }
-    // Bubble up to find a tagAndClass match because we didn't find one this time.
-    target = getParent(target);
-    if (target) {
-      onHandler(element, event, target, customData);
-    }
-  };
-  bind(element, eventName, onHandler, customData);
 };
 
 /**
@@ -1236,8 +1289,13 @@ var focusElement = function (
     element = getElement(element);
     if (element) {
       var focusMethod = element.focus;
-      if (focusMethod) {
+      if (isFunction(focusMethod)) {
         focusMethod.call(element);
+      }
+      else {
+        //+env:debug
+        error('[Jymin] Element does not exist, or has no focus method', element);
+        //-env:debug
       }
     }
   };
@@ -1577,13 +1635,13 @@ var zeroFill = function (
  * Execute a callback when the page loads.
  */
 var onReady = window._ON_READY = function (
-  callback
+  callbackOrElement
 ) {
   // If there's no queue, create it as a property of this function.
   var queue = ensureProperty(onReady, '_QUEUE', []);
 
   // If there's a callback, push it into the queue.
-  if (callback) {
+  if (typeof callbackOrElement == 'function') {
 
     // The 1st callback makes schedules onReady, if not waiting for scripts.
     if (!getLength(queue)) {
@@ -1603,13 +1661,13 @@ var onReady = window._ON_READY = function (
     }
 
     // Put an item in the queue and wait.
-    push(queue, callback);
+    push(queue, callbackOrElement);
   }
 
   // If there's no callback, onReady has been triggered, so run callbacks.
   else {
     forEach(queue, function (callback) {
-      callback();
+      callback(callbackOrElement || document);
     });
   }
 };

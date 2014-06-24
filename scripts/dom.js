@@ -11,7 +11,6 @@ var getElement = function (
     id = parentElement;
     parentElement = document;
   }
-  // If the argument is not a string, just assume it's already an element reference, and return it.
   return isString(id) ? parentElement.getElementById(id) : id;
 };
 
@@ -569,8 +568,18 @@ var all = function (
     });
   }
   else if (selector[0] == '#') {
-    var element = getElement(parentElement, selector.substr(1));
-    elements = element ? [element] : [];
+    var id = selector.substr(1);
+    var child = getElement(parentElement.ownerDocument || document, id);
+    if (child) {
+      var parent = getParent(child);
+      while (parent) {
+        if (parent === parentElement) {
+          elements = [child];
+          break;
+        }
+        parent = getParent(parent);
+      }
+    }
   }
   else {
     elements = getElementsByTagAndClass(parentElement, selector);
@@ -578,7 +587,7 @@ var all = function (
   if (callback) {
     forEach(elements, callback);
   }
-  return elements;
+  return elements || [];
 };
 
 /**
