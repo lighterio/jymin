@@ -1,15 +1,23 @@
+var CLICK = 'click';
+var MOUSEDOWN = 'mousedown';
+var MOUSEUP = 'mouseup';
+var KEYDOWN = 'keydown';
+var KEYUP = 'keyup';
+var KEYPRESS = 'keypress';
+
 /**
  * Bind a handler to listen for a particular event on an element.
  */
 var bind = function (
   element,            // DOMElement|string: Element or ID of element to bind to.
-  eventName,          // string:            Name of event (e.g. "click", "mouseover", "keyup").
+  eventName,          // string|Array:      Name of event (e.g. "click", "mouseover", "keyup").
   eventHandler,       // function:          Function to run when the event is triggered. `eventHandler(element, event, target, customData)`
   customData          // object|:           Custom data to pass through to the event handler when it's triggered.
 ) {
   // Allow multiple events to be bound at once using a space-delimited string.
-  if (contains(eventName, ' ')) {
-    var eventNames = splitBySpaces(eventName);
+  var isEventArray = isArray(eventNames);
+  if (isEventArray || contains(eventName, ' ')) {
+    var eventNames = isEventArray ? eventName : splitBySpaces(eventName);
     forEach(eventNames, function (singleEventName) {
       bind(element, singleEventName, eventHandler, customData);
     });
@@ -71,16 +79,19 @@ var on = function (
   eventHandler,
   customData
 ) {
-  // If there's no parent element, assume it's the document.
-  if (isFunction(eventName)) {
+  if (isFunction(selector)) {
+    customData = eventName;
+    eventHandler = selector;
+    eventName = element;
+    selector = '';
+    element = document;
+  }
+  else if (isFunction(eventName)) {
     customData = eventHandler;
     eventHandler = eventName;
     eventName = selector;
     selector = element;
     element = document;
-  }
-  if (!selector || selector == '*') {
-    selector = '';
   }
   var parts = selector.split(',');
   var onHandler = function(element, event, target, customData) {

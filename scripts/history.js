@@ -19,7 +19,7 @@ var getHistory = function () {
 /**
  * Push an item into the history.
  */
-var pushHistory = function (
+var historyPush = function (
   href
 ) {
   getHistory().push(href);
@@ -28,7 +28,7 @@ var pushHistory = function (
 /**
  * Replace the current item in the history.
  */
-var replaceHistory = function (
+var historyReplace = function (
   href
 ) {
   getHistory().replace(href);
@@ -37,7 +37,7 @@ var replaceHistory = function (
 /**
  * Go back.
  */
-var popHistory = function (
+var historyPop = function (
   href
 ) {
   getHistory().back();

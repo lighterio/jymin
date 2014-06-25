@@ -1,9 +1,9 @@
 /**
- *      _                 _                ___   ____   ___
- *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ \ / _ \
- *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  __) | (_) |
- * | |_| | |_| | | | | | | | | | |  \ V /| |_| | / __/ \__, |
- *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)_____(_)/_/
+ *      _                 _                ___   _____  ___
+ *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ / / _ \
+ *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  |_ \| | | |
+ * | |_| | |_| | | | | | | | | | |  \ V /| |_| | ___) | |_| |
+ *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)____(_)___/
  *        |___/
  *
  * http://lighter.io/jymin
@@ -30,7 +30,7 @@
  */
 
 
-this.jymin = {version: '0.2.9'};
+this.jymin = {version: '0.3.0'};
 
 /**
  * Empty handler.
@@ -1009,18 +1009,26 @@ var one = function (
 ) {
   return all(parentElement, selector, callback)[0];
 };
+var CLICK = 'click';
+var MOUSEDOWN = 'mousedown';
+var MOUSEUP = 'mouseup';
+var KEYDOWN = 'keydown';
+var KEYUP = 'keyup';
+var KEYPRESS = 'keypress';
+
 /**
  * Bind a handler to listen for a particular event on an element.
  */
 var bind = function (
   element,            // DOMElement|string: Element or ID of element to bind to.
-  eventName,          // string:            Name of event (e.g. "click", "mouseover", "keyup").
+  eventName,          // string|Array:      Name of event (e.g. "click", "mouseover", "keyup").
   eventHandler,       // function:          Function to run when the event is triggered. `eventHandler(element, event, target, customData)`
   customData          // object|:           Custom data to pass through to the event handler when it's triggered.
 ) {
   // Allow multiple events to be bound at once using a space-delimited string.
-  if (contains(eventName, ' ')) {
-    var eventNames = splitBySpaces(eventName);
+  var isEventArray = isArray(eventNames);
+  if (isEventArray || contains(eventName, ' ')) {
+    var eventNames = isEventArray ? eventName : splitBySpaces(eventName);
     forEach(eventNames, function (singleEventName) {
       bind(element, singleEventName, eventHandler, customData);
     });
@@ -1082,8 +1090,14 @@ var on = function (
   eventHandler,
   customData
 ) {
-  // If there's no parent element, assume it's the document.
-  if (isFunction(eventName)) {
+  if (isFunction(selector)) {
+    customData = eventName;
+    eventHandler = selector;
+    eventName = element;
+    selector = '';
+    element = document;
+  }
+  else if (isFunction(eventName)) {
     customData = eventHandler;
     eventHandler = eventName;
     eventName = selector;
@@ -1438,7 +1452,7 @@ var getHistory = function () {
 /**
  * Push an item into the history.
  */
-var pushHistory = function (
+var historyPush = function (
   href
 ) {
   getHistory().push(href);
@@ -1447,7 +1461,7 @@ var pushHistory = function (
 /**
  * Replace the current item in the history.
  */
-var replaceHistory = function (
+var historyReplace = function (
   href
 ) {
   getHistory().replace(href);
@@ -1456,7 +1470,7 @@ var replaceHistory = function (
 /**
  * Go back.
  */
-var popHistory = function (
+var historyPop = function (
   href
 ) {
   getHistory().back();
