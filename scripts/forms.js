@@ -6,7 +6,7 @@ var getValue = function (
 ) {
   input = getElement(input);
   if (input) {
-    var type = input.type[0];
+    var type = ensureString(input.type)[0];
     var value = input.value;
     var checked = input.checked;
     var options = input.options;
@@ -22,7 +22,7 @@ var getValue = function (
       });
     }
     else if (options) {
-      value = options[input.selectedIndex].value;
+      value = getValue(options[input.selectedIndex]);
     }
     return value;
   }

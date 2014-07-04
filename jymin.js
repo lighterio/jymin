@@ -230,7 +230,7 @@ var getLength = function (
 var getFirst = function (
   array // Array: The array to get the
 ) {
-  return isInstance(array) ? array[0] : undefined;
+  return isArray(array) ? array[0] : undefined;
 };
 
 /**
@@ -1108,7 +1108,7 @@ var on = function (
   var onHandler = function(element, event, target, customData) {
     forEach(parts, function (part) {
       var found = false;
-      if ((part[0] == '#') && part == target.id) {
+      if ('#' + target.id == part) {
         found = true;
       }
       else {
@@ -1153,8 +1153,7 @@ var trigger = function (
     customData = target;
     target = element;
   }
-  customData = customData || {};
-  customData._TRIGGERED = true;
+  event._TRIGGERED = true;
 
   var handlers = element._HANDLERS;
   if (handlers) {
@@ -1372,7 +1371,7 @@ var getValue = function (
 ) {
   input = getElement(input);
   if (input) {
-    var type = input.type[0];
+    var type = ensureString(input.type)[0];
     var value = input.value;
     var checked = input.checked;
     var options = input.options;
@@ -1388,7 +1387,7 @@ var getValue = function (
       });
     }
     else if (options) {
-      value = options[input.selectedIndex].value;
+      value = getValue(options[input.selectedIndex]);
     }
     return value;
   }

@@ -17,6 +17,14 @@ var getXhr = function () {
 };
 
 /**
+ * Get an XHR upload object.
+ */
+var getUpload = function () {
+  var xhr = getXhr();
+  return xhr ? xhr.upload : false;
+};
+
+/**
  * Make an AJAX request, and handle it with success or failure.
  * @return boolean: True if AJAX is supported.
  */

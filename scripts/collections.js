@@ -113,7 +113,7 @@ var getLength = function (
 var getFirst = function (
   array // Array: The array to get the
 ) {
-  return isInstance(array) ? array[0] : undefined;
+  return isArray(array) ? array[0] : undefined;
 };
 
 /**

@@ -97,7 +97,7 @@ var on = function (
   var onHandler = function(element, event, target, customData) {
     forEach(parts, function (part) {
       var found = false;
-      if ((part[0] == '#') && part == target.id) {
+      if ('#' + target.id == part) {
         found = true;
       }
       else {
@@ -142,8 +142,7 @@ var trigger = function (
     customData = target;
     target = element;
   }
-  customData = customData || {};
-  customData._TRIGGERED = true;
+  event._TRIGGERED = true;
 
   var handlers = element._HANDLERS;
   if (handlers) {
