@@ -1,9 +1,9 @@
 /**
- *      _                 _                ___   _____  ___
- *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ / / _ \
- *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  |_ \| | | |
- * | |_| | |_| | | | | | | | | | |  \ V /| |_| | ___) | |_| |
- *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)____(_)___/
+ *      _                 _                ___   _____  _
+ *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ / / |
+ *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  |_ \ | |
+ * | |_| | |_| | | | | | | | | | |  \ V /| |_| | ___) || |
+ *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)____(_)_|
  *        |___/
  *
  * http://lighter.io/jymin
@@ -30,7 +30,7 @@
  */
 
 
-this.jymin = {version: '0.3.0'};
+this.jymin = {version: '0.3.1'};
 
 /**
  * Empty handler.
@@ -48,6 +48,14 @@ var getXhr = function () {
   var Xhr = window.XMLHttpRequest;
   var ActiveX = window.ActiveXObject;
   return Xhr ? new Xhr() : (ActiveX ? new ActiveX('Microsoft.XMLHTTP') : false);
+};
+
+/**
+ * Get an XHR upload object.
+ */
+var getUpload = function () {
+  var xhr = getXhr();
+  return xhr ? xhr.upload : false;
 };
 
 /**
@@ -1364,6 +1372,13 @@ var removeTimeout = function (
   addTimeout(elementOrString, false);
 };
 /**
+ * Get the type of a form element.
+ */
+var getType = function (input) {
+  return ensureString(input.type)[0];
+};
+
+/**
  * Get the value of a form element.
  */
 var getValue = function (
@@ -1371,7 +1386,7 @@ var getValue = function (
 ) {
   input = getElement(input);
   if (input) {
-    var type = ensureString(input.type)[0];
+    var type = getType(input);
     var value = input.value;
     var checked = input.checked;
     var options = input.options;
@@ -1402,7 +1417,7 @@ var setValue = function (
 ) {
   input = getElement(input);
   if (input) {
-    var type = input.type[0];
+    var type = getType(input);
     var options = input.options;
     if (type == 'c' || type == 'r') {
       input.checked = value ? true : false;

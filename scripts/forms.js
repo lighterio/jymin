@@ -1,4 +1,11 @@
 /**
+ * Get the type of a form element.
+ */
+var getType = function (input) {
+  return ensureString(input.type)[0];
+};
+
+/**
  * Get the value of a form element.
  */
 var getValue = function (
@@ -6,7 +13,7 @@ var getValue = function (
 ) {
   input = getElement(input);
   if (input) {
-    var type = ensureString(input.type)[0];
+    var type = getType(input);
     var value = input.value;
     var checked = input.checked;
     var options = input.options;
@@ -37,7 +44,7 @@ var setValue = function (
 ) {
   input = getElement(input);
   if (input) {
-    var type = input.type[0];
+    var type = getType(input);
     var options = input.options;
     if (type == 'c' || type == 'r') {
       input.checked = value ? true : false;
