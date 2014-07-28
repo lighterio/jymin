@@ -720,7 +720,7 @@ var getText = function (
   // Ensure that we have an element, not just an ID.
   element = getElement(element);
   if (element) {
-    return element.innerText;
+    return element.textContent;
   }
 };
 
