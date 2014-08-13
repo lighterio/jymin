@@ -12,21 +12,21 @@
  * If you're seeing this in production, you really should minify.
  *
  * Source files:
- *   https://github.com/zerious/jymin/blob/master/scripts/ajax.js
- *   https://github.com/zerious/jymin/blob/master/scripts/collections.js
- *   https://github.com/zerious/jymin/blob/master/scripts/cookies.js
- *   https://github.com/zerious/jymin/blob/master/scripts/dates.js
- *   https://github.com/zerious/jymin/blob/master/scripts/dom.js
- *   https://github.com/zerious/jymin/blob/master/scripts/events.js
- *   https://github.com/zerious/jymin/blob/master/scripts/forms.js
- *   https://github.com/zerious/jymin/blob/master/scripts/history.js
- *   https://github.com/zerious/jymin/blob/master/scripts/json.js
- *   https://github.com/zerious/jymin/blob/master/scripts/logging.js
- *   https://github.com/zerious/jymin/blob/master/scripts/numbers.js
- *   https://github.com/zerious/jymin/blob/master/scripts/ready.js
- *   https://github.com/zerious/jymin/blob/master/scripts/strings.js
- *   https://github.com/zerious/jymin/blob/master/scripts/types.js
- *   https://github.com/zerious/jymin/blob/master/scripts/url.js
+/Users/sam/Workspace/jymin/scripts/ajax.js
+/Users/sam/Workspace/jymin/scripts/collections.js
+/Users/sam/Workspace/jymin/scripts/cookies.js
+/Users/sam/Workspace/jymin/scripts/dates.js
+/Users/sam/Workspace/jymin/scripts/dom.js
+/Users/sam/Workspace/jymin/scripts/events.js
+/Users/sam/Workspace/jymin/scripts/forms.js
+/Users/sam/Workspace/jymin/scripts/history.js
+/Users/sam/Workspace/jymin/scripts/json.js
+/Users/sam/Workspace/jymin/scripts/logging.js
+/Users/sam/Workspace/jymin/scripts/numbers.js
+/Users/sam/Workspace/jymin/scripts/ready.js
+/Users/sam/Workspace/jymin/scripts/strings.js
+/Users/sam/Workspace/jymin/scripts/types.js
+/Users/sam/Workspace/jymin/scripts/url.js
  */
 
 

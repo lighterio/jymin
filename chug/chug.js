@@ -14,7 +14,7 @@ require('figlet').text('Jymin v' + exports.version, {font: 'Standard'}, function
       locations.forEach(function (location, index) {
         locations[index] = location.replace(
           /^.*\/node_modules\/([a-z]+)\/(.*?)$/,
-          ' *   https://github.com/zerious/$1/blob/master/$2');
+          ' *   https://github.com/lighterio/$1/blob/master/$2');
       });
       asset.setContent(
         "/**\n" +
