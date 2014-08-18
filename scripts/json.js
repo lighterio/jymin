@@ -88,5 +88,5 @@ var parse = function (text) {
  * Execute JavaScript.
  */
 var execute = function (text) {
-  parse('0;' + text);
+  parse('{};' + text);
 };
