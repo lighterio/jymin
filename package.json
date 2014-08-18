@@ -47,8 +47,7 @@
   "dependencies": {},
   "devDependencies": {
     "zeriousify": "0.1.9",
-    "mocha": "0.0.5",
-    "istanbul": "0.2.11",
+    "exam": "0.0.5",
     "coveralls": "2.10.0",
     "chug": "0.1.30",
     "figlet": "1.0.9"
