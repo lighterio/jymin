@@ -382,7 +382,8 @@ var getClass = function (
   // Ensure that we have an element, not just an ID.
   element = getElement(element);
   if (element) {
-    return element.className;
+    var className = element.className || '';
+    return className.baseVal || className;
   }
 };
 
