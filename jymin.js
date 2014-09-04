@@ -1,9 +1,9 @@
 /**
- *      _                 _                ___   _____ _  _
- *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ /| || |
- *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  |_ \| || |_
- * | |_| | |_| | | | | | | | | | |  \ V /| |_| | ___) |__   _|
- *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)____(_) |_|
+ *      _                 _                ___   _____  ____
+ *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ / | ___|
+ *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  |_ \ |___ \
+ * | |_| | |_| | | | | | | | | | |  \ V /| |_| | ___) | ___) |
+ *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)____(_)____/
  *        |___/
  *
  * http://lighter.io/jymin
@@ -30,7 +30,7 @@
  */
 
 
-this.jymin = {version: '0.3.4'};
+this.jymin = {version: '0.3.5'};
 
 /**
  * Empty handler.
@@ -832,7 +832,8 @@ var getClass = function (
   // Ensure that we have an element, not just an ID.
   element = getElement(element);
   if (element) {
-    return element.className;
+    var className = element.className || '';
+    return className.baseVal || className;
   }
 };
 
