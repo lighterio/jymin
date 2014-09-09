@@ -1,10 +1,10 @@
 # Jymin - Tiny JavaScript for a Big World
 
-[![NPM Version](https://badge.fury.io/js/jymin.png)](http://badge.fury.io/js/jymin)
-[![Build Status](https://travis-ci.org/lighterio/jymin.png?branch=master)](https://travis-ci.org/lighterio/jymin)
-[![Code Coverage](https://coveralls.io/repos/lighterio/jymin/badge.png?branch=master)](https://coveralls.io/r/lighterio/jymin)
-[![Dependencies](https://david-dm.org/lighterio/jymin.png?theme=shields.io)](https://david-dm.org/lighterio/jymin)
-[![Support](http://img.shields.io/gittip/zerious.png)](https://www.gittip.com/lighterio/)
+[![NPM Version](https://img.shields.io/npm/v/jymin.svg) ![Downloads](https://img.shields.io/npm/dm/jymin.svg)](https://npmjs.org/package/jymin)
+[![Build Status](https://img.shields.io/travis/lighterio/jymin.svg)](https://travis-ci.org/lighterio/jymin)
+[![Code Coverage](https://img.shields.io/coveralls/lighterio/jymin/master.svg)](https://coveralls.io/r/lighterio/jymin)
+[![Dependencies](https://img.shields.io/david/lighterio/jymin.svg)](https://david-dm.org/lighterio/jymin)
+[![Support](https://img.shields.io/gittip/zerious.png)](https://www.gittip.com/lighterio/)
 
 Jymin is "JavaScript You Minify", meaning Jymin scripts get concatenated with
 your application code and minfied within a single function closure. Functions
