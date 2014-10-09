@@ -46,7 +46,7 @@ var formatLongDate = function (date) {
   var isAm = true;
   var h = +date.getHours();
   var minutes = date.getMinutes();
-  minutes = minutes > 10 ? minutes : "0" + minutes;
+  minutes = minutes > 9 ? minutes : "0" + minutes;
   h > 12 ? (isAm = false, h -= 12) : (h === 0 ? h = 12 : 0);
   return m + " " + date.getDate() + ", " + date.getFullYear() + " at " + h +
     ":" + minutes + (isAm ? "AM" : "PM");
@@ -61,7 +61,7 @@ var formatShortDate = function (date) {
   var isAm = true;
   var h = +date.getHours();
   var minutes = date.getMinutes();
-  minutes = minutes > 10 ? minutes : "0" + minutes;
+  minutes = minutes > 9 ? minutes : "0" + minutes;
   h > 12 ? (isAm = false, h -= 12) : (h === 0 ? h = 12 : 0);
   return m + "/" + date.getDate() + "/" + date.getFullYear() % 100 + " " + h +
     ":" + minutes + (isAm ? "AM" : "PM");

@@ -460,7 +460,7 @@ var addClass = function (
   className
 ) {
   element = getElement(element);
-  if (element) {
+  if (element && !hasClass(element, className)) {
     element.className += ' ' + className;
   }
 };
