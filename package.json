@@ -1,13 +1,13 @@
 {
   "name": "jymin",
-  "version": "0.3.5",
-  "description": "Minifier-friendly JavaScript for the real-time world",
+  "version": "0.4.0",
+  "description": "Minifier-friendly JavaScript built for speed and usefulness",
   "dependencies": {},
   "devDependencies": {
     "zeriousify": "^0.1.10",
-    "exam": "^0.0.8",
+    "exam": "^0.1.5",
     "coveralls": "2.10.0",
-    "chug": "^0.2.0",
+    "chug": "^0.2.1",
     "figlet": "1.0.9"
   },
   "keywords": [
@@ -21,12 +21,12 @@
     "zepto",
     "alternative"
   ],
-  "main": "chug/chug.js",
+  "main": "jymin.node.js",
   "engines": {
     "node": ">=0.2.6"
   },
   "scripts": {
-    "build": "node chug/chug",
+    "build": "node .chug.js",
     "test": "./node_modules/exam/exam.js",
     "cover": "istanbul cover ./node_modules/exam/exam.js",
     "report": "open coverage/lcov-report/index.html",

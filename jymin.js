@@ -1,36 +1,35 @@
-/**
- *      _                 _                ___   _____  ____
- *     | |_   _ _ __ ___ (_)_ __   __   __/ _ \ |___ / | ___|
- *  _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | |  |_ \ |___ \
- * | |_| | |_| | | | | | | | | | |  \ V /| |_| | ___) | ___) |
- *  \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_)____(_)____/
- *        |___/
+/**      _                 _                ___  _  _    ___
+ *      | |_   _ _ __ ___ (_)_ __   __   __/ _ \| || |  / _ \
+ *   _  | | | | | '_ ` _ \| | '_ \  \ \ / / | | | || |_| | | |
+ *  | |_| | |_| | | | | | | | | | |  \ V /| |_| |__   _| |_| |
+ *   \___/ \__, |_| |_| |_|_|_| |_|   \_/  \___(_) |_|(_)___/
+ *         |___/
  *
  * http://lighter.io/jymin
- * MIT License
  *
  * If you're seeing this in production, you really should minify.
  *
  * Source files:
-/Users/sam/Workspace/jymin/scripts/ajax.js
-/Users/sam/Workspace/jymin/scripts/collections.js
-/Users/sam/Workspace/jymin/scripts/cookies.js
-/Users/sam/Workspace/jymin/scripts/dates.js
-/Users/sam/Workspace/jymin/scripts/dom.js
-/Users/sam/Workspace/jymin/scripts/events.js
-/Users/sam/Workspace/jymin/scripts/forms.js
-/Users/sam/Workspace/jymin/scripts/history.js
-/Users/sam/Workspace/jymin/scripts/json.js
-/Users/sam/Workspace/jymin/scripts/logging.js
-/Users/sam/Workspace/jymin/scripts/numbers.js
-/Users/sam/Workspace/jymin/scripts/ready.js
-/Users/sam/Workspace/jymin/scripts/strings.js
-/Users/sam/Workspace/jymin/scripts/types.js
-/Users/sam/Workspace/jymin/scripts/url.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/ajax.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/arrays.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/cookies.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/dates.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/dom.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/emitter.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/events.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/forms.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/history.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/json.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/logging.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/numbers.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/objects.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/strings.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/types.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/url.js
  */
 
 
-this.jymin = {version: '0.3.5'};
+var version = '0.4.0';
 
 /**
  * Empty handler.
@@ -80,9 +79,7 @@ var getResponse = function (
     onSuccess = onSuccess || responseSuccessHandler;
     request.onreadystatechange = function() {
       if (request.readyState == 4) {
-        //+env:debug
-        log('[Jymin] Received response from "' + url + '". (' + getResponse._WAITING + ' in progress).');
-        //-env:debug
+
         --getResponse._WAITING;
         var status = request.status;
         var isSuccess = (status == 200);
@@ -115,9 +112,7 @@ var getResponse = function (
     // Allow applications to back off when too many requests are in progress.
     getResponse._WAITING = (getResponse._WAITING || 0) + 1;
 
-    //+env:debug
-    log('[Jymin] Sending request to "' + url + '". (' + getResponse._WAITING + ' in progress).');
-    //-env:debug
+
     request.send(body || null);
 
   }
@@ -155,70 +150,6 @@ var each = function (
       }
     }
   }
-};
-
-/**
- * Iterate over an object's keys, and call a function on each key value pair.
- */
-var forIn = function (
-  object,  // Object*:   The object to iterate over.
-  callback // Function*: The function to call on each pair. `callback(value, key, object)`
-) {
-  if (object) {
-    for (var key in object) {
-      var result = callback(key, object[key], object);
-      if (result === false) {
-        break;
-      }
-    }
-  }
-};
-
-/**
- * Iterate over an object's keys, and call a function on each (value, key) pair.
- */
-var forOf = function (
-  object,  // Object*:   The object to iterate over.
-  callback // Function*: The function to call on each pair. `callback(value, key, object)`
-) {
-  if (object) {
-    for (var key in object) {
-      var result = callback(object[key], key, object);
-      if (result === false) {
-        break;
-      }
-    }
-  }
-};
-
-/**
- * Decorate an object with properties from another object. If the properties
- */
-var decorateObject = function (
-  object,     // Object: The object to decorate.
-  decorations // Object: The object to iterate over.
-) {
-    if (object && decorations) {
-    forIn(decorations, function (key, value) {
-      object[key] = value;
-    });
-    }
-    return object;
-};
-
-/**
- * Ensure that a property exists by creating it if it doesn't.
- */
-var ensureProperty = function (
-  object,
-  property,
-  defaultValue
-) {
-  var value = object[property];
-  if (!value) {
-    value = object[property] = defaultValue;
-  }
-  return value;
 };
 
 /**
@@ -375,7 +306,7 @@ var setCookie = function (
 /**
  * Delete a cookie.
  */
-var deleteCookie = function deleteCookie(
+var deleteCookie = function (
   name   // string: Name of the cookie.
 ) {
   setCookie(name, null);
@@ -535,9 +466,16 @@ var getParent = function (
 /**
  * Create a DOM element.
  */
-var createElement = function (
-  tagIdentifier
-) {
+var createTag = function (tagName) {
+  var isSvg = /^(svg|g|path|circle|line)$/.test(tagName);
+  var uri = 'http://www.w3.org/' + (isSvg ? '2000/svg' : '1999/xhtml');
+  return document.createElementNS(uri, tagName);
+};
+
+/**
+ * Create a DOM element.
+ */
+var createElement = function (tagIdentifier) {
   if (!isString(tagIdentifier)) {
     return tagIdentifier;
   }
@@ -549,7 +487,7 @@ var createElement = function (
   var tagName = tagAndId[0] || 'div';
   var id = tagAndId[1];
   var attributes = tagAndAttributes[1];
-  var cachedElement = createElement[tagName] || (createElement[tagName] = document.createElement(tagName));
+  var cachedElement = createTag[tagName] || (createTag[tagName] = createTag(tagName));
   var element = cachedElement.cloneNode(true);
   if (id) {
     element.id = id;
@@ -1051,6 +989,79 @@ var one = function (
 ) {
   return all(parentElement, selector, callback)[0];
 };
+/**
+ * An Emitter is an EventEmitter-style object.
+ */
+var Emitter = function () {
+  // Lazily apply the prototype so that Emitter can minify out if not used.
+  Emitter.prototype = EmitterPrototype;
+};
+
+/**
+ * Expose Emitter methods which can be applied lazily.
+ */
+var EmitterPrototype = {
+
+  _ON: function (event, fn) {
+    var self = this;
+    var events = self._EVENTS || (self._EVENTS = {});
+    var listeners = events[event] || (events[event] = []);
+    listeners.push(fn);
+    return self;
+  },
+
+  _ONCE: function (event, fn) {
+    var self = this;
+    function f() {
+      fn.apply(self, arguments);
+      self._REMOVE_LISTENER(event, f);
+    }
+    self._ON(event, f);
+    return self;
+  },
+
+  _EMIT: function (event) {
+    var self = this;
+    var listeners = self._LISTENERS(event);
+    var args = Array.prototype.slice.call(arguments, 1);
+    forEach(listeners, function (listener) {
+      listener.apply(self, args);
+    });
+    return self;
+  },
+
+  _LISTENERS: function (event) {
+    var self = this;
+    var events = self._EVENTS || 0;
+    var listeners = events[event] || [];
+    return listeners;
+  },
+
+  _REMOVE_LISTENER: function (event, fn) {
+    var self = this;
+    var listeners = self._LISTENERS(event);
+    var i = listeners.indexOf(fn);
+    if (i > -1) {
+      listeners.splice(i, 1);
+    }
+    return self;
+  },
+
+  _REMOVE_ALL_LISTENERS: function (event, fn) {
+    var self = this;
+    var events = self._EVENTS || {};
+    if (event) {
+      delete events[event];
+    }
+    else {
+      for (event in events) {
+        delete events[event];
+      }
+    }
+    return self;
+  }
+
+};
 var CLICK = 'click';
 var MOUSEDOWN = 'mousedown';
 var MOUSEUP = 'mouseup';
@@ -1224,11 +1235,7 @@ var stopPropagation = function (
       event.stopPropagation();
     }
   }
-  //+env:debug
-  else {
-    error('[Jymin] Called stopPropagation on a non-event.', event);
-  }
-  //-env:debug
+
 };
 
 /**
@@ -1242,11 +1249,7 @@ var preventDefault = function (
       event.preventDefault();
     }
   }
-  //+env:debug
-  else {
-    error('[Jymin] Called preventDefault on a non-event.', event);
-  }
-  //-env:debug
+
 };
 
 /**
@@ -1348,9 +1351,7 @@ var focusElement = function (
         focusMethod.call(element);
       }
       else {
-        //+env:debug
-        error('[Jymin] Element does not exist, or has no focus method', element);
-        //-env:debug
+
       }
     }
   };
@@ -1532,31 +1533,34 @@ var onHistoryPop = function (
 ) {
   bind(window, 'popstate', callback);
 };
+
+// JavaScript reserved words.
+var reservedWordPattern = /^(break|case|catch|continue|debugger|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|this|throw|try|typeof|var|void|while|with)$/;
+
+
+
 /**
  * Create JSON that doesn't necessarily have to be strict.
  */
 var stringify = function (data, strict, stack) {
-  var reserved = /^(break|case|catch|continue|debugger|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|this|throw|try|typeof|var|void|while|with)$/;
-  if (data === null) {
-    data = 'null';
+  if (isString(data)) {
+    data = '"' + data.replace(/\n\r"/g, function (c) {
+      return c == '\n' ? '\\n' : c == '\r' ? '\\r' : '\\"';
+    }) + '"';
   }
   else if (isFunction(data)) {
+    data = data.toString();
     if (strict) {
-      data = '-1';
-    }
-    else {
-      data = ensureString(data).replace(/^function \(/, 'function(');
+      data = stringify(data);
     }
   }
   else if (isDate(data)) {
+    data = 'new Date(' + getTime(data) + ')';
     if (strict) {
-      data = '"' + getIsoDate() + '"';
-    }
-    else {
-      data = 'new Date(' + getTime(data) + ')';
+      data = stringify(data);
     }
   }
-  else if (isObject(data)) {
+  else if (data && isObject(data)) {
     stack = stack || [];
     var isCircular = false;
     forEach(stack, function (item, index) {
@@ -1581,7 +1585,7 @@ var stringify = function (data, strict, stack) {
       before = '{';
       after = '}';
       forIn(data, function (key, value) {
-        if (strict || reserved.test(key)) {
+        if (strict || reservedWordPattern.test(key) || /(^\d|[^\w$])/.test(key)) {
           key = '"' + key + '"';
         }
         push(parts, key + ':' + stringify(value, strict, stack));
@@ -1590,9 +1594,6 @@ var stringify = function (data, strict, stack) {
     pop(stack);
     data = before + parts.join(',') + after;
   }
-  else if (isString(data) && stack) {
-    data = '"' + data.replace(/"/g, '\\"') + '"';
-  }
   else {
     data = '' + data;
   }
@@ -1600,30 +1601,70 @@ var stringify = function (data, strict, stack) {
 };
 
 /**
- * Parse JavaScript.
+ * Parse JavaScript and return a value.
  */
-var parse = function (text) {
-  if (text[0] == '{' || text[0] == '[') {
-    try {
-      var evil = window.eval; // jshint ignore:line
-      evil('eval.J=' + text);
-      text = evil.J;
-    }
-    catch (e) {
-      //+env:debug
-      error('[Jymin] Could not parse JS: "' + text + '"');
-      //-env:debug
-    }
+var parse = function (value) {
+  try {
+    var evil = window.eval; // jshint ignore:line
+    evil('eval.J=' + value);
+    value = evil.J;
   }
-  return text;
+  catch (e) {
+    //+env:debug
+    error('[Jymin] Could not parse JS: ' + value);
+    //-env:debug
+  }
+  return value;
 };
 
 /**
  * Execute JavaScript.
  */
 var execute = function (text) {
-  parse('{};' + text);
+  parse('0;' + text);
 };
+
+/**
+ * Parse a value and return a boolean no matter what.
+ */
+var parseBoolean = function (value, alternative) {
+  value = parse(value);
+  return isBoolean(value) ? value : (alternative || false);
+};
+
+/**
+ * Parse a value and return a number no matter what.
+ */
+var parseNumber = function (value, alternative) {
+  value = parse(value);
+  return isNumber(value) ? value : (alternative || 0);
+};
+
+/**
+ * Parse a value and return a string no matter what.
+ */
+var parseString = function (value, alternative) {
+  value = parse(value);
+  return isString(value) ? value : (alternative || '');
+};
+
+/**
+ * Parse a value and return an object no matter what.
+ */
+var parseObject = function (value, alternative) {
+  value = parse(value);
+  return isObject(value) ? value : (alternative || {});
+};
+
+/**
+ * Parse a value and return a number no matter what.
+ */
+var parseArray = function (value, alternative) {
+  value = parse(value);
+  return isObject(value) ? value : (alternative || []);
+};
+
+
 /**
  * Log values to the console, if it's available.
  */
@@ -1694,46 +1735,68 @@ var zeroFill = function (
   return (new Array(length + 1)).join('0') + number;
 };
 /**
- * Execute a callback when the page loads.
+ * Iterate over an object's keys, and call a function on each key value pair.
  */
-var onReady = window._ON_READY = function (
-  callbackOrElement
+var forIn = function (
+  object,  // Object*:   The object to iterate over.
+  callback // Function*: The function to call on each pair. `callback(value, key, object)`
 ) {
-  // If there's no queue, create it as a property of this function.
-  var queue = ensureProperty(onReady, '_QUEUE', []);
-
-  // If there's a callback, push it into the queue.
-  if (typeof callbackOrElement == 'function') {
-
-    // The 1st callback makes schedules onReady, if not waiting for scripts.
-    if (!getLength(queue)) {
-
-      // In production, there should be a single script, therefore no wait.
-      var waitingForScripts = false;
-
-      // In development, individual scripts might still be loading.
-      //+env:dev,debug
-      waitingForScripts = window._WAITING_FOR_SCRIPTS;
-      //-env:dev,debug
-
-      if (!waitingForScripts) {
-        // At the next tick, we've excuted this whole script.
-        addTimeout(onReady, onReady, 1);
+  if (object) {
+    for (var key in object) {
+      var result = callback(key, object[key], object);
+      if (result === false) {
+        break;
       }
     }
-
-    // Put an item in the queue and wait.
-    push(queue, callbackOrElement);
-  }
-
-  // If there's no callback, onReady has been triggered, so run callbacks.
-  else {
-    forEach(queue, function (callback) {
-      callback(callbackOrElement || document);
-    });
   }
 };
+
 /**
+ * Iterate over an object's keys, and call a function on each (value, key) pair.
+ */
+var forOf = function (
+  object,  // Object*:   The object to iterate over.
+  callback // Function*: The function to call on each pair. `callback(value, key, object)`
+) {
+  if (object) {
+    for (var key in object) {
+      var result = callback(object[key], key, object);
+      if (result === false) {
+        break;
+      }
+    }
+  }
+};
+
+/**
+ * Decorate an object with properties from another object. If the properties
+ */
+var decorateObject = function (
+  object,     // Object: The object to decorate.
+  decorations // Object: The object to iterate over.
+) {
+  if (object && decorations) {
+    forIn(decorations, function (key, value) {
+      object[key] = value;
+    });
+  }
+  return object;
+};
+
+/**
+ * Ensure that a property exists by creating it if it doesn't.
+ */
+var ensureProperty = function (
+  object,
+  property,
+  defaultValue
+) {
+  var value = object[property];
+  if (!value) {
+    value = object[property] = defaultValue;
+  }
+  return value;
+};/**
  * Ensure a value is a string.
  */
 var ensureString = function (
