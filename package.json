@@ -4,10 +4,10 @@
   "description": "Minifier-friendly JavaScript built for speed and usefulness",
   "dependencies": {},
   "devDependencies": {
-    "zeriousify": "^0.1.10",
-    "exam": "^0.1.5",
+    "zeriousify": "^0.1.12",
+    "exam": "^0.1.6",
     "coveralls": "2.10.0",
-    "chug": "^0.2.1",
+    "chug": "^0.2.2",
     "figlet": "1.0.9"
   },
   "keywords": [

@@ -23,6 +23,7 @@
  *   https://github.com/lighterio/jymin/blob/master/scripts/logging.js
  *   https://github.com/lighterio/jymin/blob/master/scripts/numbers.js
  *   https://github.com/lighterio/jymin/blob/master/scripts/objects.js
+ *   https://github.com/lighterio/jymin/blob/master/scripts/storage.js
  *   https://github.com/lighterio/jymin/blob/master/scripts/strings.js
  *   https://github.com/lighterio/jymin/blob/master/scripts/types.js
  *   https://github.com/lighterio/jymin/blob/master/scripts/url.js
@@ -79,7 +80,9 @@ var getResponse = function (
     onSuccess = onSuccess || responseSuccessHandler;
     request.onreadystatechange = function() {
       if (request.readyState == 4) {
-
+        //+env:debug
+        log('[Jymin] Received response from "' + url + '". (' + getResponse._WAITING + ' in progress).');
+        //-env:debug
         --getResponse._WAITING;
         var status = request.status;
         var isSuccess = (status == 200);
@@ -112,7 +115,9 @@ var getResponse = function (
     // Allow applications to back off when too many requests are in progress.
     getResponse._WAITING = (getResponse._WAITING || 0) + 1;
 
-
+    //+env:debug
+    log('[Jymin] Sending request to "' + url + '". (' + getResponse._WAITING + ' in progress).');
+    //-env:debug
     request.send(body || null);
 
   }
@@ -1235,7 +1240,11 @@ var stopPropagation = function (
       event.stopPropagation();
     }
   }
-
+  //+env:debug
+  else {
+    error('[Jymin] Called stopPropagation on a non-event.', event);
+  }
+  //-env:debug
 };
 
 /**
@@ -1249,7 +1258,11 @@ var preventDefault = function (
       event.preventDefault();
     }
   }
-
+  //+env:debug
+  else {
+    error('[Jymin] Called preventDefault on a non-event.', event);
+  }
+  //-env:debug
 };
 
 /**
@@ -1351,7 +1364,9 @@ var focusElement = function (
         focusMethod.call(element);
       }
       else {
-
+        //+env:debug
+        error('[Jymin] Element does not exist, or has no focus method', element);
+        //-env:debug
       }
     }
   };
@@ -1533,11 +1548,8 @@ var onHistoryPop = function (
 ) {
   bind(window, 'popstate', callback);
 };
-
 // JavaScript reserved words.
 var reservedWordPattern = /^(break|case|catch|continue|debugger|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|this|throw|try|typeof|var|void|while|with)$/;
-
-
 
 /**
  * Create JSON that doesn't necessarily have to be strict.
@@ -1607,14 +1619,13 @@ var parse = function (value) {
   try {
     var evil = window.eval; // jshint ignore:line
     evil('eval.J=' + value);
-    value = evil.J;
+    return evil.J;
   }
   catch (e) {
     //+env:debug
     error('[Jymin] Could not parse JS: ' + value);
     //-env:debug
   }
-  return value;
 };
 
 /**
@@ -1663,8 +1674,6 @@ var parseArray = function (value, alternative) {
   value = parse(value);
   return isObject(value) ? value : (alternative || []);
 };
-
-
 /**
  * Log values to the console, if it's available.
  */
@@ -1796,7 +1805,25 @@ var ensureProperty = function (
     value = object[property] = defaultValue;
   }
   return value;
-};/**
+};
+var storage = window.localStorage;
+
+/**
+ * Fetch an item from local storage.
+ */
+var fetch = function (key) {
+  return storage ? parse(storage.getItem(key)) : 0;
+};
+
+/**
+ * Store an item in local storage.
+ */
+var store = function (key, value) {
+  if (storage) {
+    storage.setItem(key, stringify(value));
+  }
+};
+/**
  * Ensure a value is a string.
  */
 var ensureString = function (

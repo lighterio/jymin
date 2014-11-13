@@ -1,3 +1,8 @@
+// Fake some stuff.
+global.window = global;
+global.document = {};
+global.location = document.location = {};
+
 // Load Jymin using eval so it can be tested in Node.
 var fs = require('fs');
 var code = '' + fs.readFileSync(__dirname + '/jymin.js');

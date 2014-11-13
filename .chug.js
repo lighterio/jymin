@@ -17,7 +17,6 @@ figlet.text('Jymin v' + pkg.version, {font: 'Standard'}, function (e, art) {
       urls.push(asset.location.replace(pattern, url));
     })
     .concat('jymin.js')
-    .cull('env', 'browser')
     .each(function (asset) {
       content = "var version = '" + pkg.version + "';\n\n" + asset.getContent();
       asset.setContent(

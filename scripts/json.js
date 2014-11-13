@@ -1,8 +1,5 @@
-
 // JavaScript reserved words.
 var reservedWordPattern = /^(break|case|catch|continue|debugger|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|this|throw|try|typeof|var|void|while|with)$/;
-
-//+env:browser
 
 /**
  * Create JSON that doesn't necessarily have to be strict.
@@ -72,14 +69,13 @@ var parse = function (value) {
   try {
     var evil = window.eval; // jshint ignore:line
     evil('eval.J=' + value);
-    value = evil.J;
+    return evil.J;
   }
   catch (e) {
     //+env:debug
     error('[Jymin] Could not parse JS: ' + value);
     //-env:debug
   }
-  return value;
 };
 
 /**
@@ -128,5 +124,3 @@ var parseArray = function (value, alternative) {
   value = parse(value);
   return isObject(value) ? value : (alternative || []);
 };
-
-//-env:browser

@@ -130,6 +130,9 @@ forIn
 forOf
 decorateObject
 ensureProperty
+storage
+fetch
+store
 ensureString
 contains
 startsWith
