@@ -7,8 +7,6 @@
 [![Support](https://img.shields.io/gittip/zerious.png)](https://www.gittip.com/lighterio/)
 
 
-## TL;DR
-
 Jymin is "JavaScript You Minify", meaning Jymin scripts get concatenated with
 your application code and minfied within a single function closure. Functions
 you use will remain intact after minification, and functions you don't use
