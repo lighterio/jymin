@@ -85,9 +85,16 @@ var getParent = function (
 /**
  * Create a DOM element.
  */
-var createElement = function (
-  tagIdentifier
-) {
+var createTag = function (tagName) {
+  var isSvg = /^(svg|g|path|circle|line)$/.test(tagName);
+  var uri = 'http://www.w3.org/' + (isSvg ? '2000/svg' : '1999/xhtml');
+  return document.createElementNS(uri, tagName);
+};
+
+/**
+ * Create a DOM element.
+ */
+var createElement = function (tagIdentifier) {
   if (!isString(tagIdentifier)) {
     return tagIdentifier;
   }
@@ -99,7 +106,7 @@ var createElement = function (
   var tagName = tagAndId[0] || 'div';
   var id = tagAndId[1];
   var attributes = tagAndAttributes[1];
-  var cachedElement = createElement[tagName] || (createElement[tagName] = document.createElement(tagName));
+  var cachedElement = createTag[tagName] || (createTag[tagName] = createTag(tagName));
   var element = cachedElement.cloneNode(true);
   if (id) {
     element.id = id;
@@ -460,7 +467,7 @@ var addClass = function (
   className
 ) {
   element = getElement(element);
-  if (element) {
+  if (element && !hasClass(element, className)) {
     element.className += ' ' + className;
   }
 };

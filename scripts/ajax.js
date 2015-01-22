@@ -55,7 +55,7 @@ var getResponse = function (
         var callback = isSuccess ?
           onSuccess || responseSuccessHandler :
           onFailure || responseFailureHandler;
-        var data = parse(request.responseText);
+        var data = parse(request.responseText) || {};
         data._STATUS = status;
         data._REQUEST = request;
         callback(data);

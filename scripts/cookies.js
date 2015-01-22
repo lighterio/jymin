@@ -51,7 +51,7 @@ var setCookie = function (
 /**
  * Delete a cookie.
  */
-var deleteCookie = function deleteCookie(
+var deleteCookie = function (
   name   // string: Name of the cookie.
 ) {
   setCookie(name, null);

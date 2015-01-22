@@ -1,6 +1,14 @@
 {
   "name": "jymin",
-  "description": "Minifier-friendly JavaScript for the real-time world",
+  "version": "0.4.0",
+  "description": "Minifier-friendly JavaScript built for speed and usefulness",
+  "dependencies": {},
+  "devDependencies": {
+    "exam": "^0.2.1",
+    "coveralls": "2.10.0",
+    "chug": "^0.3.0",
+    "figlet": "1.0.9"
+  },
   "keywords": [
     "jymin",
     "javascript",
@@ -12,44 +20,23 @@
     "zepto",
     "alternative"
   ],
-  "version": "0.3.5",
-  "main": "chug/chug.js",
-  "homepage": "http://lighter.io/jymin",
-  "repository": "http://github.com/lighterio/jymin.git",
-  "bugs": {
-    "url": "http://github.com/lighterio/jymin/issues"
+  "main": "jymin.node.js",
+  "engines": {
+    "node": ">=0.2.6"
   },
-  "author": {
-    "name": "Sam Eubank",
-    "email": "sameubank@gmail.com"
-  },
-  "contributors": {
-    "name": "Sam Eubank",
-    "email": "sameubank@gmail.com"
-  },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://github.com/lighterio/jymin/blob/master/MIT-LICENSE.md"
-    }
-  ],
-  "engines": [
-    "node >= 0.2.6"
-  ],
   "scripts": {
-    "build": "node chug/chug",
+    "build": "node .chug.js",
     "test": "./node_modules/exam/exam.js",
-    "retest": "./node_modules/exam/exam.js --watch",
     "cover": "istanbul cover ./node_modules/exam/exam.js",
     "report": "open coverage/lcov-report/index.html",
     "coveralls": "istanbul cover ./node_modules/exam/exam.js --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage"
   },
-  "dependencies": {},
-  "devDependencies": {
-    "zeriousify": "0.1.9",
-    "exam": "0.0.5",
-    "coveralls": "2.10.0",
-    "chug": "0.1.30",
-    "figlet": "1.0.9"
-  }
+  "repository": "https://github.com/lighterio/jymin.git",
+  "bugs": "https://github.com/lighterio/jymin/issues",
+  "homepage": "http://lighter.io/jymin",
+  "author": "Sam Eubank <sameubank@gmail.com>",
+  "contributors": [
+    "Sam Eubank <sameubank@gmail.com>"
+  ],
+  "license": "MIT"
 }
