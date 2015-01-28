@@ -1,12 +1,11 @@
 {
   "name": "jymin",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Minifier-friendly JavaScript built for speed and usefulness",
   "dependencies": {},
   "devDependencies": {
-    "exam": "^0.2.1",
-    "coveralls": "2.10.0",
-    "chug": "^0.3.0",
+    "exam": "^0.2.2",
+    "chug": "^0.3.1",
     "figlet": "1.0.9"
   },
   "keywords": [
@@ -27,9 +26,9 @@
   "scripts": {
     "build": "node .chug.js",
     "test": "./node_modules/exam/exam.js",
-    "cover": "istanbul cover ./node_modules/exam/exam.js",
+    "cover": "./node_modules/exam/exam-cover.js",
     "report": "open coverage/lcov-report/index.html",
-    "coveralls": "istanbul cover ./node_modules/exam/exam.js --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage"
+    "coveralls": "./node_modules/exam/exam-coveralls.js"
   },
   "repository": "https://github.com/lighterio/jymin.git",
   "bugs": "https://github.com/lighterio/jymin/issues",

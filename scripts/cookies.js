@@ -1,40 +1,41 @@
 /**
- * Return all cookies.
- * @return object: Cookie names and values.
+ * Get all cookies from the document, and return a map.
+ *
+ * @return {Object}  The map of cookie names and values.
  */
-var getAllCookies = function () {
+Jymin.getAllCookies = function () {
   var obj = {};
-  var documentCookie = trim(document.cookie);
+  var documentCookie = Jymin.trim(document.cookie);
   if (documentCookie) {
     var cookies = documentCookie.split(/\s*;\s*/);
-    forEach(cookies, function (cookie) {
+    Jymin.forEach(cookies, function (cookie) {
       var pair = cookie.split(/\s*=\s*/);
-      obj[unescape(pair[0])] = unescape(pair[1]);
+      obj[Jymin.unescape(pair[0])] = Jymin.unescape(pair[1]);
     });
   }
   return obj;
 };
 
 /**
- * Get a cookie by name.
- * @return string: Cookie value.
+ * Get a cookie by its name.
+ *
+ * @param  {String} name  A cookie name.
+ * @return {String}       The cookie value.
  */
-var getCookie = function (
-  name // string: Name of the cookie.
-) {
-  return getAllCookies()[name];
+Jymin.getCookie = function (name) {
+  return Jymin.getAllCookies()[name];
 };
 
 /**
- * Set a cookie.
+ * Set or overwrite a cookie value.
+ *
+ * @param {String} name     A cookie name, whose value is to be set.
+ * @param {Object} value    A value to be set as a string.
+ * @param {Object} options  Optional cookie options, including "maxage", "expires", "path", "domain" and "secure".
  */
-var setCookie = function (
-  name,   // string:  Name of the cookie.
-  value,  // string:  Value to set.
-  options // object|: Name/value pairs for options including "maxage", "expires", "path", "domain" and "secure".
-) {
+Jymin.setCookie = function (name, value, options) {
   options = options || {};
-  var str = escape(name) + '=' + unescape(value);
+  var str = Jymin.escape(name) + '=' + Jymin.unescape(value);
   if (null === value) {
     options.maxage = -1;
   }
@@ -49,10 +50,10 @@ var setCookie = function (
 };
 
 /**
- * Delete a cookie.
+ * Delete a cookie by name.
+ *
+ * @param {String} name  A cookie name, whose value is to be deleted.
  */
-var deleteCookie = function (
-  name   // string: Name of the cookie.
-) {
-  setCookie(name, null);
+Jymin.deleteCookie = function (name) {
+  Jymin.setCookie(name, null);
 };

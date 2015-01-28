@@ -1,28 +1,28 @@
 /**
  * Get the current location host.
  */
-var getHost = function () {
+Jymin.getHost = function () {
   return location.host;
 };
 
 /**
  * Get the base of the current URL.
  */
-var getBaseUrl = function () {
-  return location.protocol + '//' + getHost();
+Jymin.getBaseUrl = function () {
+  return location.protocol + '//' + Jymin.getHost();
 };
 
 /**
  * Get the query parameters from a URL.
  */
-var getQueryParams = function (
+Jymin.getQueryParams = function (
   url
 ) {
   url = url || location.href;
   var query = url.substr(url.indexOf('?') + 1).split('#')[0];
   var pairs = query.split('&');
   query = {};
-  forEach(pairs, function (pair) {
+  Jymin.forEach(pairs, function (pair) {
     var eqPos = pair.indexOf('=');
     var name = pair.substr(0, eqPos);
     var value = pair.substr(eqPos + 1);
@@ -34,9 +34,9 @@ var getQueryParams = function (
 /**
  * Get the query parameters from the hash of a URL.
  */
-var getHashParams = function (
+Jymin.getHashParams = function (
   hash
 ) {
   hash = (hash || location.hash).replace(/^#/, '');
-  return hash ? getQueryParams(hash) : {};
+  return hash ? Jymin.getQueryParams(hash) : {};
 };

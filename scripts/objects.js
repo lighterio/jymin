@@ -1,10 +1,7 @@
 /**
  * Iterate over an object's keys, and call a function on each key value pair.
  */
-var forIn = function (
-  object,  // Object*:   The object to iterate over.
-  callback // Function*: The function to call on each pair. `callback(value, key, object)`
-) {
+Jymin.forIn = function (object, callback) {
   if (object) {
     for (var key in object) {
       var result = callback(key, object[key], object);
@@ -18,10 +15,7 @@ var forIn = function (
 /**
  * Iterate over an object's keys, and call a function on each (value, key) pair.
  */
-var forOf = function (
-  object,  // Object*:   The object to iterate over.
-  callback // Function*: The function to call on each pair. `callback(value, key, object)`
-) {
+Jymin.forOf = function (object, callback) {
   if (object) {
     for (var key in object) {
       var result = callback(object[key], key, object);
@@ -33,14 +27,11 @@ var forOf = function (
 };
 
 /**
- * Decorate an object with properties from another object. If the properties
+ * Decorate an object with properties from another object.
  */
-var decorateObject = function (
-  object,     // Object: The object to decorate.
-  decorations // Object: The object to iterate over.
-) {
+Jymin.decorateObject = function (object, decorations) {
   if (object && decorations) {
-    forIn(decorations, function (key, value) {
+    Jymin.forIn(decorations, function (key, value) {
       object[key] = value;
     });
   }
@@ -50,11 +41,7 @@ var decorateObject = function (
 /**
  * Ensure that a property exists by creating it if it doesn't.
  */
-var ensureProperty = function (
-  object,
-  property,
-  defaultValue
-) {
+Jymin.ensureProperty = function (object, property, defaultValue) {
   var value = object[property];
   if (!value) {
     value = object[property] = defaultValue;

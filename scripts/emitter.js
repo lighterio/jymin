@@ -1,54 +1,55 @@
 /**
  * An Emitter is an EventEmitter-style object.
  */
-var Emitter = function () {
+Jymin.Emitter = function () {
   // Lazily apply the prototype so that Emitter can minify out if not used.
-  Emitter.prototype = EmitterPrototype;
+  // TODO: Find out if this is still necessary with UglifyJS.
+  Jymin.Emitter.prototype = Jymin.EmitterPrototype;
 };
 
 /**
  * Expose Emitter methods which can be applied lazily.
  */
-var EmitterPrototype = {
+Jymin.EmitterPrototype = {
 
-  _ON: function (event, fn) {
+  _on: function (event, fn) {
     var self = this;
-    var events = self._EVENTS || (self._EVENTS = {});
+    var events = self._events || (self._events = {});
     var listeners = events[event] || (events[event] = []);
     listeners.push(fn);
     return self;
   },
 
-  _ONCE: function (event, fn) {
+  _once: function (event, fn) {
     var self = this;
     function f() {
       fn.apply(self, arguments);
-      self._REMOVE_LISTENER(event, f);
+      self._removeListener(event, f);
     }
-    self._ON(event, f);
+    self._on(event, f);
     return self;
   },
 
-  _EMIT: function (event) {
+  _emit: function (event) {
     var self = this;
-    var listeners = self._LISTENERS(event);
+    var listeners = self._listeners(event);
     var args = Array.prototype.slice.call(arguments, 1);
-    forEach(listeners, function (listener) {
+    Jymin.forEach(listeners, function (listener) {
       listener.apply(self, args);
     });
     return self;
   },
 
-  _LISTENERS: function (event) {
+  _listeners: function (event) {
     var self = this;
-    var events = self._EVENTS || 0;
+    var events = self._events || 0;
     var listeners = events[event] || [];
     return listeners;
   },
 
-  _REMOVE_LISTENER: function (event, fn) {
+  _removeListener: function (event, fn) {
     var self = this;
-    var listeners = self._LISTENERS(event);
+    var listeners = self._listeners(event);
     var i = listeners.indexOf(fn);
     if (i > -1) {
       listeners.splice(i, 1);
@@ -56,9 +57,9 @@ var EmitterPrototype = {
     return self;
   },
 
-  _REMOVE_ALL_LISTENERS: function (event, fn) {
+  _removeAllListeners: function (event, fn) {
     var self = this;
-    var events = self._EVENTS || {};
+    var events = self._events || {};
     if (event) {
       delete events[event];
     }

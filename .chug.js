@@ -12,13 +12,14 @@ figlet.text('Jymin v' + pkg.version, {font: 'Standard'}, function (e, art) {
   var content;
 
   // Concatenate and output all non-plugin scripts.
-  var load = chug('scripts')
+  scripts = chug('scripts')
     .each(function (asset) {
       urls.push(asset.location.replace(pattern, url));
     })
     .concat('jymin.js')
     .each(function (asset) {
-      content = "var version = '" + pkg.version + "';\n\n" + asset.getContent();
+      content = "var Jymin = window.Jymin = {version: '" + pkg.version + "'};\n\n" +
+      asset.getContent();
       asset.setContent(
         "/**" + art.replace(/ +$/, '').replace(/ *\n/g, '\n * ') + "\n" +
         " *\n" +
@@ -31,7 +32,18 @@ figlet.text('Jymin v' + pkg.version, {font: 'Standard'}, function (e, art) {
         " */\n\n\n" +
         content);
     })
-    .wrap('window, document, location, Math')
+    .write(dir, 'jymin.src.js');
+
+  // Write a backend script for testing in node.
+  var node = chug('lib/nodify.js', 'jymin.src.js')
+    .concat()
+    .write(dir, 'jymin.node.js');
+
+  // Write front-end scripts.
+  scripts
+    .replace(/\nJymin\./g, '\nvar ')
+    .replace(/Jymin\./g, '')
+    .wrap()
     .minify()
     .each(function (asset) {
       asset.content = addEval(asset.content);

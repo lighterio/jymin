@@ -1,15 +1,15 @@
-var $ = require('../jymin.node');
+require('../jymin.node.js');
 
 describe('Strings', function () {
 
-  describe('ensureString', function () {
+  describe('Jymin.ensureString', function () {
 
     it('appends an argument to a string', function () {
-      is($.ensureString('Hello'), 'Hello');
-      is($.ensureString(0), '0');
-      is($.ensureString({}), '[object Object]');
-      is($.ensureString([]), '');
-      is($.ensureString(), 'undefined');
+      is(Jymin.ensureString('Hello'), 'Hello');
+      is(Jymin.ensureString(0), '0');
+      is(Jymin.ensureString({}), '[object Object]');
+      is(Jymin.ensureString([]), '');
+      is(Jymin.ensureString(), 'undefined');
     });
 
   });

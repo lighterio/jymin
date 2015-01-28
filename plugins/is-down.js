@@ -15,10 +15,10 @@ var RIGHT_BUTTON = 3;
 
 var isDown = {};
 
-bind(window, 'keydown keyup', function (element, event) {
+Jymin.bind(window, 'keydown keyup', function (element, event) {
   isDown[event.keyCode] = (event != 'keyup');
 });
 
-bind(window, 'mousedown mouseup', function (element, event) {
+Jymin.bind(window, 'mousedown mouseup', function (element, event) {
   isDown[event.which] = (event != 'mouseup');
 });

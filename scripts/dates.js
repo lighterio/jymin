@@ -1,24 +1,21 @@
 /**
  * Get Unix epoch milliseconds from a date.
- * @return integer: Epoch milliseconds.
+ *
+ * @param {Date}    date  Date object (default: now).
+ * @return {Number}       Epoch milliseconds.
  */
-var getTime = function (
-  date // Date: Date object. (Default: now)
-) {
-  date = date || new Date();
-  return date.getTime();
+Jymin.getTime = function (date) {
+  return (date || new Date()).getTime();
 };
 
 /**
- * Get Unix epoch milliseconds from a date.
- * @return integer: Epoch milliseconds.
+ * Get an ISO-standard date string (even in super duper old browsers).
+ *
+ * @param {Date}    date  Date object (default: now).
+ * @return {String}       ISO date string.
  */
-var getIsoDate = function (
-  date // Date: Date object. (Default: now)
-) {
-  if (!date) {
-    date = new Date();
-  }
+Jymin.getIsoDate = function (date) {
+  date = date || new Date();
   if (date.toISOString) {
     date = date.toISOString();
   }
@@ -26,22 +23,25 @@ var getIsoDate = function (
     // Build an ISO date string manually in really old browsers.
     var utcPattern = /^.*?(\d+) (\w+) (\d+) ([\d:]+).*?$/;
     date = date.toUTCString().replace(utcPattern, function (a, d, m, y, t) {
-      m = zeroFill(date.getMonth(), 2);
-      t += '.' + zeroFill(date.getMilliseconds(), 3);
+      m = Jymin.zeroFill(date.getMonth(), 2);
+      t += '.' + Jymin.zeroFill(date.getMilliseconds(), 3);
       return y + '-' + m + '-' + d + 'T' + t + 'Z';
     });
   }
   return date;
 };
-/*
- * Takes a js date object and returns something in the format of
- * "August 26,2014 at 7:42pm"
+
+/**
+ * Take a date and return something like: "August 26, 2014 at 7:42pm".
+ *
+ * @param  {Object}   date  Date object or constructor argument.
+ * @return {String}         Long formatted date string.
  */
-var formatLongDate = function (date) {
+Jymin.formatLongDate = function (date) {
   var MONTHS = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
-  isDate(date) ? 0 : (date = new Date(+date || date));
+  Jymin.isDate(date) ? 0 : (date = new Date(+date || date));
   var m = MONTHS[date.getMonth()];
   var isAm = true;
   var h = +date.getHours();
@@ -49,14 +49,17 @@ var formatLongDate = function (date) {
   minutes = minutes > 9 ? minutes : "0" + minutes;
   h > 12 ? (isAm = false, h -= 12) : (h === 0 ? h = 12 : 0);
   return m + " " + date.getDate() + ", " + date.getFullYear() + " at " + h +
-    ":" + minutes + (isAm ? "AM" : "PM");
+    ":" + minutes + (isAm ? "am" : "pm");
 }
-/*
- * Takes a js date object and returns something in the format of
- * "8/26/14 7:42pm"
+
+/**
+ * Take a date, and return something like: "8/26/14 7:42pm".
+ *
+ * @param  {Object}   date  Date object or constructor argument.
+ * @return {String}         Short formatted date string.
  */
-var formatShortDate = function (date) {
-  isDate(date) ? 0 : (date = new Date(+date || date));
+Jymin.formatShortDate = function (date) {
+  Jymin.isDate(date) ? 0 : (date = new Date(+date || date));
   var m = date.getMonth() + 1;
   var isAm = true;
   var h = +date.getHours();
@@ -64,5 +67,5 @@ var formatShortDate = function (date) {
   minutes = minutes > 9 ? minutes : "0" + minutes;
   h > 12 ? (isAm = false, h -= 12) : (h === 0 ? h = 12 : 0);
   return m + "/" + date.getDate() + "/" + date.getFullYear() % 100 + " " + h +
-    ":" + minutes + (isAm ? "AM" : "PM");
+    ":" + minutes + (isAm ? "am" : "pm");
 }

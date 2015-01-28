@@ -1,27 +1,29 @@
 /**
- * Get a DOM element by its ID (if the argument is an ID).
- * If you pass in a DOM element, it just returns it.
- * This can be used to ensure that you have a DOM element.
+ * Get an element by its ID (if the argument is an ID).
+ * If you pass in an element, it just returns it.
+ * This can be used to ensure that you have an element.
+ *
+ * @param  {HTMLElement}        parentElement  Optional element to call getElementById on (default: document).
+ * @param  {string|HTMLElement} idOrElement    ID of an element, or the element itself.
+ * @return {HTMLElement}                       The matching element, or undefined.
  */
-var getElement = function (
-  parentElement, // DOMElement|:       Document or DOM element for getElementById. (Default: document)
-  id             // string|DOMElement: DOM element or ID of a DOM element.
-) {
-  if (getLength(arguments) < 2) {
-    id = parentElement;
+Jymin.getElement = function (parentElement, idOrElement) {
+  if (!Jymin.hasMany(arguments)) {
+    idOrElement = parentElement;
     parentElement = document;
   }
-  return isString(id) ? parentElement.getElementById(id) : id;
+  return Jymin.isString(idOrElement) ? parentElement.getElementById(idOrElement) : idOrElement;
 };
 
 /**
- * Get DOM elements that have a specified tag name.
+ * Get elements that have a specified tag name.
+ *
+ * @param  {HTMLElement}    parentElement  Optional element to call getElementsByTagName on (default: document).
+ * @param  {String}         tagName        Optional name of tag to search for (default: *).
+ * @return {HTMLCollection}                Collection of matching elements.
  */
-var getElementsByTagName = function (
-  parentElement, // DOMElement|: Document or DOM element for getElementsByTagName. (Default: document)
-  tagName        // string|:     Name of the tag to look for. (Default: "*")
-) {
-  if (getLength(arguments) < 2) {
+Jymin.getElementsByTagName = function (parentElement, tagName) {
+  if (!Jymin.hasMany(arguments)) {
     tagName = parentElement;
     parentElement = document;
   }
@@ -29,13 +31,14 @@ var getElementsByTagName = function (
 };
 
 /**
- * Get DOM elements that have a specified tag and class.
+ * Get elements that have a specified tag and class.
+ *
+ * @param  {HTMLElement}    parentElement  Optional element to call getElementsByTagName on (default: document).
+ * @param  {String}         tagAndClass    Optional tag and class to search for, separated by a period (default: *).
+ * @return {HTMLCollection}                Collection of matching elements.
  */
-var getElementsByTagAndClass = function (
-  parentElement,
-  tagAndClass
-) {
-  if (getLength(arguments) < 2) {
+Jymin.getElementsByTagAndClass = function (parentElement, tagAndClass) {
+  if (!Jymin.hasMany(arguments)) {
     tagAndClass = parentElement;
     parentElement = document;
   }
@@ -47,152 +50,59 @@ var getElementsByTagAndClass = function (
   if (className) {
     elements = [];
     if (parentElement.getElementsByClassName) {
-      forEach(parentElement.getElementsByClassName(className), function(element) {
+      Jymin.forEach(parentElement.getElementsByClassName(className), function(element) {
         if (anyTag || (element.tagName == tagName)) {
           elements.push(element);
         }
       });
     }
     else {
-      forEach(getElementsByTagName(parentElement, tagName), function(element) {
-        if (hasClass(element, className)) {
+      Jymin.forEach(Jymin.getElementsByTagName(parentElement, tagName), function(element) {
+        if (Jymin.hasClass(element, className)) {
           elements.push(element);
         }
       });
     }
   }
   else {
-    elements = getElementsByTagName(parentElement, tagName);
+    elements = Jymin.getElementsByTagName(parentElement, tagName);
   }
   return elements;
 };
 
 /**
- * Get the parent of a DOM element.
+ * Get the parent of an element, or an ancestor with a specified tag name.
+ *
+ * @param  {HTMLElement} element  A element whose parent elements are being searched.
+ * @param  {string}      tagName  An optional ancestor tag to search up the tree.
+ * @return {HTMLElement}          The parent or matching ancestor.
  */
-var getParent = function (
-  element,
-  tagName
-) {
-  var parentElement = (getElement(element) || {}).parentNode;
+Jymin.getParent = function (element, tagName) {
+  element = element.parentNode;
   // If a tag name is specified, keep walking up.
-  if (tagName && parentElement && parentElement.tagName != tagName) {
-    parentElement = getParent(parentElement, tagName);
-  }
-  return parentElement;
-};
-
-/**
- * Create a DOM element.
- */
-var createTag = function (tagName) {
-  var isSvg = /^(svg|g|path|circle|line)$/.test(tagName);
-  var uri = 'http://www.w3.org/' + (isSvg ? '2000/svg' : '1999/xhtml');
-  return document.createElementNS(uri, tagName);
-};
-
-/**
- * Create a DOM element.
- */
-var createElement = function (tagIdentifier) {
-  if (!isString(tagIdentifier)) {
-    return tagIdentifier;
-  }
-  tagIdentifier = tagIdentifier || '';
-  var tagAndAttributes = tagIdentifier.split('?');
-  var tagAndClass = tagAndAttributes[0].split('.');
-  var className = tagAndClass.slice(1).join(' ');
-  var tagAndId = tagAndClass[0].split('#');
-  var tagName = tagAndId[0] || 'div';
-  var id = tagAndId[1];
-  var attributes = tagAndAttributes[1];
-  var cachedElement = createTag[tagName] || (createTag[tagName] = createTag(tagName));
-  var element = cachedElement.cloneNode(true);
-  if (id) {
-    element.id = id;
-  }
-  if (className) {
-    element.className = className;
-  }
-  // TODO: Do something less janky than using query string syntax (like Ltl).
-  if (attributes) {
-    attributes = attributes.split('&');
-    forEach(attributes, function (attribute) {
-      var keyAndValue = attribute.split('=');
-      var key = unescape(keyAndValue[0]);
-      var value = unescape(keyAndValue[1]);
-      element[key] = value;
-      element.setAttribute(key, value);
-    });
+  if (tagName && element && element.tagName != tagName) {
+    element = Jymin.getParent(element, tagName);
   }
   return element;
 };
 
 /**
-* Create a DOM element, and append it to a parent element.
-*/
-var addElement = function (
-  parentElement,
-  tagIdentifier,
-  beforeSibling
-) {
-  var element = createElement(tagIdentifier);
-  if (parentElement) {
-    insertElement(parentElement, element, beforeSibling);
-  }
-  return element;
+ * Get the children of a parent element.
+ *
+ * @param  {HTMLElement}    element  A parent element who might have children.
+ * @return {HTMLCollection}          The collection of children.
+ */
+Jymin.getChildren = function (element) {
+  return element.childNodes;
 };
 
 /**
- * Create a DOM element, and append it to a parent element.
+ * Get an element's index with respect to its parent.
+ *
+ * @param  {HTMLElement} element  An element with a parent, and potentially siblings.
+ * @return {Number}               The element's index, or -1 if there's no matching element.
  */
-var appendElement = function (
-  parentElement,
-  tagIdentifier
-) {
-  return addElement(parentElement, tagIdentifier);
-};
-
-/**
- * Create a DOM element, and prepend it to a parent element.
- */
-var prependElement = function (
-  parentElement,
-  tagIdentifier
-) {
-  var beforeSibling = getFirstChild(parentElement);
-  return addElement(parentElement, tagIdentifier, beforeSibling);
-};
-
-/**
- * Wrap an existing DOM element within a newly created one.
- */
-var wrapElement = function (
-  element,
-  tagIdentifier
-) {
-  var parentElement = getParent(element);
-  var wrapper = addElement(parentElement, tagIdentifier, element);
-  insertElement(wrapper, element);
-  return wrapper;
-};
-
-/**
- * Return the children of a parent DOM element.
- */
-var getChildren = function (
-  parentElement
-) {
-  return getElement(parentElement).childNodes;
-};
-
-/**
- * Return a DOM element's index with respect to its parent.
- */
-var getIndex = function (
-  element
-) {
-  element = getElement(element);
+Jymin.getIndex = function (element) {
   var index = -1;
   while (element) {
     ++index;
@@ -202,62 +112,163 @@ var getIndex = function (
 };
 
 /**
- * Append a child DOM element to a parent DOM element.
+ * Get an element's first child.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @return {[type]}               The element's first child.
  */
-var insertElement = function (
-  parentElement,
-  childElement,
-  beforeSibling
-) {
-  // Ensure that we have elements, not just IDs.
-  parentElement = getElement(parentElement);
-  childElement = getElement(childElement);
-  if (parentElement && childElement) {
+Jymin.getFirstChild = function (element) {
+  return element.firstChild;
+};
+
+/**
+ * Get an element's previous sibling.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @return {HTMLElement}          The element's previous sibling.
+ */
+Jymin.getPreviousSibling = function (element) {
+  return element.previousSibling;
+};
+
+/**
+ * Get an element's next sibling.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @return {HTMLElement}          The element's next sibling.
+ */
+Jymin.getNextSibling = function (element) {
+  return element.nextSibling;
+};
+
+/**
+ * Create a cloneable element with a specified tag name.
+ *
+ * @param  {String}      tagName  An optional tag name (default: div).
+ * @return {HTMLElement}          The newly-created DOM Element with the specified tag name.
+ */
+Jymin.createTag = function (tagName) {
+  tagName = tagName || 'div';
+  var isSvg = /^(svg|g|path|circle|line)$/.test(tagName);
+  var uri = 'http://www.w3.org/' + (isSvg ? '2000/svg' : '1999/xhtml');
+  return document.createElementNS(uri, tagName);
+};
+
+/**
+ * Create an element, given a specified tag identifier.
+ *
+ * Identifiers are of the form:
+ *   tagName#id.class1.class2?attr1=value1&attr2=value2
+ *
+ * Each part of the identifier is optional.
+ *
+ * @param  {HTMLElement|String} elementOrString  An element or a string used to create an element (default: div).
+ * @param  {String}             innerHtml        An optional string of HTML to populate the element.
+ * @return {HTMLElement}                         The existing or created element.
+ */
+Jymin.createElement = function (elementOrString, innerHtml) {
+  var element = elementOrString;
+  if (Jymin.isString(elementOrString)) {
+    elementOrString = elementOrString || '';
+    var tagAndAttributes = elementOrString.split('?');
+    var tagAndClass = tagAndAttributes[0].split('.');
+    var className = tagAndClass.slice(1).join(' ');
+    var tagAndId = tagAndClass[0].split('#');
+    var tagName = tagAndId[0];
+    var id = tagAndId[1];
+    var attributes = tagAndAttributes[1];
+    var cachedElement = Jymin.createTag[tagName] || (Jymin.createTag[tagName] = Jymin.createTag(tagName));
+    var element = cachedElement.cloneNode(true);
+    if (id) {
+      element.id = id;
+    }
+    if (className) {
+      element.className = className;
+    }
+    // TODO: Do something less janky than using query string syntax (Maybe like Ltl?).
+    if (attributes) {
+      attributes = attributes.split('&');
+      Jymin.forEach(attributes, function (attribute) {
+        var keyAndValue = attribute.split('=');
+        var key = Jymin.unescape(keyAndValue[0]);
+        var value = Jymin.unescape(keyAndValue[1]);
+        element[key] = value;
+        element.setAttribute(key, value);
+      });
+    }
+    if (innerHtml) {
+      setHtml(element, innerHtml);
+    }
+  }
+  return element;
+};
+
+/**
+ * Add an element to a parent element, creating it first if necessary.
+ *
+ * @param  {HTMLElement}        parentElement    An optional parent element (default: document).
+ * @param  {HTMLElement|String} elementOrString  An element or a string used to create an element (default: div).
+ * @return {HTMLElement}                         The element that was added.
+ */
+Jymin.addElement = function (parentElement, elementOrString) {
+  if (Jymin.isString(parentElement)) {
+    elementOrString = parentElement;
+    parentElement = document;
+  }
+  var element = Jymin.createElement(elementOrString);
+  parentElement.appendChild(element);
+  return element;
+};
+
+/**
+ * Insert a child element under a parent element, optionally before another element.
+ *
+ * @param  {HTMLElement}         parentElement    An optional parent element (default: document).
+ * @param  {HTMLElement|String}  elementOrString  An element or a string used to create an element (default: div).
+ * @param  {HTMLElement}         beforeSibling    An optional child to insert the element before.
+ * @return {HTMLElement}                          The element that was inserted.
+ */
+Jymin.insertElement = function (parentElement, elementOrString, beforeSibling) {
+  if (Jymin.isString(parentElement)) {
+    beforeSibling = elementOrString;
+    elementOrString = parentElement;
+    parentElement = document;
+  }
+  var element = Jymin.createElement(childElement);
+  if (parentElement) {
     // If the beforeSibling value is a number, get the (future) sibling at that index.
-    if (isNumber(beforeSibling)) {
-      beforeSibling = getChildren(parentElement)[beforeSibling];
+    if (Jymin.isNumber(beforeSibling)) {
+      beforeSibling = Jymin.getChildren(parentElement)[beforeSibling];
     }
     // Insert the element, optionally before an existing sibling.
-    parentElement.insertBefore(childElement, beforeSibling || null);
+    parentElement.insertBefore(element, beforeSibling || Jymin.getFirstChild(parentElement) || null);
   }
+  return element;
 };
 
 /**
- * Insert a DOM element after another.
+ * Wrap an element with another element.
+ *
+ * @param  {HTMLElement}        innerElement  An element to wrap with another element.
+ * @param  {HTMLElement|String} outerElement  An element or a string used to create an element (default: div).
+ * @return {HTMLElement}                      The element that was created as a wrapper.
  */
-var insertBefore = function (
-  element,
-  childElement
-) {
-  element = getElement(element);
-  var parentElement = getParent(element);
-  addElement(parentElement, childElement, element);
+Jymin.wrapElement = function (innerElement, outerElement) {
+  var parentElement = Jymin.getParent(innerElement);
+  outerElement = Jymin.insertElement(parentElement, outerElement, innerElement);
+  Jymin.insertElement(outerElement, innerElement);
+  return outerElement;
 };
 
 /**
- * Insert a DOM element after another.
+ * Remove an element from its parent.
+ *
+ * @param  {HTMLElement} element  An element to remove.
  */
-var insertAfter = function (
-  element,
-  childElement
-) {
-  element = getElement(element);
-  var parentElement = getParent(element);
-  var beforeElement = getNextSibling(element);
-  addElement(parentElement, childElement, beforeElement);
-};
-
-/**
- * Remove a DOM element from its parent.
- */
-var removeElement = function (
-  element
-) {
-  // Ensure that we have an element, not just an ID.
-  element = getElement(element);
+Jymin.removeElement = function (element) {
   if (element) {
-    // Remove the element from its parent, provided that its parent still exists.
-    var parentElement = getParent(element);
+    // Remove the element from its parent, provided that it has a parent.
+    var parentElement = Jymin.getParent(element);
     if (parentElement) {
       parentElement.removeChild(element);
     }
@@ -265,275 +276,200 @@ var removeElement = function (
 };
 
 /**
- * Remove children from a DOM element.
+ * Remove children from an element.
+ *
+ * @param  {HTMLElement} element  An element whose children should all be removed.
  */
-var clearElement = function (
-  element
-) {
-  setHtml(element, '');
+Jymin.clearElement = function (element) {
+  Jymin.setHtml(element, '');
 };
 
 /**
- * Get a DOM element's inner HTML if the element can be found.
+ * Get an element's inner HTML.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @return {String}               The element's HTML.
  */
-var getHtml = function (
-  element
-) {
-  // Ensure that we have an element, not just an ID.
-  element = getElement(element);
-  if (element) {
-    return element.innerHTML;
-  }
+Jymin.getHtml = function (element) {
+  return element.innerHTML;
 };
 
 /**
- * Set a DOM element's inner HTML if the element can be found.
+ * Set an element's inner HTML.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @param  {String}      html     A string of HTML to set as the innerHTML.
  */
-var setHtml = function (
-  element,
-  html
-) {
-  // Ensure that we have an element, not just an ID.
-  element = getElement(element);
-  if (element) {
-    // Set the element's innerHTML.
-    element.innerHTML = html;
-  }
+Jymin.setHtml = function (element, html) {
+  element.innerHTML = html;
 };
 
 /**
- * Get a DOM element's inner text if the element can be found.
+ * Get an element's text.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @return {String}               The element's text content.
  */
-var getText = function (
-  element
-) {
-  // Ensure that we have an element, not just an ID.
-  element = getElement(element);
-  if (element) {
-    return element.textContent || element.innerText;
-  }
+Jymin.getText = function (element) {
+  return element.textContent || element.innerText;
 };
 
 /**
- * Set a DOM element's inner text if the element can be found.
+ * Get an attribute from an element.
+ *
+ * @param  {HTMLElement} element        An element.
+ * @param  {String}      attributeName  An attribute's name.
+ * @return {String}                     The value of the attribute.
  */
-var setText = function (
-  element,
-  text
-) {
-  // Ensure that we have an element, not just an ID.
-  element = getElement(element);
-  if (element) {
-    // Set the element's innerText.
-    element.innerHTML = text;
-  }
+Jymin.getAttribute = function (element, attributeName) {
+  return element.getAttribute(attributeName);
 };
 
 /**
- * Get an attribute from a DOM element, if it can be found.
+ * Set an attribute on an element.
+ *
+ * @param  {HTMLElement} element        An element.
+ * @param  {String}      attributeName  An attribute name.
+ * @param  {String}      value          A value to set the attribute to.
  */
-var getAttribute = function (
-  element,
-  attributeName
-) {
-  // Ensure that we have an element, not just an ID.
-  element = getElement(element);
-  if (element) {
-    return element.getAttribute(attributeName);
-  }
+Jymin.setAttribute = function (element, attributeName, value) {
+  element.setAttribute(attributeName, value);
 };
 
 /**
- * Set an attribute on a DOM element, if it can be found.
+ * Get a data attribute from an element.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @param  {String}      dataKey  A data attribute's key.
+ * @return {String}               The value of the data attribute.
  */
-var setAttribute = function (
-  element,
-  attributeName,
-  value
-) {
-  // Ensure that we have an element, not just an ID.
-  element = getElement(element);
-  if (element) {
-    // Set the element's innerText.
-    element.setAttribute(attributeName, value);
-  }
+Jymin.getData = function (element, dataKey) {
+  return Jymin.getAttribute(element, 'data-' + dataKey);
 };
 
 /**
- * Get a data attribute from a DOM element.
+ * Set a data attribute on an element.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @param  {String}      dataKey  A data attribute key.
+ * @param  {String}      value    A value to set the data attribute to.
  */
-var getData = function (
-  element,
-  dataKey
-) {
-  return getAttribute(element, 'data-' + dataKey);
+Jymin.setData = function (element, dataKey, value) {
+  Jymin.setAttribute(element, 'data-' + dataKey, value);
 };
 
 /**
- * Set a data attribute on a DOM element.
+ * Get an element's class name.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @return {String}               The element's class name.
  */
-var setData = function (
-  element,
-  dataKey,
-  value
-) {
-  setAttribute(element, 'data-' + dataKey, value);
+Jymin.getClass = function (element) {
+  var className = element.className || '';
+  return className.baseVal || className;
 };
 
 /**
- * Get a DOM element's class name if the element can be found.
+ * Get an element's class name as an array of classes.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @return {Array}                The element's class name classes.
  */
-var getClass = function (
-  element
-) {
-  // Ensure that we have an element, not just an ID.
-  element = getElement(element);
-  if (element) {
-    var className = element.className || '';
-    return className.baseVal || className;
-  }
+Jymin.getClasses = function (element) {
+  return Jymin.getClass(element).split(/\s+/);
 };
 
 /**
- * Set a DOM element's class name if the element can be found.
+ * Set an element's class name.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @return {String}               One or more space-delimited classes to set.
  */
-var setClass = function (
-  element,
-  className
-) {
-  // Ensure that we have an element, not just an ID.
-  element = getElement(element);
-  if (element) {
-    // Set the element's innerText.
-    element.className = className;
-  }
+Jymin.setClass = function (element, className) {
+  element.className = className;
 };
 
 /**
- * Get a DOM element's firstChild if the element can be found.
+ * Find out whether an element has a specified class.
+ *
+ * @param  {HTMLElement} element    An element.
+ * @param  {String}      className  A class to search for.
+ * @return {boolean}                True if the class was found.
  */
-var getFirstChild = function (
-  element
-) {
-  // Ensure that we have an element, not just an ID.
-  element = getElement(element);
-  if (element) {
-    return element.firstChild;
-  }
-};
-
-/**
- * Get a DOM element's previousSibling if the element can be found.
- */
-var getPreviousSibling = function (
-  element
-) {
-  // Ensure that we have an element, not just an ID.
-  element = getElement(element);
-  if (element) {
-    return element.previousSibling;
-  }
-};
-
-/**
- * Get a DOM element's nextSibling if the element can be found.
- */
-var getNextSibling = function (
-  element
-) {
-  // Ensure that we have an element, not just an ID.
-  element = getElement(element);
-  if (element) {
-    return element.nextSibling;
-  }
-};
-
-/**
- * Case-sensitive class detection.
- */
-var hasClass = function (
-  element,
-  className
-) {
-  var pattern = new RegExp('(^|\\s)' + className + '(\\s|$)');
-  return pattern.test(getClass(element));
+Jymin.hasClass = function (element, className) {
+  var classes = Jymin.getClasses(element);
+  return classes.indexOf(className) > -1;
 };
 
 /**
  * Add a class to a given element.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @param  {String}               A class to add if it's not already there.
  */
-var addClass = function (
-  element,
-  className
-) {
-  element = getElement(element);
-  if (element && !hasClass(element, className)) {
+Jymin.addClass = function (element, className) {
+  if (!Jymin.hasClass(element, className)) {
     element.className += ' ' + className;
   }
 };
 
 /**
- * Remove a class from a given element.
+ * Remove a class from a given element, assuming no duplication.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @return {String}               A class to remove.
  */
-var removeClass = function (
-  element,
-  className
-) {
-  element = getElement(element);
-  if (element) {
-    var tokens = getClass(element).split(/\s/);
-    var ok = [];
-    forEach(tokens, function (token) {
-      if (token != className) {
-        ok.push(token);
-      }
-    });
-    element.className = ok.join(' ');
+Jymin.removeClass = function (element, className) {
+  var classes = Jymin.getClasses(element);
+  var index = classes.indexOf(className);
+  if (index > -1) {
+    classes.splice(index, 1);
   }
+  classes.join(' ');
+  Jymin.setClass(element, classes);
 };
 
 /**
  * Turn a class on or off on a given element.
+ *
+ * @param  {HTMLElement} element    An element.
+ * @param  {String}      className  A class to add or remove.
+ * @param  {boolean}     flipOn     Whether to add, rather than removing.
  */
-var flipClass = function (
-  element,
-  className,
-  flipOn
-) {
-  var method = flipOn ? addClass : removeClass;
+Jymin.flipClass = function (element, className, flipOn) {
+  var method = flipOn ? Jymin.addClass : Jymin.removeClass;
   method(element, className);
 };
 
 /**
- * Turn a class on or off on a given element.
+ * Turn a class on if it's off, or off if it's on.
+ *
+ * @param  {HTMLElement} element    An element.
+ * @param  {String}      className  A class to toggle.
+ * @return {boolean}                True if the class was turned on.
  */
-var toggleClass = function (
-  element,
-  className
-) {
-  var turnOn = false;
-  element = getElement(element);
-  if (element) {
-    turnOn = !hasClass(element, className);
-    flipClass(element, className, turnOn);
-  }
-  return turnOn;
+Jymin.toggleClass = function (element, className) {
+  var flipOn = !Jymin.hasClass(element, className);
+  Jymin.flipClass(element, className, flipOn);
+  return flipOn;
 };
 
 /**
- * Insert a call to an external JavaScript file.
+ * Insert an external JavaScript file.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @param  {HTMLElement} element  An element.
+ * @param  {String}      src      A source URL of a script to insert.
+ * @param  {function}    fn       An optional function to run when the script loads.
  */
-var insertScript = function (
-  src,
-  callback
-) {
-  var head = getElementsByTagName('head')[0];
-  var script = addElement(head, 'script');
-  if (callback) {
-    script.onload = callback;
+Jymin.insertScript = function (src, fn) {
+  var head = Jymin.getElementsByTagName('head')[0];
+  var script = Jymin.addElement(head, 'script');
+  if (fn) {
+    script.onload = fn;
     script.onreadystatechange = function() {
-      if (isLoaded(script)) {
-        callback();
+      if (Jymin.isLoaded(script)) {
+        fn();
       }
     };
   }
@@ -541,70 +477,72 @@ var insertScript = function (
 };
 
 /**
- * Finds elements matching a selector, and return or run a callback on them.
+ * Find elements matching a selector, and return or run a function on them.
+ *
+ * Selectors are not fully querySelector compatible.
+ * Selectors only support commas, spaces, IDs, tags & classes.
+ *
+ * @param  {HTMLElement} parentElement  An optional element under which to find elements.
+ * @param  {String}      selector       A simple selector for finding elements.
+ * @return {function}    fn             An optional function to run on matching elements.
  */
-var all = function (
-  parentElement,
-  selector,
-  callback
-) {
-  // TODO: Better argument collapsing.
-  if (!selector || isFunction(selector)) {
-    callback = selector;
+Jymin.all = function (parentElement, selector, fn) {
+  if (!selector || Jymin.isFunction(selector)) {
+    fn = selector;
     selector = parentElement;
     parentElement = document;
   }
   var elements;
-  if (contains(selector, ',')) {
+  if (Jymin.contains(selector, ',')) {
     elements = [];
-    var selectors = splitByCommas(selector);
-    forEach(selectors, function (piece) {
-      var more = all(parentElement, piece);
-      if (getLength(more)) {
-        merge(elements, more);
+    var selectors = Jymin.splitByCommas(selector);
+    Jymin.forEach(selectors, function (piece) {
+      var more = Jymin.all(parentElement, piece);
+      if (Jymin.getLength(more)) {
+        Jymin.merge(elements, more);
       }
     });
   }
-  else if (contains(selector, ' ')) {
+  else if (Jymin.contains(selector, ' ')) {
     var pos = selector.indexOf(' ');
     var preSelector = selector.substr(0, pos);
     var postSelector = selector.substr(pos + 1);
     elements = [];
-    all(parentElement, preSelector, function (element) {
-      var children = all(element, postSelector);
-      merge(elements, children);
+    Jymin.all(parentElement, preSelector, function (element) {
+      var children = Jymin.all(element, postSelector);
+      Jymin.merge(elements, children);
     });
   }
   else if (selector[0] == '#') {
     var id = selector.substr(1);
-    var child = getElement(parentElement.ownerDocument || document, id);
+    var child = Jymin.getElement(parentElement.ownerDocument || document, id);
     if (child) {
-      var parent = getParent(child);
+      var parent = Jymin.getParent(child);
       while (parent) {
         if (parent === parentElement) {
           elements = [child];
           break;
         }
-        parent = getParent(parent);
+        parent = Jymin.getParent(parent);
       }
     }
   }
   else {
-    elements = getElementsByTagAndClass(parentElement, selector);
+    elements = Jymin.getElementsByTagAndClass(parentElement, selector);
   }
-  if (callback) {
-    forEach(elements, callback);
+  if (fn) {
+    Jymin.forEach(elements, fn);
   }
   return elements || [];
 };
 
 /**
- * Finds elements matching a selector, and return or run a callback on them.
+ * Find an element matching a selector, optionally run a function on it, and return it.
+ *
+ * @param  {HTMLElement} parentElement  An optional element under which to find an element.
+ * @param  {String}      selector       A simple selector for finding an element.
+ * @return {function}    fn             An optional function to run on a matching element.
  */
-var one = function (
-  parentElement,
-  selector,
-  callback
-) {
-  return all(parentElement, selector, callback)[0];
+Jymin.one = function (parentElement, selector, fn) {
+  return Jymin.all(parentElement, selector, fn)[0];
 };

@@ -1,40 +1,40 @@
 /**
- * Execute a callback when the page loads.
+ * Execute a fn when the page loads.
+ * @param  {function|Object} fnOrElement
+ * @return {[type]}                   [description]
  */
-var onReady = window._ON_READY = function (
-  callbackOrElement
-) {
+Jymin.onReady = window._onReady = function (fnOrElement) {
   // If there's no queue, create it as a property of this function.
-  var queue = ensureProperty(onReady, '_QUEUE', []);
+  var queue = Jymin.ensureProperty(Jymin.onReady, '_queue', []);
 
-  // If there's a callback, push it into the queue.
-  if (typeof callbackOrElement == 'function') {
+  // If there's a function, push it into the queue.
+  if (typeof fnOrElement == 'function') {
 
-    // The 1st callback makes schedules onReady, if not waiting for scripts.
-    if (!getLength(queue)) {
+    // The 1st function makes schedules onReady, if not waiting for scripts.
+    if (!Jymin.getLength(queue)) {
 
       // In production, there should be a single script, therefore no wait.
       var waitingForScripts = false;
 
       // In development, individual scripts might still be loading.
       //+env:dev,debug
-      waitingForScripts = window._WAITING_FOR_SCRIPTS;
+      waitingForScripts = window._waitingForScripts;
       //-env:dev,debug
 
       if (!waitingForScripts) {
         // At the next tick, we've excuted this whole script.
-        addTimeout(onReady, onReady, 1);
+        Jymin.addTimeout(Jymin.onReady, Jymin.onReady, 1);
       }
     }
 
     // Put an item in the queue and wait.
-    push(queue, callbackOrElement);
+    Jymin.push(queue, fnOrElement);
   }
 
-  // If there's no callback, onReady has been triggered, so run callbacks.
+  // If there's no function, Jymin.onReady has been triggered, so run functions.
   else {
-    forEach(queue, function (callback) {
-      callback(callbackOrElement || document);
+    Jymin.forEach(queue, function (fn) {
+      fn(fnOrElement || document);
     });
   }
 };

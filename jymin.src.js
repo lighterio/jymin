@@ -36,26 +36,26 @@ var Jymin = window.Jymin = {version: '0.4.1'};
  * Empty handler.
  * @type {function}
  */
-var doNothing = function () {};
+Jymin.doNothing = function () {};
 
 /**
  * Default AJAX success handler function.
  * @type {function}
  */
-var responseSuccessFn = doNothing;
+Jymin.responseSuccessFn = Jymin.doNothing;
 
 /**
  * Default AJAX failure handler function.
  * @type {function}
  */
-var responseFailureFn = doNothing;
+Jymin.responseFailureFn = Jymin.doNothing;
 
 /**
  * Get an XMLHttpRequest object (or ActiveX object in old IE).
  *
  * @return {XMLHttpRequest}   The request object.
  */
-var getXhr = function () {
+Jymin.getXhr = function () {
   var Xhr = window.XMLHttpRequest;
   var ActiveX = window.ActiveXObject;
   return Xhr ? new Xhr() : (ActiveX ? new ActiveX('Microsoft.XMLHTTP') : false);
@@ -66,8 +66,8 @@ var getXhr = function () {
  *
  * @return {XMLHttpRequestUpload}   The request upload object.
  */
-var getUpload = function () {
-  var xhr = getXhr();
+Jymin.getUpload = function () {
+  var xhr = Jymin.getXhr();
   return xhr ? xhr.upload : false;
 };
 
@@ -80,29 +80,29 @@ var getUpload = function () {
  * @param  {function} onFailure  An optional function to run upon failure.
  * @return {boolean}             True if AJAX is supported.
  */
-var getResponse = function (url, body, onSuccess, onFailure) {
+Jymin.getResponse = function (url, body, onSuccess, onFailure) {
   // If the optional body argument is omitted, shuffle it out.
-  if (isFunction(body)) {
+  if (Jymin.isFunction(body)) {
     onFailure = onSuccess;
     onSuccess = body;
     body = 0;
   }
-  var request = getXhr();
+  var request = Jymin.getXhr();
   if (request) {
-    onFailure = onFailure || responseFailureFn;
-    onSuccess = onSuccess || responseSuccessFn;
+    onFailure = onFailure || Jymin.responseFailureFn;
+    onSuccess = onSuccess || Jymin.responseSuccessFn;
     request.onreadystatechange = function() {
       if (request.readyState == 4) {
         //+env:debug
-        log('[Jymin] Received response from "' + url + '". (' + getResponse._waiting + ' in progress).');
+        Jymin.log('[Jymin] Received response from "' + url + '". (' + Jymin.getResponse._waiting + ' in progress).');
         //-env:debug
-        --getResponse._waiting;
+        --Jymin.getResponse._waiting;
         var status = request.status;
         var isSuccess = (status == 200);
         var fn = isSuccess ?
-          onSuccess || responseSuccessFn :
-          onFailure || responseFailureFn;
-        var data = parse(request.responseText) || {};
+          onSuccess || Jymin.responseSuccessFn :
+          onFailure || Jymin.responseFailureFn;
+        var data = Jymin.parse(request.responseText) || {};
         data._status = status;
         data._request = request;
         fn(data);
@@ -123,13 +123,13 @@ var getResponse = function (url, body, onSuccess, onFailure) {
     }
 
     // Record the time the request was made.
-    request._time = getTime();
+    request._time = Jymin.getTime();
 
     // Allow applications to back off when too many requests are in progress.
-    getResponse._waiting = (getResponse._waiting || 0) + 1;
+    Jymin.getResponse._waiting = (Jymin.getResponse._waiting || 0) + 1;
 
     //+env:debug
-    log('[Jymin] Sending request to "' + url + '". (' + getResponse._waiting + ' in progress).');
+    Jymin.log('[Jymin] Sending request to "' + url + '". (' + Jymin.getResponse._waiting + ' in progress).');
     //-env:debug
     request.send(body || null);
 
@@ -144,9 +144,9 @@ var getResponse = function (url, body, onSuccess, onFailure) {
  * @param  {Function}             fn     A function to call on each item.
  * @return {Number}                      The number of items iterated over without breaking.
  */
-var forEach = function (array, fn) {
+Jymin.forEach = function (array, fn) {
   if (array) {
-    for (var index = 0, length = getLength(array); index < length; index++) {
+    for (var index = 0, length = Jymin.getLength(array); index < length; index++) {
       var result = fn(array[index], index, array);
       if (result === false) {
         break;
@@ -164,9 +164,9 @@ var forEach = function (array, fn) {
  * @param  {Function}  fn                   A function to call on each item.
  * @return {Number}                         The number of items iterated over without breaking.
  */
-var each = function (array, fn) {
+Jymin.each = function (array, fn) {
   if (array) {
-    for (var index = 0, length = getLength(array); index < length; index++) {
+    for (var index = 0, length = Jymin.getLength(array); index < length; index++) {
       var result = fn(index, array[index], array);
       if (result === false) {
         break;
@@ -182,7 +182,7 @@ var each = function (array, fn) {
  * @param {Array|Object|string}  array  A collection, expected to have a length.
  * @return {Number}                     The length of the collection.
  */
-var getLength = function (array) {
+Jymin.getLength = function (array) {
   return (array || 0).length || 0;
 };
 
@@ -191,7 +191,7 @@ var getLength = function (array) {
  * @param {Array|Object|string}  array  A collection, expected to have index items.
  * @return {Object}                     The first item in the collection.
  */
-var getFirst = function (array) {
+Jymin.getFirst = function (array) {
   return (array || 0)[0];
 };
 
@@ -201,8 +201,8 @@ var getFirst = function (array) {
  * @param {Array|Object|string}  array  A collection, expected to have indexed items and a length.
  * @return {Object}                     The last item in the collection.
  */
-var getLast = function (array) {
-  return (array || 0)[getLength(array) - 1];
+Jymin.getLast = function (array) {
+  return (array || 0)[Jymin.getLength(array) - 1];
 };
 
 /**
@@ -211,8 +211,8 @@ var getLast = function (array) {
  * @param {Array|Object|string}   array  A collection, expected to have a length.
  * @return {boolean}                     True if the collection has more than one item.
  */
-var hasMany = function (array) {
-  return getLength(array) > 1;
+Jymin.hasMany = function (array) {
+  return Jymin.getLength(array) > 1;
 };
 
 /**
@@ -222,8 +222,8 @@ var hasMany = function (array) {
  * @param  {Object} item   An item to push.
  * @return {Object}        The item that was pushed.
  */
-var push = function (array, item) {
-  if (isArray(array)) {
+Jymin.push = function (array, item) {
+  if (Jymin.isArray(array)) {
     array.push(item);
   }
   return item;
@@ -235,8 +235,8 @@ var push = function (array, item) {
  * @param  {Array}  array  An array to pop an item from.
  * @return {Object}        The item that was popped.
  */
-var pop = function (array) {
-  if (isArray(array)) {
+Jymin.pop = function (array) {
+  if (Jymin.isArray(array)) {
     return array.pop();
   }
 };
@@ -248,11 +248,11 @@ var pop = function (array) {
  * @params {Array...}         Items to merge into the array.
  * @return {Array}            The first array argument, with new items merged in.
  */
-var merge = function (array) {
-  forEach(arguments, function (items, index) {
+Jymin.merge = function (array) {
+  Jymin.forEach(arguments, function (items, index) {
     if (index) {
-      forEach(items, function (item) {
-        push(array, item);
+      Jymin.forEach(items, function (item) {
+        Jymin.push(array, item);
       });
     }
   });
@@ -268,14 +268,14 @@ var merge = function (array) {
  * @param  {Object} paddingValue A value to use as padding.
  * @return {Number}              The number of padding values that were added.
  */
-var padArray = function (array, padToLength, paddingValue) {
+Jymin.padArray = function (array, padToLength, paddingValue) {
   var countAdded = 0;
-  if (isArray(array)) {
-    var startingLength = getLength(array);
+  if (Jymin.isArray(array)) {
+    var startingLength = Jymin.getLength(array);
     if (startingLength < length) {
-      paddingValue = isUndefined(paddingValue) ? '' : paddingValue;
+      paddingValue = Jymin.isUndefined(paddingValue) ? '' : paddingValue;
       for (var index = startingLength; index < length; index++) {
-        push(array, paddingValue);
+        Jymin.push(array, paddingValue);
         countAdded++;
       }
     }
@@ -287,14 +287,14 @@ var padArray = function (array, padToLength, paddingValue) {
  *
  * @return {Object}  The map of cookie names and values.
  */
-var getAllCookies = function () {
+Jymin.getAllCookies = function () {
   var obj = {};
-  var documentCookie = trim(document.cookie);
+  var documentCookie = Jymin.trim(document.cookie);
   if (documentCookie) {
     var cookies = documentCookie.split(/\s*;\s*/);
-    forEach(cookies, function (cookie) {
+    Jymin.forEach(cookies, function (cookie) {
       var pair = cookie.split(/\s*=\s*/);
-      obj[unescape(pair[0])] = unescape(pair[1]);
+      obj[Jymin.unescape(pair[0])] = Jymin.unescape(pair[1]);
     });
   }
   return obj;
@@ -306,8 +306,8 @@ var getAllCookies = function () {
  * @param  {String} name  A cookie name.
  * @return {String}       The cookie value.
  */
-var getCookie = function (name) {
-  return getAllCookies()[name];
+Jymin.getCookie = function (name) {
+  return Jymin.getAllCookies()[name];
 };
 
 /**
@@ -317,9 +317,9 @@ var getCookie = function (name) {
  * @param {Object} value    A value to be set as a string.
  * @param {Object} options  Optional cookie options, including "maxage", "expires", "path", "domain" and "secure".
  */
-var setCookie = function (name, value, options) {
+Jymin.setCookie = function (name, value, options) {
   options = options || {};
-  var str = escape(name) + '=' + unescape(value);
+  var str = Jymin.escape(name) + '=' + Jymin.unescape(value);
   if (null === value) {
     options.maxage = -1;
   }
@@ -338,8 +338,8 @@ var setCookie = function (name, value, options) {
  *
  * @param {String} name  A cookie name, whose value is to be deleted.
  */
-var deleteCookie = function (name) {
-  setCookie(name, null);
+Jymin.deleteCookie = function (name) {
+  Jymin.setCookie(name, null);
 };
 /**
  * Get Unix epoch milliseconds from a date.
@@ -347,7 +347,7 @@ var deleteCookie = function (name) {
  * @param {Date}    date  Date object (default: now).
  * @return {Number}       Epoch milliseconds.
  */
-var getTime = function (date) {
+Jymin.getTime = function (date) {
   return (date || new Date()).getTime();
 };
 
@@ -357,7 +357,7 @@ var getTime = function (date) {
  * @param {Date}    date  Date object (default: now).
  * @return {String}       ISO date string.
  */
-var getIsoDate = function (date) {
+Jymin.getIsoDate = function (date) {
   date = date || new Date();
   if (date.toISOString) {
     date = date.toISOString();
@@ -366,8 +366,8 @@ var getIsoDate = function (date) {
     // Build an ISO date string manually in really old browsers.
     var utcPattern = /^.*?(\d+) (\w+) (\d+) ([\d:]+).*?$/;
     date = date.toUTCString().replace(utcPattern, function (a, d, m, y, t) {
-      m = zeroFill(date.getMonth(), 2);
-      t += '.' + zeroFill(date.getMilliseconds(), 3);
+      m = Jymin.zeroFill(date.getMonth(), 2);
+      t += '.' + Jymin.zeroFill(date.getMilliseconds(), 3);
       return y + '-' + m + '-' + d + 'T' + t + 'Z';
     });
   }
@@ -380,11 +380,11 @@ var getIsoDate = function (date) {
  * @param  {Object}   date  Date object or constructor argument.
  * @return {String}         Long formatted date string.
  */
-var formatLongDate = function (date) {
+Jymin.formatLongDate = function (date) {
   var MONTHS = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
-  isDate(date) ? 0 : (date = new Date(+date || date));
+  Jymin.isDate(date) ? 0 : (date = new Date(+date || date));
   var m = MONTHS[date.getMonth()];
   var isAm = true;
   var h = +date.getHours();
@@ -401,8 +401,8 @@ var formatLongDate = function (date) {
  * @param  {Object}   date  Date object or constructor argument.
  * @return {String}         Short formatted date string.
  */
-var formatShortDate = function (date) {
-  isDate(date) ? 0 : (date = new Date(+date || date));
+Jymin.formatShortDate = function (date) {
+  Jymin.isDate(date) ? 0 : (date = new Date(+date || date));
   var m = date.getMonth() + 1;
   var isAm = true;
   var h = +date.getHours();
@@ -421,12 +421,12 @@ var formatShortDate = function (date) {
  * @param  {string|HTMLElement} idOrElement    ID of an element, or the element itself.
  * @return {HTMLElement}                       The matching element, or undefined.
  */
-var getElement = function (parentElement, idOrElement) {
-  if (!hasMany(arguments)) {
+Jymin.getElement = function (parentElement, idOrElement) {
+  if (!Jymin.hasMany(arguments)) {
     idOrElement = parentElement;
     parentElement = document;
   }
-  return isString(idOrElement) ? parentElement.getElementById(idOrElement) : idOrElement;
+  return Jymin.isString(idOrElement) ? parentElement.getElementById(idOrElement) : idOrElement;
 };
 
 /**
@@ -436,8 +436,8 @@ var getElement = function (parentElement, idOrElement) {
  * @param  {String}         tagName        Optional name of tag to search for (default: *).
  * @return {HTMLCollection}                Collection of matching elements.
  */
-var getElementsByTagName = function (parentElement, tagName) {
-  if (!hasMany(arguments)) {
+Jymin.getElementsByTagName = function (parentElement, tagName) {
+  if (!Jymin.hasMany(arguments)) {
     tagName = parentElement;
     parentElement = document;
   }
@@ -451,8 +451,8 @@ var getElementsByTagName = function (parentElement, tagName) {
  * @param  {String}         tagAndClass    Optional tag and class to search for, separated by a period (default: *).
  * @return {HTMLCollection}                Collection of matching elements.
  */
-var getElementsByTagAndClass = function (parentElement, tagAndClass) {
-  if (!hasMany(arguments)) {
+Jymin.getElementsByTagAndClass = function (parentElement, tagAndClass) {
+  if (!Jymin.hasMany(arguments)) {
     tagAndClass = parentElement;
     parentElement = document;
   }
@@ -464,22 +464,22 @@ var getElementsByTagAndClass = function (parentElement, tagAndClass) {
   if (className) {
     elements = [];
     if (parentElement.getElementsByClassName) {
-      forEach(parentElement.getElementsByClassName(className), function(element) {
+      Jymin.forEach(parentElement.getElementsByClassName(className), function(element) {
         if (anyTag || (element.tagName == tagName)) {
           elements.push(element);
         }
       });
     }
     else {
-      forEach(getElementsByTagName(parentElement, tagName), function(element) {
-        if (hasClass(element, className)) {
+      Jymin.forEach(Jymin.getElementsByTagName(parentElement, tagName), function(element) {
+        if (Jymin.hasClass(element, className)) {
           elements.push(element);
         }
       });
     }
   }
   else {
-    elements = getElementsByTagName(parentElement, tagName);
+    elements = Jymin.getElementsByTagName(parentElement, tagName);
   }
   return elements;
 };
@@ -491,11 +491,11 @@ var getElementsByTagAndClass = function (parentElement, tagAndClass) {
  * @param  {string}      tagName  An optional ancestor tag to search up the tree.
  * @return {HTMLElement}          The parent or matching ancestor.
  */
-var getParent = function (element, tagName) {
+Jymin.getParent = function (element, tagName) {
   element = element.parentNode;
   // If a tag name is specified, keep walking up.
   if (tagName && element && element.tagName != tagName) {
-    element = getParent(element, tagName);
+    element = Jymin.getParent(element, tagName);
   }
   return element;
 };
@@ -506,7 +506,7 @@ var getParent = function (element, tagName) {
  * @param  {HTMLElement}    element  A parent element who might have children.
  * @return {HTMLCollection}          The collection of children.
  */
-var getChildren = function (element) {
+Jymin.getChildren = function (element) {
   return element.childNodes;
 };
 
@@ -516,7 +516,7 @@ var getChildren = function (element) {
  * @param  {HTMLElement} element  An element with a parent, and potentially siblings.
  * @return {Number}               The element's index, or -1 if there's no matching element.
  */
-var getIndex = function (element) {
+Jymin.getIndex = function (element) {
   var index = -1;
   while (element) {
     ++index;
@@ -531,7 +531,7 @@ var getIndex = function (element) {
  * @param  {HTMLElement} element  An element.
  * @return {[type]}               The element's first child.
  */
-var getFirstChild = function (element) {
+Jymin.getFirstChild = function (element) {
   return element.firstChild;
 };
 
@@ -541,7 +541,7 @@ var getFirstChild = function (element) {
  * @param  {HTMLElement} element  An element.
  * @return {HTMLElement}          The element's previous sibling.
  */
-var getPreviousSibling = function (element) {
+Jymin.getPreviousSibling = function (element) {
   return element.previousSibling;
 };
 
@@ -551,7 +551,7 @@ var getPreviousSibling = function (element) {
  * @param  {HTMLElement} element  An element.
  * @return {HTMLElement}          The element's next sibling.
  */
-var getNextSibling = function (element) {
+Jymin.getNextSibling = function (element) {
   return element.nextSibling;
 };
 
@@ -561,7 +561,7 @@ var getNextSibling = function (element) {
  * @param  {String}      tagName  An optional tag name (default: div).
  * @return {HTMLElement}          The newly-created DOM Element with the specified tag name.
  */
-var createTag = function (tagName) {
+Jymin.createTag = function (tagName) {
   tagName = tagName || 'div';
   var isSvg = /^(svg|g|path|circle|line)$/.test(tagName);
   var uri = 'http://www.w3.org/' + (isSvg ? '2000/svg' : '1999/xhtml');
@@ -580,9 +580,9 @@ var createTag = function (tagName) {
  * @param  {String}             innerHtml        An optional string of HTML to populate the element.
  * @return {HTMLElement}                         The existing or created element.
  */
-var createElement = function (elementOrString, innerHtml) {
+Jymin.createElement = function (elementOrString, innerHtml) {
   var element = elementOrString;
-  if (isString(elementOrString)) {
+  if (Jymin.isString(elementOrString)) {
     elementOrString = elementOrString || '';
     var tagAndAttributes = elementOrString.split('?');
     var tagAndClass = tagAndAttributes[0].split('.');
@@ -591,7 +591,7 @@ var createElement = function (elementOrString, innerHtml) {
     var tagName = tagAndId[0];
     var id = tagAndId[1];
     var attributes = tagAndAttributes[1];
-    var cachedElement = createTag[tagName] || (createTag[tagName] = createTag(tagName));
+    var cachedElement = Jymin.createTag[tagName] || (Jymin.createTag[tagName] = Jymin.createTag(tagName));
     var element = cachedElement.cloneNode(true);
     if (id) {
       element.id = id;
@@ -602,10 +602,10 @@ var createElement = function (elementOrString, innerHtml) {
     // TODO: Do something less janky than using query string syntax (Maybe like Ltl?).
     if (attributes) {
       attributes = attributes.split('&');
-      forEach(attributes, function (attribute) {
+      Jymin.forEach(attributes, function (attribute) {
         var keyAndValue = attribute.split('=');
-        var key = unescape(keyAndValue[0]);
-        var value = unescape(keyAndValue[1]);
+        var key = Jymin.unescape(keyAndValue[0]);
+        var value = Jymin.unescape(keyAndValue[1]);
         element[key] = value;
         element.setAttribute(key, value);
       });
@@ -624,12 +624,12 @@ var createElement = function (elementOrString, innerHtml) {
  * @param  {HTMLElement|String} elementOrString  An element or a string used to create an element (default: div).
  * @return {HTMLElement}                         The element that was added.
  */
-var addElement = function (parentElement, elementOrString) {
-  if (isString(parentElement)) {
+Jymin.addElement = function (parentElement, elementOrString) {
+  if (Jymin.isString(parentElement)) {
     elementOrString = parentElement;
     parentElement = document;
   }
-  var element = createElement(elementOrString);
+  var element = Jymin.createElement(elementOrString);
   parentElement.appendChild(element);
   return element;
 };
@@ -642,20 +642,20 @@ var addElement = function (parentElement, elementOrString) {
  * @param  {HTMLElement}         beforeSibling    An optional child to insert the element before.
  * @return {HTMLElement}                          The element that was inserted.
  */
-var insertElement = function (parentElement, elementOrString, beforeSibling) {
-  if (isString(parentElement)) {
+Jymin.insertElement = function (parentElement, elementOrString, beforeSibling) {
+  if (Jymin.isString(parentElement)) {
     beforeSibling = elementOrString;
     elementOrString = parentElement;
     parentElement = document;
   }
-  var element = createElement(childElement);
+  var element = Jymin.createElement(childElement);
   if (parentElement) {
     // If the beforeSibling value is a number, get the (future) sibling at that index.
-    if (isNumber(beforeSibling)) {
-      beforeSibling = getChildren(parentElement)[beforeSibling];
+    if (Jymin.isNumber(beforeSibling)) {
+      beforeSibling = Jymin.getChildren(parentElement)[beforeSibling];
     }
     // Insert the element, optionally before an existing sibling.
-    parentElement.insertBefore(element, beforeSibling || getFirstChild(parentElement) || null);
+    parentElement.insertBefore(element, beforeSibling || Jymin.getFirstChild(parentElement) || null);
   }
   return element;
 };
@@ -667,10 +667,10 @@ var insertElement = function (parentElement, elementOrString, beforeSibling) {
  * @param  {HTMLElement|String} outerElement  An element or a string used to create an element (default: div).
  * @return {HTMLElement}                      The element that was created as a wrapper.
  */
-var wrapElement = function (innerElement, outerElement) {
-  var parentElement = getParent(innerElement);
-  outerElement = insertElement(parentElement, outerElement, innerElement);
-  insertElement(outerElement, innerElement);
+Jymin.wrapElement = function (innerElement, outerElement) {
+  var parentElement = Jymin.getParent(innerElement);
+  outerElement = Jymin.insertElement(parentElement, outerElement, innerElement);
+  Jymin.insertElement(outerElement, innerElement);
   return outerElement;
 };
 
@@ -679,10 +679,10 @@ var wrapElement = function (innerElement, outerElement) {
  *
  * @param  {HTMLElement} element  An element to remove.
  */
-var removeElement = function (element) {
+Jymin.removeElement = function (element) {
   if (element) {
     // Remove the element from its parent, provided that it has a parent.
-    var parentElement = getParent(element);
+    var parentElement = Jymin.getParent(element);
     if (parentElement) {
       parentElement.removeChild(element);
     }
@@ -694,8 +694,8 @@ var removeElement = function (element) {
  *
  * @param  {HTMLElement} element  An element whose children should all be removed.
  */
-var clearElement = function (element) {
-  setHtml(element, '');
+Jymin.clearElement = function (element) {
+  Jymin.setHtml(element, '');
 };
 
 /**
@@ -704,7 +704,7 @@ var clearElement = function (element) {
  * @param  {HTMLElement} element  An element.
  * @return {String}               The element's HTML.
  */
-var getHtml = function (element) {
+Jymin.getHtml = function (element) {
   return element.innerHTML;
 };
 
@@ -714,7 +714,7 @@ var getHtml = function (element) {
  * @param  {HTMLElement} element  An element.
  * @param  {String}      html     A string of HTML to set as the innerHTML.
  */
-var setHtml = function (element, html) {
+Jymin.setHtml = function (element, html) {
   element.innerHTML = html;
 };
 
@@ -724,7 +724,7 @@ var setHtml = function (element, html) {
  * @param  {HTMLElement} element  An element.
  * @return {String}               The element's text content.
  */
-var getText = function (element) {
+Jymin.getText = function (element) {
   return element.textContent || element.innerText;
 };
 
@@ -735,7 +735,7 @@ var getText = function (element) {
  * @param  {String}      attributeName  An attribute's name.
  * @return {String}                     The value of the attribute.
  */
-var getAttribute = function (element, attributeName) {
+Jymin.getAttribute = function (element, attributeName) {
   return element.getAttribute(attributeName);
 };
 
@@ -746,7 +746,7 @@ var getAttribute = function (element, attributeName) {
  * @param  {String}      attributeName  An attribute name.
  * @param  {String}      value          A value to set the attribute to.
  */
-var setAttribute = function (element, attributeName, value) {
+Jymin.setAttribute = function (element, attributeName, value) {
   element.setAttribute(attributeName, value);
 };
 
@@ -757,8 +757,8 @@ var setAttribute = function (element, attributeName, value) {
  * @param  {String}      dataKey  A data attribute's key.
  * @return {String}               The value of the data attribute.
  */
-var getData = function (element, dataKey) {
-  return getAttribute(element, 'data-' + dataKey);
+Jymin.getData = function (element, dataKey) {
+  return Jymin.getAttribute(element, 'data-' + dataKey);
 };
 
 /**
@@ -768,8 +768,8 @@ var getData = function (element, dataKey) {
  * @param  {String}      dataKey  A data attribute key.
  * @param  {String}      value    A value to set the data attribute to.
  */
-var setData = function (element, dataKey, value) {
-  setAttribute(element, 'data-' + dataKey, value);
+Jymin.setData = function (element, dataKey, value) {
+  Jymin.setAttribute(element, 'data-' + dataKey, value);
 };
 
 /**
@@ -778,7 +778,7 @@ var setData = function (element, dataKey, value) {
  * @param  {HTMLElement} element  An element.
  * @return {String}               The element's class name.
  */
-var getClass = function (element) {
+Jymin.getClass = function (element) {
   var className = element.className || '';
   return className.baseVal || className;
 };
@@ -789,8 +789,8 @@ var getClass = function (element) {
  * @param  {HTMLElement} element  An element.
  * @return {Array}                The element's class name classes.
  */
-var getClasses = function (element) {
-  return getClass(element).split(/\s+/);
+Jymin.getClasses = function (element) {
+  return Jymin.getClass(element).split(/\s+/);
 };
 
 /**
@@ -799,7 +799,7 @@ var getClasses = function (element) {
  * @param  {HTMLElement} element  An element.
  * @return {String}               One or more space-delimited classes to set.
  */
-var setClass = function (element, className) {
+Jymin.setClass = function (element, className) {
   element.className = className;
 };
 
@@ -810,8 +810,8 @@ var setClass = function (element, className) {
  * @param  {String}      className  A class to search for.
  * @return {boolean}                True if the class was found.
  */
-var hasClass = function (element, className) {
-  var classes = getClasses(element);
+Jymin.hasClass = function (element, className) {
+  var classes = Jymin.getClasses(element);
   return classes.indexOf(className) > -1;
 };
 
@@ -821,8 +821,8 @@ var hasClass = function (element, className) {
  * @param  {HTMLElement} element  An element.
  * @param  {String}               A class to add if it's not already there.
  */
-var addClass = function (element, className) {
-  if (!hasClass(element, className)) {
+Jymin.addClass = function (element, className) {
+  if (!Jymin.hasClass(element, className)) {
     element.className += ' ' + className;
   }
 };
@@ -833,14 +833,14 @@ var addClass = function (element, className) {
  * @param  {HTMLElement} element  An element.
  * @return {String}               A class to remove.
  */
-var removeClass = function (element, className) {
-  var classes = getClasses(element);
+Jymin.removeClass = function (element, className) {
+  var classes = Jymin.getClasses(element);
   var index = classes.indexOf(className);
   if (index > -1) {
     classes.splice(index, 1);
   }
   classes.join(' ');
-  setClass(element, classes);
+  Jymin.setClass(element, classes);
 };
 
 /**
@@ -850,8 +850,8 @@ var removeClass = function (element, className) {
  * @param  {String}      className  A class to add or remove.
  * @param  {boolean}     flipOn     Whether to add, rather than removing.
  */
-var flipClass = function (element, className, flipOn) {
-  var method = flipOn ? addClass : removeClass;
+Jymin.flipClass = function (element, className, flipOn) {
+  var method = flipOn ? Jymin.addClass : Jymin.removeClass;
   method(element, className);
 };
 
@@ -862,9 +862,9 @@ var flipClass = function (element, className, flipOn) {
  * @param  {String}      className  A class to toggle.
  * @return {boolean}                True if the class was turned on.
  */
-var toggleClass = function (element, className) {
-  var flipOn = !hasClass(element, className);
-  flipClass(element, className, flipOn);
+Jymin.toggleClass = function (element, className) {
+  var flipOn = !Jymin.hasClass(element, className);
+  Jymin.flipClass(element, className, flipOn);
   return flipOn;
 };
 
@@ -876,13 +876,13 @@ var toggleClass = function (element, className) {
  * @param  {String}      src      A source URL of a script to insert.
  * @param  {function}    fn       An optional function to run when the script loads.
  */
-var insertScript = function (src, fn) {
-  var head = getElementsByTagName('head')[0];
-  var script = addElement(head, 'script');
+Jymin.insertScript = function (src, fn) {
+  var head = Jymin.getElementsByTagName('head')[0];
+  var script = Jymin.addElement(head, 'script');
   if (fn) {
     script.onload = fn;
     script.onreadystatechange = function() {
-      if (isLoaded(script)) {
+      if (Jymin.isLoaded(script)) {
         fn();
       }
     };
@@ -900,52 +900,52 @@ var insertScript = function (src, fn) {
  * @param  {String}      selector       A simple selector for finding elements.
  * @return {function}    fn             An optional function to run on matching elements.
  */
-var all = function (parentElement, selector, fn) {
-  if (!selector || isFunction(selector)) {
+Jymin.all = function (parentElement, selector, fn) {
+  if (!selector || Jymin.isFunction(selector)) {
     fn = selector;
     selector = parentElement;
     parentElement = document;
   }
   var elements;
-  if (contains(selector, ',')) {
+  if (Jymin.contains(selector, ',')) {
     elements = [];
-    var selectors = splitByCommas(selector);
-    forEach(selectors, function (piece) {
-      var more = all(parentElement, piece);
-      if (getLength(more)) {
-        merge(elements, more);
+    var selectors = Jymin.splitByCommas(selector);
+    Jymin.forEach(selectors, function (piece) {
+      var more = Jymin.all(parentElement, piece);
+      if (Jymin.getLength(more)) {
+        Jymin.merge(elements, more);
       }
     });
   }
-  else if (contains(selector, ' ')) {
+  else if (Jymin.contains(selector, ' ')) {
     var pos = selector.indexOf(' ');
     var preSelector = selector.substr(0, pos);
     var postSelector = selector.substr(pos + 1);
     elements = [];
-    all(parentElement, preSelector, function (element) {
-      var children = all(element, postSelector);
-      merge(elements, children);
+    Jymin.all(parentElement, preSelector, function (element) {
+      var children = Jymin.all(element, postSelector);
+      Jymin.merge(elements, children);
     });
   }
   else if (selector[0] == '#') {
     var id = selector.substr(1);
-    var child = getElement(parentElement.ownerDocument || document, id);
+    var child = Jymin.getElement(parentElement.ownerDocument || document, id);
     if (child) {
-      var parent = getParent(child);
+      var parent = Jymin.getParent(child);
       while (parent) {
         if (parent === parentElement) {
           elements = [child];
           break;
         }
-        parent = getParent(parent);
+        parent = Jymin.getParent(parent);
       }
     }
   }
   else {
-    elements = getElementsByTagAndClass(parentElement, selector);
+    elements = Jymin.getElementsByTagAndClass(parentElement, selector);
   }
   if (fn) {
-    forEach(elements, fn);
+    Jymin.forEach(elements, fn);
   }
   return elements || [];
 };
@@ -957,22 +957,22 @@ var all = function (parentElement, selector, fn) {
  * @param  {String}      selector       A simple selector for finding an element.
  * @return {function}    fn             An optional function to run on a matching element.
  */
-var one = function (parentElement, selector, fn) {
-  return all(parentElement, selector, fn)[0];
+Jymin.one = function (parentElement, selector, fn) {
+  return Jymin.all(parentElement, selector, fn)[0];
 };
 /**
  * An Emitter is an EventEmitter-style object.
  */
-var Emitter = function () {
+Jymin.Emitter = function () {
   // Lazily apply the prototype so that Emitter can minify out if not used.
   // TODO: Find out if this is still necessary with UglifyJS.
-  Emitter.prototype = EmitterPrototype;
+  Jymin.Emitter.prototype = Jymin.EmitterPrototype;
 };
 
 /**
  * Expose Emitter methods which can be applied lazily.
  */
-var EmitterPrototype = {
+Jymin.EmitterPrototype = {
 
   _on: function (event, fn) {
     var self = this;
@@ -996,7 +996,7 @@ var EmitterPrototype = {
     var self = this;
     var listeners = self._listeners(event);
     var args = Array.prototype.slice.call(arguments, 1);
-    forEach(listeners, function (listener) {
+    Jymin.forEach(listeners, function (listener) {
       listener.apply(self, args);
     });
     return self;
@@ -1034,34 +1034,34 @@ var EmitterPrototype = {
   }
 
 };
-var CLICK = 'click';
-var MOUSEDOWN = 'mousedown';
-var MOUSEUP = 'mouseup';
-var KEYDOWN = 'keydown';
-var KEYUP = 'keyup';
-var KEYPRESS = 'keypress';
+Jymin.CLICK = 'click';
+Jymin.MOUSEDOWN = 'mousedown';
+Jymin.MOUSEUP = 'mouseup';
+Jymin.KEYDOWN = 'keydown';
+Jymin.KEYUP = 'keyup';
+Jymin.KEYPRESS = 'keypress';
 
 /**
  * Bind a handler to listen for a particular event on an element.
  */
-var bind = function (
+Jymin.bind = function (
   element,            // DOMElement|string: Element or ID of element to bind to.
   eventName,          // string|Array:      Name of event (e.g. "click", "mouseover", "keyup").
   eventHandler,       // function:          Function to run when the event is triggered. `eventHandler(element, event, target, customData)`
   customData          // object|:           Custom data to pass through to the event handler when it's triggered.
 ) {
   // Allow multiple events to be bound at once using a space-delimited string.
-  var isEventArray = isArray(eventNames);
-  if (isEventArray || contains(eventName, ' ')) {
-    var eventNames = isEventArray ? eventName : splitBySpaces(eventName);
-    forEach(eventNames, function (singleEventName) {
-      bind(element, singleEventName, eventHandler, customData);
+  var isEventArray = Jymin.isArray(eventNames);
+  if (isEventArray || Jymin.contains(eventName, ' ')) {
+    var eventNames = isEventArray ? eventName : Jymin.splitBySpaces(eventName);
+    Jymin.forEach(eventNames, function (singleEventName) {
+      Jymin.bind(element, singleEventName, eventHandler, customData);
     });
     return;
   }
 
   // Ensure that we have an element, not just an ID.
-  element = getElement(element);
+  element = Jymin.getElement(element);
   if (element) {
 
     // Invoke the event handler with the event information and the target element.
@@ -1072,11 +1072,11 @@ var bind = function (
       var target = event.target || event.srcElement;
       // Defeat Safari text node bug.
       if (target.nodeType == 3) {
-        target = getParent(target);
+        target = Jymin.getParent(target);
       }
       var relatedTarget = event.relatedTarget || event.toElement;
       if (eventName == 'mouseout') {
-        while (relatedTarget = getParent(relatedTarget)) { // jshint ignore:line
+        while (relatedTarget = Jymin.getParent(relatedTarget)) { // jshint ignore:line
           if (relatedTarget == target) {
             return;
           }
@@ -1084,7 +1084,7 @@ var bind = function (
       }
       var result = eventHandler(element, event, target, customData);
       if (result === false) {
-        preventDefault(event);
+        Jymin.preventDefault(event);
       }
     };
 
@@ -1093,36 +1093,36 @@ var bind = function (
       element.addEventListener(eventName, callback, true);
     }
     else if (element.attachEvent) {
-      element.attachEvent('on' + eventName, callback);
+      element.attachEvent('Jymin.on' + eventName, callback);
     }
     else {
-      element['on' + eventName] = callback;
+      element['Jymin.on' + eventName] = callback;
     }
 
     var handlers = (element._handlers = element._handlers || {});
     var queue = (handlers[eventName] = handlers[eventName] || []);
-    push(queue, eventHandler);
+    Jymin.push(queue, eventHandler);
   }
 };
 
 /**
  * Bind an event handler on an element that delegates to specified child elements.
  */
-var on = function (
+Jymin.on = function (
   element,
   selector, // Supports "tag.class,tag.class" but does not support nesting.
   eventName,
   eventHandler,
   customData
 ) {
-  if (isFunction(selector)) {
+  if (Jymin.isFunction(selector)) {
     customData = eventName;
     eventHandler = selector;
     eventName = element;
     selector = '';
     element = document;
   }
-  else if (isFunction(eventName)) {
+  else if (Jymin.isFunction(eventName)) {
     customData = eventHandler;
     eventHandler = eventName;
     eventName = selector;
@@ -1131,7 +1131,7 @@ var on = function (
   }
   var parts = selector.split(',');
   onHandler = function(element, event, target, customData) {
-    forEach(parts, function (part) {
+    Jymin.forEach(parts, function (part) {
       var found = false;
       if ('#' + target.id == part) {
         found = true;
@@ -1141,7 +1141,7 @@ var on = function (
         var tagName = tagAndClass[0].toUpperCase();
         var className = tagAndClass[1];
         if (!tagName || (target.tagName == tagName)) {
-          if (!className || hasClass(target, className)) {
+          if (!className || Jymin.hasClass(target, className)) {
             found = true;
           }
         }
@@ -1149,29 +1149,29 @@ var on = function (
       if (found) {
         var result = eventHandler(target, event, element, customData);
         if (result === false) {
-          preventDefault(event);
+          Jymin.preventDefault(event);
         }
       }
     });
     // Bubble up to find a selector match because we didn't find one this time.
-    target = getParent(target);
+    target = Jymin.getParent(target);
     if (target) {
       onHandler(element, event, target, customData);
     }
   };
-  bind(element, eventName, onHandler, customData);
+  Jymin.bind(element, eventName, onHandler, customData);
 };
 
 /**
  * Trigger an element event.
  */
-var trigger = function (
+Jymin.trigger = function (
   element,   // object:        Element to trigger an event on.
   event,     // object|String: Event to trigger.
   target,    // object|:       Fake target.
   customData // object|:       Custom data to pass to handlers.
 ) {
-  if (isString(event)) {
+  if (Jymin.isString(event)) {
     event = {type: event};
   }
   if (!target) {
@@ -1183,14 +1183,14 @@ var trigger = function (
   var handlers = element._handlers;
   if (handlers) {
     var queue = handlers[event.type];
-    forEach(queue, function (handler) {
+    Jymin.forEach(queue, function (handler) {
       handler(element, event, target, customData);
     });
   }
   if (!event.cancelBubble) {
-    element = getParent(element);
+    element = Jymin.getParent(element);
     if (element) {
-      trigger(element, event, target, customData);
+      Jymin.trigger(element, event, target, customData);
     }
   }
 };
@@ -1198,7 +1198,7 @@ var trigger = function (
 /**
  * Stop event bubbling.
  */
-var stopPropagation = function (
+Jymin.stopPropagation = function (
   event // object: Event to be canceled.
 ) {
   if (event) {
@@ -1209,7 +1209,7 @@ var stopPropagation = function (
   }
   //+env:debug
   else {
-    error('[Jymin] Called stopPropagation on a non-event.', event);
+    Jymin.error('[Jymin] Called Jymin.stopPropagation on a non-event.', event);
   }
   //-env:debug
 };
@@ -1218,7 +1218,7 @@ var stopPropagation = function (
  * Prevent the default action for this event.
  * @param  {Object} event  Event to prevent from doing its default action.
  */
-var preventDefault = function (event) {
+Jymin.preventDefault = function (event) {
   if (event) {
     if (event.preventDefault) {
       event.preventDefault();
@@ -1226,7 +1226,7 @@ var preventDefault = function (event) {
   }
   //+env:debug
   else {
-    error('[Jymin] Called preventDefault on a non-event.', event);
+    Jymin.error('[Jymin] Called Jymin.preventDefault on a non-event.', event);
   }
   //-env:debug
 };
@@ -1234,50 +1234,50 @@ var preventDefault = function (event) {
 /**
  * Bind an event handler for both the focus and blur events.
  */
-var bindFocusChange = function (element, eventHandler, customData) {
-  bind(element, 'focus', eventHandler, true, customData);
-  bind(element, 'blur', eventHandler, false, customData);
+Jymin.bindFocusChange = function (element, eventHandler, customData) {
+  Jymin.bind(element, 'focus', eventHandler, true, customData);
+  Jymin.bind(element, 'blur', eventHandler, false, customData);
 };
 
 /**
  * Bind an event handler for both the mouseenter and mouseleave events.
  */
-var bindHover = function (element, eventHandler, customData) {
-  var ieVersion = getBrowserVersionOrZero('msie');
+Jymin.bindHover = function (element, eventHandler, customData) {
+  var ieVersion = Jymin.getBrowserVersionOrZero('msie');
   var HOVER_OVER = 'mouse' + (ieVersion ? 'enter' : 'over');
   var HOVER_OUT = 'mouse' + (ieVersion ? 'leave' : 'out');
-  bind(element, HOVER_OVER, eventHandler, true, customData);
-  bind(element, HOVER_OUT, eventHandler, false, customData);
+  Jymin.bind(element, HOVER_OVER, eventHandler, true, customData);
+  Jymin.bind(element, HOVER_OUT, eventHandler, false, customData);
 };
 
 /**
  * Bind an event handler for both the mouseenter and mouseleave events.
  */
-var onHover = function (element, tagAndClass, eventHandler, customData) {
-  on(element, tagAndClass, 'mouseover', eventHandler, true, customData);
-  on(element, tagAndClass, 'mouseout', eventHandler, false, customData);
+Jymin.onHover = function (element, tagAndClass, eventHandler, customData) {
+  Jymin.on(element, tagAndClass, 'mouseover', eventHandler, true, customData);
+  Jymin.on(element, tagAndClass, 'mouseout', eventHandler, false, customData);
 };
 
 /**
  * Bind an event handler for both the mouseenter and mouseleave events.
  */
-var bindClick = function (element, eventHandler, customData) {
-  bind(element, 'click', eventHandler, customData);
+Jymin.bindClick = function (element, eventHandler, customData) {
+  Jymin.bind(element, 'click', eventHandler, customData);
 };
 
 /**
  * Bind a callback to be run after window onload.
  */
-var bindWindowLoad = function (callback, windowObject) {
+Jymin.bindWindowLoad = function (callback, windowObject) {
   // Default to the run after the window we're in.
   windowObject = windowObject || window;
   // If the window is already loaded, run the callback now.
-  if (isLoaded(windowObject.document)) {
+  if (Jymin.isLoaded(windowObject.document)) {
     callback();
   }
   // Otherwise, defer the callback.
   else {
-    bind(windowObject, 'load', callback);
+    Jymin.bind(windowObject, 'load', callback);
   }
 };
 
@@ -1285,7 +1285,7 @@ var bindWindowLoad = function (callback, windowObject) {
  * Return true if the object is loaded (signaled by its readyState being "loaded" or "complete").
  * This can be useful for the documents, iframes and scripts.
  */
-var isLoaded = function (object) {
+Jymin.isLoaded = function (object) {
   var state = object.readyState;
   // In all browsers, documents will reach readyState=="complete".
   // In IE, scripts can reach readyState=="loaded" or readyState=="complete".
@@ -1296,22 +1296,22 @@ var isLoaded = function (object) {
 /**
  * Focus on a specified element.
  */
-var focusElement = function (element, delay) {
+Jymin.focusElement = function (element, delay) {
   var focus = function () {
-    element = getElement(element);
+    element = Jymin.getElement(element);
     if (element) {
       var focusMethod = element.focus;
-      if (isFunction(focusMethod)) {
+      if (Jymin.isFunction(focusMethod)) {
         focusMethod.call(element);
       }
       else {
         //+env:debug
-        error('[Jymin] Element does not exist, or has no focus method', element);
+        Jymin.error('[Jymin] Element does not exist, or has no focus method', element);
         //-env:debug
       }
     }
   };
-  if (isUndefined(delay)) {
+  if (Jymin.isUndefined(delay)) {
     focus();
   }
   else {
@@ -1322,7 +1322,7 @@ var focusElement = function (element, delay) {
 /**
  * Stop events from triggering a handler more than once in rapid succession.
  */
-var doOnce = function (method, args, delay) {
+Jymin.doOnce = function (method, args, delay) {
   clearTimeout(method.t);
   method.t = setTimeout(function () {
     clearTimeout(method.t);
@@ -1333,13 +1333,13 @@ var doOnce = function (method, args, delay) {
 /**
  * Set or reset a timeout, and save it for possible cancellation.
  */
-var addTimeout = function (elementOrString, callback, delay) {
-  var usingString = isString(elementOrString);
-  var object = usingString ? addTimeout : elementOrString;
+Jymin.addTimeout = function (elementOrString, callback, delay) {
+  var usingString = Jymin.isString(elementOrString);
+  var object = usingString ? Jymin.addTimeout : elementOrString;
   var key = usingString ? elementOrString : '_timeout';
   clearTimeout(object[key]);
   if (callback) {
-    if (isUndefined(delay)) {
+    if (Jymin.isUndefined(delay)) {
       delay = 9;
     }
     object[key] = setTimeout(callback, delay);
@@ -1347,27 +1347,27 @@ var addTimeout = function (elementOrString, callback, delay) {
 };
 
 /**
- * Remove a timeout from an element or from the addTimeout method.
+ * Remove a timeout from an element or from the Jymin.addTimeout method.
  */
-var removeTimeout = function (elementOrString) {
-  addTimeout(elementOrString, false);
+Jymin.removeTimeout = function (elementOrString) {
+  Jymin.addTimeout(elementOrString, false);
 };
 /**
  * Get the type of a form element.
  */
-var getType = function (input) {
-  return ensureString(input.type)[0];
+Jymin.getType = function (input) {
+  return Jymin.ensureString(input.type)[0];
 };
 
 /**
  * Get the value of a form element.
  */
-var getValue = function (
+Jymin.getValue = function (
   input
 ) {
-  input = getElement(input);
+  input = Jymin.getElement(input);
   if (input) {
-    var type = getType(input);
+    var type = Jymin.getType(input);
     var value = input.value;
     var checked = input.checked;
     var options = input.options;
@@ -1376,14 +1376,14 @@ var getValue = function (
     }
     else if (input.multiple) {
       value = [];
-      forEach(options, function (option) {
+      Jymin.forEach(options, function (option) {
         if (option.selected) {
-          push(value, option.value);
+          Jymin.push(value, option.value);
         }
       });
     }
     else if (options) {
-      value = getValue(options[input.selectedIndex]);
+      value = Jymin.getValue(options[input.selectedIndex]);
     }
     return value;
   }
@@ -1392,13 +1392,13 @@ var getValue = function (
 /**
  * Set the value of a form element.
  */
-var setValue = function (
+Jymin.setValue = function (
   input,
   value
 ) {
-  input = getElement(input);
+  input = Jymin.getElement(input);
   if (input) {
-    var type = getType(input);
+    var type = Jymin.getType(input);
     var options = input.options;
     if (type == 'c' || type == 'r') {
       input.checked = value ? true : false;
@@ -1406,18 +1406,18 @@ var setValue = function (
     else if (options) {
       var selected = {};
       if (input.multiple) {
-        if (!isArray(value)) {
-          value = splitByCommas(value);
+        if (!Jymin.isArray(value)) {
+          value = Jymin.splitByCommas(value);
         }
-        forEach(value, function (val) {
+        Jymin.forEach(value, function (val) {
           selected[val] = true;
         });
       }
       else {
         selected[value] = true;
       }
-      value = isArray(value) ? value : [value];
-      forEach(options, function (option) {
+      value = Jymin.isArray(value) ? value : [value];
+      Jymin.forEach(options, function (option) {
         option.selected = !!selected[option.value];
       });
     }
@@ -1429,9 +1429,9 @@ var setValue = function (
 /**
  * Return a history object.
  */
-var getHistory = function () {
+Jymin.getHistory = function () {
   var history = window.history || {};
-  forEach(['push', 'replace'], function (key) {
+  Jymin.forEach(['Jymin.push', 'replace'], function (key) {
     var fn = history[key + 'State'];
     history[key] = function (href) {
       if (fn) {
@@ -1447,58 +1447,58 @@ var getHistory = function () {
 /**
  * Push an item into the history.
  */
-var historyPush = function (href) {
-  getHistory().push(href);
+Jymin.historyPush = function (href) {
+  Jymin.getHistory().push(href);
 };
 
 /**
  * Replace the current item in the history.
  */
-var historyReplace = function (href) {
-  getHistory().replace(href);
+Jymin.historyReplace = function (href) {
+  Jymin.getHistory().replace(href);
 };
 
 /**
  * Go back.
  */
-var historyPop = function (href) {
-  getHistory().back();
+Jymin.historyPop = function (href) {
+  Jymin.getHistory().back();
 };
 
 /**
  * Listen for a history change.
  */
-var onHistoryPop = function (callback) {
-  bind(window, 'popstate', callback);
+Jymin.onHistoryPop = function (callback) {
+  Jymin.bind(window, 'Jymin.popstate', callback);
 };
 // JavaScript reserved words.
-var reservedWordPattern = /^(break|case|catch|continue|debugger|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|this|throw|try|typeof|var|void|while|with)$/;
+Jymin.reservedWordPattern = /^(break|case|catch|continue|debugger|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|this|throw|try|typeof|var|void|while|with)$/;
 
 /**
  * Create JSON that doesn't necessarily have to be strict.
  */
-var stringify = function (data, strict, stack) {
-  if (isString(data)) {
+Jymin.stringify = function (data, strict, stack) {
+  if (Jymin.isString(data)) {
     data = '"' + data.replace(/\n\r"/g, function (c) {
       return c == '\n' ? '\\n' : c == '\r' ? '\\r' : '\\"';
     }) + '"';
   }
-  else if (isFunction(data)) {
+  else if (Jymin.isFunction(data)) {
     data = data.toString();
     if (strict) {
-      data = stringify(data);
+      data = Jymin.stringify(data);
     }
   }
-  else if (isDate(data)) {
-    data = 'new Date(' + getTime(data) + ')';
+  else if (Jymin.isDate(data)) {
+    data = 'new Date(' + Jymin.getTime(data) + ')';
     if (strict) {
-      data = stringify(data);
+      data = Jymin.stringify(data);
     }
   }
-  else if (data && isObject(data)) {
+  else if (data && Jymin.isObject(data)) {
     stack = stack || [];
     var isCircular = false;
-    forEach(stack, function (item, index) {
+    Jymin.forEach(stack, function (item, index) {
       if (item == data) {
         isCircular = true;
       }
@@ -1506,27 +1506,27 @@ var stringify = function (data, strict, stack) {
     if (isCircular) {
       return null;
     }
-    push(stack, data);
+    Jymin.push(stack, data);
     var parts = [];
     var before, after;
-    if (isArray(data)) {
+    if (Jymin.isArray(data)) {
       before = '[';
       after = ']';
-      forEach(data, function (value) {
-        push(parts, stringify(value, strict, stack));
+      Jymin.forEach(data, function (value) {
+        Jymin.push(parts, Jymin.stringify(value, strict, stack));
       });
     }
     else {
       before = '{';
       after = '}';
-      forIn(data, function (key, value) {
-        if (strict || reservedWordPattern.test(key) || /(^\d|[^\w$])/.test(key)) {
+      Jymin.forIn(data, function (key, value) {
+        if (strict || Jymin.reservedWordPattern.test(key) || /(^\d|[^\w$])/.test(key)) {
           key = '"' + key + '"';
         }
-        push(parts, key + ':' + stringify(value, strict, stack));
+        Jymin.push(parts, key + ':' + Jymin.stringify(value, strict, stack));
       });
     }
-    pop(stack);
+    Jymin.pop(stack);
     data = before + parts.join(',') + after;
   }
   else {
@@ -1538,7 +1538,7 @@ var stringify = function (data, strict, stack) {
 /**
  * Parse JavaScript and return a value.
  */
-var parse = function (value) {
+Jymin.parse = function (value) {
   try {
     var evil = window.eval; // jshint ignore:line
     evil('eval.J=' + value);
@@ -1546,7 +1546,7 @@ var parse = function (value) {
   }
   catch (e) {
     //+env:debug
-    error('[Jymin] Could not parse JS: ' + value);
+    Jymin.error('[Jymin] Could not parse JS: ' + value);
     //-env:debug
   }
 };
@@ -1554,88 +1554,88 @@ var parse = function (value) {
 /**
  * Execute JavaScript.
  */
-var execute = function (text) {
-  parse('0;' + text);
+Jymin.execute = function (text) {
+  Jymin.parse('0;' + text);
 };
 
 /**
  * Parse a value and return a boolean no matter what.
  */
-var parseBoolean = function (value, alternative) {
-  value = parse(value);
-  return isBoolean(value) ? value : (alternative || false);
+Jymin.parseBoolean = function (value, alternative) {
+  value = Jymin.parse(value);
+  return Jymin.isBoolean(value) ? value : (alternative || false);
 };
 
 /**
  * Parse a value and return a number no matter what.
  */
-var parseNumber = function (value, alternative) {
-  value = parse(value);
-  return isNumber(value) ? value : (alternative || 0);
+Jymin.parseNumber = function (value, alternative) {
+  value = Jymin.parse(value);
+  return Jymin.isNumber(value) ? value : (alternative || 0);
 };
 
 /**
  * Parse a value and return a string no matter what.
  */
-var parseString = function (value, alternative) {
-  value = parse(value);
-  return isString(value) ? value : (alternative || '');
+Jymin.parseString = function (value, alternative) {
+  value = Jymin.parse(value);
+  return Jymin.isString(value) ? value : (alternative || '');
 };
 
 /**
  * Parse a value and return an object no matter what.
  */
-var parseObject = function (value, alternative) {
-  value = parse(value);
-  return isObject(value) ? value : (alternative || {});
+Jymin.parseObject = function (value, alternative) {
+  value = Jymin.parse(value);
+  return Jymin.isObject(value) ? value : (alternative || {});
 };
 
 /**
  * Parse a value and return a number no matter what.
  */
-var parseArray = function (value, alternative) {
-  value = parse(value);
-  return isObject(value) ? value : (alternative || []);
+Jymin.parseArray = function (value, alternative) {
+  value = Jymin.parse(value);
+  return Jymin.isObject(value) ? value : (alternative || []);
 };
 /**
  * Log values to the console, if it's available.
  */
-var error = function () {
-  ifConsole('error', arguments);
-};
-
-/**
- * Log values to the console, if it's available.
- */
-var warn = function () {
-  ifConsole('warn', arguments);
+Jymin.error = function () {
+  Jymin.ifConsole('Jymin.error', arguments);
 };
 
 /**
  * Log values to the console, if it's available.
  */
-var info = function () {
-  ifConsole('info', arguments);
+Jymin.warn = function () {
+  Jymin.ifConsole('Jymin.warn', arguments);
 };
 
 /**
  * Log values to the console, if it's available.
  */
-var log = function () {
-  ifConsole('log', arguments);
+Jymin.info = function () {
+  Jymin.ifConsole('Jymin.info', arguments);
 };
 
 /**
  * Log values to the console, if it's available.
  */
-var trace = function () {
-  ifConsole('trace', arguments);
+Jymin.log = function () {
+  Jymin.ifConsole('Jymin.log', arguments);
 };
 
 /**
  * Log values to the console, if it's available.
  */
-var ifConsole = function (method, args) {
+Jymin.trace = function () {
+  Jymin.ifConsole('Jymin.trace', arguments);
+};
+
+/**
+ * Log values to the console, if it's available.
+ */
+Jymin.ifConsole = function (method, args) {
   var console = window.console;
   if (console && console[method]) {
     console[method].apply(console, args);
@@ -1645,7 +1645,7 @@ var ifConsole = function (method, args) {
  * If the argument is numeric, return a number, otherwise return zero.
  * @param Object n
  */
-var ensureNumber = function (
+Jymin.ensureNumber = function (
   number,
   defaultNumber
 ) {
@@ -1657,11 +1657,11 @@ var ensureNumber = function (
 /**
  * Left-pad a number with zeros if it's shorter than the desired length.
  */
-var zeroFill = function (
+Jymin.zeroFill = function (
   number,
   length
 ) {
-  number = ensureString(number);
+  number = Jymin.ensureString(number);
   // Repurpose the lenth variable to count how much padding we need.
   length = Math.max(length - number.length, 0);
   return (new Array(length + 1)).join('0') + number;
@@ -1669,7 +1669,7 @@ var zeroFill = function (
 /**
  * Iterate over an object's keys, and call a function on each key value pair.
  */
-var forIn = function (object, callback) {
+Jymin.forIn = function (object, callback) {
   if (object) {
     for (var key in object) {
       var result = callback(key, object[key], object);
@@ -1683,7 +1683,7 @@ var forIn = function (object, callback) {
 /**
  * Iterate over an object's keys, and call a function on each (value, key) pair.
  */
-var forOf = function (object, callback) {
+Jymin.forOf = function (object, callback) {
   if (object) {
     for (var key in object) {
       var result = callback(object[key], key, object);
@@ -1697,9 +1697,9 @@ var forOf = function (object, callback) {
 /**
  * Decorate an object with properties from another object.
  */
-var decorateObject = function (object, decorations) {
+Jymin.decorateObject = function (object, decorations) {
   if (object && decorations) {
-    forIn(decorations, function (key, value) {
+    Jymin.forIn(decorations, function (key, value) {
       object[key] = value;
     });
   }
@@ -1709,7 +1709,7 @@ var decorateObject = function (object, decorations) {
 /**
  * Ensure that a property exists by creating it if it doesn't.
  */
-var ensureProperty = function (object, property, defaultValue) {
+Jymin.ensureProperty = function (object, property, defaultValue) {
   var value = object[property];
   if (!value) {
     value = object[property] = defaultValue;
@@ -1721,7 +1721,7 @@ var ensureProperty = function (object, property, defaultValue) {
  *
  * @return {Object}  The local storage object.
  */
-var getStorage = function () {
+Jymin.getStorage = function () {
   return window.localStorage;
 };
 
@@ -1731,9 +1731,9 @@ var getStorage = function () {
  * @param  {string} key  A key to fetch an object by
  * @return {Object}      The object that was fetched and deserialized
  */
-var fetch = function (key) {
-  var storage = getStorage();
-  return storage ? parse(storage.getItem(key)) : 0;
+Jymin.fetch = function (key) {
+  var storage = Jymin.getStorage();
+  return storage ? Jymin.parse(storage.getItem(key)) : 0;
 };
 
 /**
@@ -1742,86 +1742,86 @@ var fetch = function (key) {
  * @param  {string} key    A key to store and fetch an object by
  * @param  {Object} value  A value to be stringified and stored
  */
-var store = function (key, value) {
-  var storage = getStorage();
+Jymin.store = function (key, value) {
+  var storage = Jymin.getStorage();
   if (storage) {
-    storage.setItem(key, stringify(value));
+    storage.setItem(key, Jymin.stringify(value));
   }
 };
 /**
  * Ensure a value is a string.
  */
-var ensureString = function (
+Jymin.ensureString = function (
   value
 ) {
-  return isString(value) ? value : '' + value;
+  return Jymin.isString(value) ? value : '' + value;
 };
 
 /**
  * Return true if the string contains the given substring.
  */
-var contains = function (
+Jymin.contains = function (
   string,
   substring
 ) {
-  return ensureString(string).indexOf(substring) > -1;
+  return Jymin.ensureString(string).indexOf(substring) > -1;
 };
 
 /**
  * Return true if the string starts with the given substring.
  */
-var startsWith = function (
+Jymin.startsWith = function (
   string,
   substring
 ) {
-  return ensureString(string).indexOf(substring) == 0; // jshint ignore:line
+  return Jymin.ensureString(string).indexOf(substring) == 0; // jshint ignore:line
 };
 
 /**
  * Trim the whitespace from a string.
  */
-var trim = function (
+Jymin.trim = function (
   string
 ) {
-  return ensureString(string).replace(/^\s+|\s+$/g, '');
+  return Jymin.ensureString(string).replace(/^\s+|\s+$/g, '');
 };
 
 /**
  * Split a string by commas.
  */
-var splitByCommas = function (
+Jymin.splitByCommas = function (
   string
 ) {
-  return ensureString(string).split(',');
+  return Jymin.ensureString(string).split(',');
 };
 
 /**
  * Split a string by spaces.
  */
-var splitBySpaces = function (
+Jymin.splitBySpaces = function (
   string
 ) {
-  return ensureString(string).split(' ');
+  return Jymin.ensureString(string).split(' ');
 };
 
 /**
  * Return a string, with asterisks replaced by values from a replacements array.
  */
-var decorateString = function (
+Jymin.decorateString = function (
   string,
   replacements
 ) {
-  string = ensureString(string);
-  forEach(replacements, function(replacement) {
+  string = Jymin.ensureString(string);
+  Jymin.forEach(replacements, function(replacement) {
     string = string.replace('*', replacement);
   });
   return string;
 };
 
 /**
- * Perform a RegExp match, and call a callback on the result;
+ * Perform a RegExp Jymin.match, and call a callback on the result;
   */
-var match = function (
+Jymin.match = function (
   string,
   pattern,
   callback
@@ -1835,62 +1835,62 @@ var match = function (
 /**
  * Reduce a string to its alphabetic characters.
  */
-var extractLetters = function (
+Jymin.extractLetters = function (
   string
 ) {
-  return ensureString(string).replace(/[^a-z]/ig, '');
+  return Jymin.ensureString(string).replace(/[^a-z]/ig, '');
 };
 
 /**
  * Reduce a string to its numeric characters.
  */
-var extractNumbers = function (
+Jymin.extractNumbers = function (
   string
 ) {
-  return ensureString(string).replace(/[^0-9]/g, '');
+  return Jymin.ensureString(string).replace(/[^0-9]/g, '');
 };
 
 /**
  * Returns a lowercase string.
  */
-var lower = function (
+Jymin.lower = function (
   object
 ) {
-  return ensureString(object).toLowerCase();
+  return Jymin.ensureString(object).toLowerCase();
 };
 
 /**
  * Returns an uppercase string.
  */
-var upper = function (
+Jymin.upper = function (
   object
 ) {
-  return ensureString(object).toUpperCase();
+  return Jymin.ensureString(object).toUpperCase();
 };
 
 /**
  * Return an escaped value for URLs.
  */
-var escape = function (value) {
+Jymin.escape = function (value) {
   return encodeURIComponent(value);
 };
 
 /**
  * Return an unescaped value from an escaped URL.
  */
-var unescape = function (value) {
+Jymin.unescape = function (value) {
   return decodeURIComponent(value);
 };
 
 /**
  * Returns a query string generated by serializing an object and joined using a delimiter (defaults to '&')
  */
-var buildQueryString = function (
+Jymin.buildQueryString = function (
   object
 ) {
   var queryParams = [];
-  forIn(object, function(key, value) {
-    queryParams.push(escape(key) + '=' + escape(value));
+  Jymin.forIn(object, function(key, value) {
+    queryParams.push(Jymin.escape(key) + '=' + Jymin.escape(value));
   });
   return queryParams.join('&');
 };
@@ -1898,16 +1898,16 @@ var buildQueryString = function (
 /**
  * Return the browser version if the browser name matches or zero if it doesn't.
  */
-var getBrowserVersionOrZero = function (
+Jymin.getBrowserVersionOrZero = function (
   browserName
 ) {
   match = new RegExp(browserName + '[ /](\\d+(\\.\\d+)?)', 'i').exec(navigator.userAgent);
-  return match ? +match[1] : 0;
+  return match ? +Jymin.match[1] : 0;
 };
 /**
  * Return true if a variable is a given type.
  */
-var isType = function (
+Jymin.isType = function (
   value, // mixed:  The variable to check.
   type   // string: The type we're checking for.
 ) {
@@ -1917,61 +1917,61 @@ var isType = function (
 /**
  * Return true if a variable is undefined.
  */
-var isUndefined = function (
+Jymin.isUndefined = function (
   value // mixed:  The variable to check.
 ) {
-  return isType(value, 'undefined');
+  return Jymin.isType(value, 'undefined');
 };
 
 /**
  * Return true if a variable is boolean.
  */
-var isBoolean = function (
+Jymin.isBoolean = function (
   value // mixed:  The variable to check.
 ) {
-  return isType(value, 'boolean');
+  return Jymin.isType(value, 'boolean');
 };
 
 /**
  * Return true if a variable is a number.
  */
-var isNumber = function (
+Jymin.isNumber = function (
   value // mixed:  The variable to check.
 ) {
-  return isType(value, 'number');
+  return Jymin.isType(value, 'number');
 };
 
 /**
  * Return true if a variable is a string.
  */
-var isString = function (
+Jymin.isString = function (
   value // mixed:  The variable to check.
 ) {
-  return isType(value, 'string');
+  return Jymin.isType(value, 'string');
 };
 
 /**
  * Return true if a variable is a function.
  */
-var isFunction = function (
+Jymin.isFunction = function (
   value // mixed:  The variable to check.
 ) {
-  return isType(value, 'function');
+  return Jymin.isType(value, 'function');
 };
 
 /**
  * Return true if a variable is an object.
  */
-var isObject = function (
+Jymin.isObject = function (
   value // mixed:  The variable to check.
 ) {
-  return isType(value, 'object');
+  return Jymin.isType(value, 'object');
 };
 
 /**
  * Return true if a variable is an instance of a class.
  */
-var isInstance = function (
+Jymin.isInstance = function (
   value,     // mixed:  The variable to check.
   protoClass // Class|: The class we'ere checking for.
 ) {
@@ -1981,45 +1981,45 @@ var isInstance = function (
 /**
  * Return true if a variable is an array.
  */
-var isArray = function (
+Jymin.isArray = function (
   value // mixed:  The variable to check.
 ) {
-  return isInstance(value, Array);
+  return Jymin.isInstance(value, Array);
 };
 
 /**
  * Return true if a variable is a date.
  */
-var isDate = function (
+Jymin.isDate = function (
   value // mixed:  The variable to check.
 ) {
-  return isInstance(value, Date);
+  return Jymin.isInstance(value, Date);
 };
 /**
  * Get the current location host.
  */
-var getHost = function () {
+Jymin.getHost = function () {
   return location.host;
 };
 
 /**
  * Get the base of the current URL.
  */
-var getBaseUrl = function () {
-  return location.protocol + '//' + getHost();
+Jymin.getBaseUrl = function () {
+  return location.protocol + '//' + Jymin.getHost();
 };
 
 /**
  * Get the query parameters from a URL.
  */
-var getQueryParams = function (
+Jymin.getQueryParams = function (
   url
 ) {
   url = url || location.href;
   var query = url.substr(url.indexOf('?') + 1).split('#')[0];
   var pairs = query.split('&');
   query = {};
-  forEach(pairs, function (pair) {
+  Jymin.forEach(pairs, function (pair) {
     var eqPos = pair.indexOf('=');
     var name = pair.substr(0, eqPos);
     var value = pair.substr(eqPos + 1);
@@ -2031,9 +2031,9 @@ var getQueryParams = function (
 /**
  * Get the query parameters from the hash of a URL.
  */
-var getHashParams = function (
+Jymin.getHashParams = function (
   hash
 ) {
   hash = (hash || location.hash).replace(/^#/, '');
-  return hash ? getQueryParams(hash) : {};
+  return hash ? Jymin.getQueryParams(hash) : {};
 };

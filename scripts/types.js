@@ -1,7 +1,7 @@
 /**
  * Return true if a variable is a given type.
  */
-var isType = function (
+Jymin.isType = function (
   value, // mixed:  The variable to check.
   type   // string: The type we're checking for.
 ) {
@@ -11,61 +11,61 @@ var isType = function (
 /**
  * Return true if a variable is undefined.
  */
-var isUndefined = function (
+Jymin.isUndefined = function (
   value // mixed:  The variable to check.
 ) {
-  return isType(value, 'undefined');
+  return Jymin.isType(value, 'undefined');
 };
 
 /**
  * Return true if a variable is boolean.
  */
-var isBoolean = function (
+Jymin.isBoolean = function (
   value // mixed:  The variable to check.
 ) {
-  return isType(value, 'boolean');
+  return Jymin.isType(value, 'boolean');
 };
 
 /**
  * Return true if a variable is a number.
  */
-var isNumber = function (
+Jymin.isNumber = function (
   value // mixed:  The variable to check.
 ) {
-  return isType(value, 'number');
+  return Jymin.isType(value, 'number');
 };
 
 /**
  * Return true if a variable is a string.
  */
-var isString = function (
+Jymin.isString = function (
   value // mixed:  The variable to check.
 ) {
-  return isType(value, 'string');
+  return Jymin.isType(value, 'string');
 };
 
 /**
  * Return true if a variable is a function.
  */
-var isFunction = function (
+Jymin.isFunction = function (
   value // mixed:  The variable to check.
 ) {
-  return isType(value, 'function');
+  return Jymin.isType(value, 'function');
 };
 
 /**
  * Return true if a variable is an object.
  */
-var isObject = function (
+Jymin.isObject = function (
   value // mixed:  The variable to check.
 ) {
-  return isType(value, 'object');
+  return Jymin.isType(value, 'object');
 };
 
 /**
  * Return true if a variable is an instance of a class.
  */
-var isInstance = function (
+Jymin.isInstance = function (
   value,     // mixed:  The variable to check.
   protoClass // Class|: The class we'ere checking for.
 ) {
@@ -75,17 +75,17 @@ var isInstance = function (
 /**
  * Return true if a variable is an array.
  */
-var isArray = function (
+Jymin.isArray = function (
   value // mixed:  The variable to check.
 ) {
-  return isInstance(value, Array);
+  return Jymin.isInstance(value, Array);
 };
 
 /**
  * Return true if a variable is a date.
  */
-var isDate = function (
+Jymin.isDate = function (
   value // mixed:  The variable to check.
 ) {
-  return isInstance(value, Date);
+  return Jymin.isInstance(value, Date);
 };

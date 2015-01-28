@@ -1,19 +1,19 @@
 /**
  * Get the type of a form element.
  */
-var getType = function (input) {
-  return ensureString(input.type)[0];
+Jymin.getType = function (input) {
+  return Jymin.ensureString(input.type)[0];
 };
 
 /**
  * Get the value of a form element.
  */
-var getValue = function (
+Jymin.getValue = function (
   input
 ) {
-  input = getElement(input);
+  input = Jymin.getElement(input);
   if (input) {
-    var type = getType(input);
+    var type = Jymin.getType(input);
     var value = input.value;
     var checked = input.checked;
     var options = input.options;
@@ -22,14 +22,14 @@ var getValue = function (
     }
     else if (input.multiple) {
       value = [];
-      forEach(options, function (option) {
+      Jymin.forEach(options, function (option) {
         if (option.selected) {
-          push(value, option.value);
+          Jymin.push(value, option.value);
         }
       });
     }
     else if (options) {
-      value = getValue(options[input.selectedIndex]);
+      value = Jymin.getValue(options[input.selectedIndex]);
     }
     return value;
   }
@@ -38,13 +38,13 @@ var getValue = function (
 /**
  * Set the value of a form element.
  */
-var setValue = function (
+Jymin.setValue = function (
   input,
   value
 ) {
-  input = getElement(input);
+  input = Jymin.getElement(input);
   if (input) {
-    var type = getType(input);
+    var type = Jymin.getType(input);
     var options = input.options;
     if (type == 'c' || type == 'r') {
       input.checked = value ? true : false;
@@ -52,18 +52,18 @@ var setValue = function (
     else if (options) {
       var selected = {};
       if (input.multiple) {
-        if (!isArray(value)) {
-          value = splitByCommas(value);
+        if (!Jymin.isArray(value)) {
+          value = Jymin.splitByCommas(value);
         }
-        forEach(value, function (val) {
+        Jymin.forEach(value, function (val) {
           selected[val] = true;
         });
       }
       else {
         selected[value] = true;
       }
-      value = isArray(value) ? value : [value];
-      forEach(options, function (option) {
+      value = Jymin.isArray(value) ? value : [value];
+      Jymin.forEach(options, function (option) {
         option.selected = !!selected[option.value];
       });
     }
