@@ -11,7 +11,7 @@ Jymin.on('a,button,input,select,textarea', 'focus', function (element) {
 Jymin.on('a,button,input,select,textarea', 'blur', function (element) {
   var focusMethod = element.focus;
   if (focusMethod) {
-    Jymin.addTimeout(focusMethod, function () {
+    Jymin.setTimer(focusMethod, function () {
       if (focusedElement == element) {
         focusedElement = null;
       }

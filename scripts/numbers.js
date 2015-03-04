@@ -1,25 +1,23 @@
 /**
  * If the argument is numeric, return a number, otherwise return zero.
- * @param Object n
+ *
+ * @param  {Object} number  An object to convert to a number, if necessary.
+ * @return {number}         The number, or zero.
  */
-Jymin.ensureNumber = function (
-  number,
-  defaultNumber
-) {
-  defaultNumber = defaultNumber || 0;
-  number *= 1;
-  return isNaN(number) ? defaultNumber : number;
+Jymin.ensureNumber = function (number) {
+  return isNaN(number *= 1) ? 0 : number;
 };
 
 /**
  * Left-pad a number with zeros if it's shorter than the desired length.
+ *
+ * @param  {number} number  A number to pad.
+ * @param  {number} length  A length to pad to.
+ * @return {String}         The zero-padded number.
  */
-Jymin.zeroFill = function (
-  number,
-  length
-) {
-  number = Jymin.ensureString(number);
+Jymin.zeroFill = function (number, length) {
+  number = '' + number;
   // Repurpose the lenth variable to count how much padding we need.
-  length = Math.max(length - number.length, 0);
+  length = Math.max(length - Jymin.getLength(number), 0);
   return (new Array(length + 1)).join('0') + number;
 };

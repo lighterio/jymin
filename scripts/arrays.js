@@ -8,6 +8,7 @@
  */
 Jymin.forEach = function (array, fn) {
   if (array) {
+    array = Jymin.isString(array) ? Jymin.splitByCommas(array) : array;
     for (var index = 0, length = Jymin.getLength(array); index < length; index++) {
       var result = fn(array[index], index, array);
       if (result === false) {
@@ -28,6 +29,7 @@ Jymin.forEach = function (array, fn) {
  */
 Jymin.each = function (array, fn) {
   if (array) {
+    array = Jymin.isString(array) ? Jymin.splitByCommas(array) : array;
     for (var index = 0, length = Jymin.getLength(array); index < length; index++) {
       var result = fn(index, array[index], array);
       if (result === false) {

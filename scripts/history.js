@@ -3,7 +3,7 @@
  */
 Jymin.getHistory = function () {
   var history = window.history || {};
-  Jymin.forEach(['Jymin.push', 'replace'], function (key) {
+  Jymin.forEach(['push', 'replace'], function (key) {
     var fn = history[key + 'State'];
     history[key] = function (href) {
       if (fn) {
@@ -33,7 +33,7 @@ Jymin.historyReplace = function (href) {
 /**
  * Go back.
  */
-Jymin.historyPop = function (href) {
+Jymin.historyPop = function () {
   Jymin.getHistory().back();
 };
 
@@ -41,5 +41,5 @@ Jymin.historyPop = function (href) {
  * Listen for a history change.
  */
 Jymin.onHistoryPop = function (callback) {
-  Jymin.bind(window, 'Jymin.popstate', callback);
+  Jymin.bind(window, 'popstate', callback);
 };

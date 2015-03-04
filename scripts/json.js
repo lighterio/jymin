@@ -1,33 +1,21 @@
-// JavaScript reserved words.
-Jymin.reservedWordPattern = /^(break|case|catch|continue|debugger|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|this|throw|try|typeof|var|void|while|with)$/;
-
 /**
- * Create JSON that doesn't necessarily have to be strict.
+ * Create a circular-safe JSON string.
  */
-Jymin.stringify = function (data, strict, stack) {
+Jymin.safeStringify = function (data, stack) {
   if (Jymin.isString(data)) {
     data = '"' + data.replace(/\n\r"/g, function (c) {
       return c == '\n' ? '\\n' : c == '\r' ? '\\r' : '\\"';
     }) + '"';
   }
-  else if (Jymin.isFunction(data)) {
-    data = data.toString();
-    if (strict) {
-      data = Jymin.stringify(data);
-    }
-  }
-  else if (Jymin.isDate(data)) {
-    data = 'new Date(' + Jymin.getTime(data) + ')';
-    if (strict) {
-      data = Jymin.stringify(data);
-    }
+  else if (Jymin.isFunction(data) || Jymin.isUndefined(data) || (data === null)) {
+    return null;
   }
   else if (data && Jymin.isObject(data)) {
     stack = stack || [];
-    var isCircular = false;
-    Jymin.forEach(stack, function (item, index) {
+    var isCircular;
+    Jymin.forEach(stack, function (item) {
       if (item == data) {
-        isCircular = true;
+        isCircular = 1;
       }
     });
     if (isCircular) {
@@ -40,17 +28,14 @@ Jymin.stringify = function (data, strict, stack) {
       before = '[';
       after = ']';
       Jymin.forEach(data, function (value) {
-        Jymin.push(parts, Jymin.stringify(value, strict, stack));
+        Jymin.push(parts, Jymin.stringify(value, stack));
       });
     }
     else {
       before = '{';
       after = '}';
       Jymin.forIn(data, function (key, value) {
-        if (strict || Jymin.reservedWordPattern.test(key) || /(^\d|[^\w$])/.test(key)) {
-          key = '"' + key + '"';
-        }
-        Jymin.push(parts, key + ':' + Jymin.stringify(value, strict, stack));
+        Jymin.push(parts, Jymin.stringify(key) + ':' + Jymin.stringify(value, stack));
       });
     }
     Jymin.pop(stack);
@@ -63,19 +48,34 @@ Jymin.stringify = function (data, strict, stack) {
 };
 
 /**
+ * Create a JSON string.
+ */
+Jymin.stringify = function (data) {
+  var json;
+  //+browser:old
+  json = Jymin.safeStringify(data);
+  //-browser:old
+  //+browser:ok
+  json = JSON.stringify(data);
+  //-browser:ok
+};
+
+/**
  * Parse JavaScript and return a value.
  */
-Jymin.parse = function (value) {
+Jymin.parse = function (value, alternative) {
   try {
     var evil = window.eval; // jshint ignore:line
     evil('eval.J=' + value);
-    return evil.J;
+    value = evil.J;
   }
   catch (e) {
     //+env:debug
     Jymin.error('[Jymin] Could not parse JS: ' + value);
     //-env:debug
+    value = alternative;
   }
+  return value;
 };
 
 /**

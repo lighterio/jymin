@@ -2,5 +2,5 @@
 global.window = global;
 var document = window.document = {};
 var location = window.location = document.location = {};
-require(__dirname + '/jymin.src');
+require(__dirname + '/jymin');
 module.exports = Jymin;

@@ -9,16 +9,17 @@ var Type = function () {};
  * Extend a Type, to create a new Type with properties decorated onto it.
  */
 Type._extend = function (properties) {
+  var self = this;
 
   // Create the constructor, using a new or inherited `_init` method.
-  var type = properties_init || function () {
-    if (this_init) {
-      this_init.apply(this, arguments);
+  var type = properties._init || function () {
+    if (self._init) {
+      self._init.apply(this, arguments);
     }
   };
 
   // Copy the parent and its prototype.
-  var parent = type.parent = this;
+  var parent = type.parent = self;
   Type._decorate(type, parent);
   Type._decorate(getPrototype(type), getPrototype(parent));
 

@@ -1,43 +1,21 @@
 var fs = require('fs');
 var resolve = require('path').resolve;
+var spawn = require('child_process').spawn;
+var cwd = process.cwd();
 
 global.window = global.window || {};
+global.document = global.document || {};
 global.Jymin = global.Jymin || {};
 
 var dirs = ['scripts', 'plugins'];
 dirs.forEach(function (dir) {
   var files = fs.readdirSync(dir);
-
-  describe('Syntax and loading', function () {
-
-    files.forEach(function (name) {
-
-      it('works in ' + dir + '/' + name, function () {
-        require('../' + dir + '/'  + name);
-      });
-
-    });
-
+  files.forEach(function (name) {
+    require('../' + dir + '/'  + name);
   });
 });
 
-/*
-require('../scripts/ajax');
-require('../scripts/arrays');
-require('../scripts/cookies');
-require('../scripts/cookies');
-require('../scripts/dates');
-require('../scripts/dom');
-require('../scripts/emitter');
-require('../scripts/events');
-require('../scripts/forms');
-require('../scripts/history');
-require('../scripts/json');
-require('../scripts/logging');
-require('../scripts/numbers');
-require('../scripts/objects');
-require('../scripts/storage');
-require('../scripts/strings');
-require('../scripts/types');
-require('../scripts/url');
-*/
+after(function (done) {
+  var child = spawn('npm', ['run', 'build'], {cwd: cwd});
+  child.on('exit', done);
+});

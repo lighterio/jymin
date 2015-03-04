@@ -16,74 +16,38 @@ Jymin.getElement = function (parentElement, idOrElement) {
 };
 
 /**
- * Get elements that have a specified tag name.
- *
- * @param  {HTMLElement}    parentElement  Optional element to call getElementsByTagName on (default: document).
- * @param  {String}         tagName        Optional name of tag to search for (default: *).
- * @return {HTMLCollection}                Collection of matching elements.
- */
-Jymin.getElementsByTagName = function (parentElement, tagName) {
-  if (!Jymin.hasMany(arguments)) {
-    tagName = parentElement;
-    parentElement = document;
-  }
-  return parentElement.getElementsByTagName(tagName || '*');
-};
-
-/**
- * Get elements that have a specified tag and class.
- *
- * @param  {HTMLElement}    parentElement  Optional element to call getElementsByTagName on (default: document).
- * @param  {String}         tagAndClass    Optional tag and class to search for, separated by a period (default: *).
- * @return {HTMLCollection}                Collection of matching elements.
- */
-Jymin.getElementsByTagAndClass = function (parentElement, tagAndClass) {
-  if (!Jymin.hasMany(arguments)) {
-    tagAndClass = parentElement;
-    parentElement = document;
-  }
-  tagAndClass = tagAndClass.split('.');
-  var tagName = (tagAndClass[0] || '*').toUpperCase();
-  var className = tagAndClass[1];
-  var anyTag = (tagName == '*');
-  var elements;
-  if (className) {
-    elements = [];
-    if (parentElement.getElementsByClassName) {
-      Jymin.forEach(parentElement.getElementsByClassName(className), function(element) {
-        if (anyTag || (element.tagName == tagName)) {
-          elements.push(element);
-        }
-      });
-    }
-    else {
-      Jymin.forEach(Jymin.getElementsByTagName(parentElement, tagName), function(element) {
-        if (Jymin.hasClass(element, className)) {
-          elements.push(element);
-        }
-      });
-    }
-  }
-  else {
-    elements = Jymin.getElementsByTagName(parentElement, tagName);
-  }
-  return elements;
-};
-
-/**
  * Get the parent of an element, or an ancestor with a specified tag name.
  *
- * @param  {HTMLElement} element  A element whose parent elements are being searched.
- * @param  {string}      tagName  An optional ancestor tag to search up the tree.
- * @return {HTMLElement}          The parent or matching ancestor.
+ * @param  {HTMLElement} element   A element whose parent elements are being searched.
+ * @param  {String}      selector  An optional selector to search up the tree.
+ * @return {HTMLElement}           The parent or matching ancestor.
  */
-Jymin.getParent = function (element, tagName) {
-  element = element.parentNode;
-  // If a tag name is specified, keep walking up.
-  if (tagName && element && element.tagName != tagName) {
-    element = Jymin.getParent(element, tagName);
+Jymin.getParent = function (element, selector) {
+  return Jymin.getTrail(element, selector)[1];
+};
+
+/**
+ * Get the trail that leads back to the root, optionally filtered by a selector.
+ *
+ * @param  {HTMLElement} element   An element to start the trail.
+ * @param  {String}      selector  An optional selector to filter the trail.
+ * @return {Array}                 The array of elements in the trail.
+ */
+Jymin.getTrail = function (element, selector) {
+  var trail = [element];
+  while (element = element.parentNode) { // jshint ignore:line
+    Jymin.push(trail, element);
   }
-  return element;
+  if (selector) {
+    var set = trail;
+    trail = [];
+    Jymin.all(selector, function (element) {
+      if (set.indexOf(element) > -1) {
+        Jymin.push(trail, element);
+      }
+    });
+  }
+  return trail;
 };
 
 /**
@@ -169,7 +133,6 @@ Jymin.createTag = function (tagName) {
 Jymin.createElement = function (elementOrString, innerHtml) {
   var element = elementOrString;
   if (Jymin.isString(elementOrString)) {
-    elementOrString = elementOrString || '';
     var tagAndAttributes = elementOrString.split('?');
     var tagAndClass = tagAndAttributes[0].split('.');
     var className = tagAndClass.slice(1).join(' ');
@@ -178,7 +141,7 @@ Jymin.createElement = function (elementOrString, innerHtml) {
     var id = tagAndId[1];
     var attributes = tagAndAttributes[1];
     var cachedElement = Jymin.createTag[tagName] || (Jymin.createTag[tagName] = Jymin.createTag(tagName));
-    var element = cachedElement.cloneNode(true);
+    element = cachedElement.cloneNode(true);
     if (id) {
       element.id = id;
     }
@@ -197,7 +160,7 @@ Jymin.createElement = function (elementOrString, innerHtml) {
       });
     }
     if (innerHtml) {
-      setHtml(element, innerHtml);
+      Jymin.setHtml(element, innerHtml);
     }
   }
   return element;
@@ -208,14 +171,15 @@ Jymin.createElement = function (elementOrString, innerHtml) {
  *
  * @param  {HTMLElement}        parentElement    An optional parent element (default: document).
  * @param  {HTMLElement|String} elementOrString  An element or a string used to create an element (default: div).
+ * @param  {String}             innerHtml        An optional string of HTML to populate the element.
  * @return {HTMLElement}                         The element that was added.
  */
-Jymin.addElement = function (parentElement, elementOrString) {
+Jymin.addElement = function (parentElement, elementOrString, innerHtml) {
   if (Jymin.isString(parentElement)) {
     elementOrString = parentElement;
     parentElement = document;
   }
-  var element = Jymin.createElement(elementOrString);
+  var element = Jymin.createElement(elementOrString, innerHtml);
   parentElement.appendChild(element);
   return element;
 };
@@ -234,7 +198,7 @@ Jymin.insertElement = function (parentElement, elementOrString, beforeSibling) {
     elementOrString = parentElement;
     parentElement = document;
   }
-  var element = Jymin.createElement(childElement);
+  var element = Jymin.createElement(elementOrString);
   if (parentElement) {
     // If the beforeSibling value is a number, get the (future) sibling at that index.
     if (Jymin.isNumber(beforeSibling)) {
@@ -305,6 +269,16 @@ Jymin.setHtml = function (element, html) {
 };
 
 /**
+ * Get an element's lowercase tag name.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @return {String}               The element's tag name.
+ */
+Jymin.getTag = function (element) {
+  return Jymin.lower(element.tagName);
+};
+
+/**
  * Get an element's text.
  *
  * @param  {HTMLElement} element  An element.
@@ -312,6 +286,27 @@ Jymin.setHtml = function (element, html) {
  */
 Jymin.getText = function (element) {
   return element.textContent || element.innerText;
+};
+
+/**
+ * Set the text of an element.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @return {String}      text     A text string to set.
+ */
+Jymin.setText = function (element, text) {
+  Jymin.clearElement(element);
+  Jymin.addText(element, text);
+};
+
+/**
+ * Add text to an element.
+ *
+ * @param  {HTMLElement} element  An element.
+ * @return {String}      text     A text string to add.
+ */
+Jymin.addText = function (element, text) {
+  Jymin.addElement(element, document.createTextNode(text));
 };
 
 /**
@@ -455,36 +450,15 @@ Jymin.toggleClass = function (element, className) {
 };
 
 /**
- * Insert an external JavaScript file.
- *
- * @param  {HTMLElement} element  An element.
- * @param  {HTMLElement} element  An element.
- * @param  {String}      src      A source URL of a script to insert.
- * @param  {function}    fn       An optional function to run when the script loads.
- */
-Jymin.insertScript = function (src, fn) {
-  var head = Jymin.getElementsByTagName('head')[0];
-  var script = Jymin.addElement(head, 'script');
-  if (fn) {
-    script.onload = fn;
-    script.onreadystatechange = function() {
-      if (Jymin.isLoaded(script)) {
-        fn();
-      }
-    };
-  }
-  script.src = src;
-};
-
-/**
  * Find elements matching a selector, and return or run a function on them.
  *
  * Selectors are not fully querySelector compatible.
  * Selectors only support commas, spaces, IDs, tags & classes.
  *
- * @param  {HTMLElement} parentElement  An optional element under which to find elements.
- * @param  {String}      selector       A simple selector for finding elements.
- * @return {function}    fn             An optional function to run on matching elements.
+ * @param  {HTMLElement}    parentElement  An optional element under which to find elements.
+ * @param  {String}         selector       A simple selector for finding elements.
+ * @param  {Function}       fn             An optional function to run on matching elements.
+ * @return {HTMLCollection}                The matching elements (if any).
  */
 Jymin.all = function (parentElement, selector, fn) {
   if (!selector || Jymin.isFunction(selector)) {
@@ -493,14 +467,13 @@ Jymin.all = function (parentElement, selector, fn) {
     parentElement = document;
   }
   var elements;
+  //+browser:old
+  elements = [];
   if (Jymin.contains(selector, ',')) {
-    elements = [];
-    var selectors = Jymin.splitByCommas(selector);
-    Jymin.forEach(selectors, function (piece) {
-      var more = Jymin.all(parentElement, piece);
-      if (Jymin.getLength(more)) {
-        Jymin.merge(elements, more);
-      }
+    Jymin.forEach(selector, function (selector) {
+      Jymin.all(parentElement, selector, function (element) {
+        Jymin.push(elements, element);
+      });
     });
   }
   else if (Jymin.contains(selector, ' ')) {
@@ -528,12 +501,24 @@ Jymin.all = function (parentElement, selector, fn) {
     }
   }
   else {
-    elements = Jymin.getElementsByTagAndClass(parentElement, selector);
+    selector = selector.split('.');
+    var tagName = selector[0];
+    var className = selector[1];
+    var tagElements = parentElement.getElementsByTagName(tagName);
+    Jymin.forEach(tagElements, function (element) {
+      if (!className || Jymin.hasClass(element, className)) {
+        Jymin.push(elements, element);
+      }
+    });
   }
+  //-browser:old
+  //+browser:ok
+  elements = parentElement.querySelectorAll(selector);
+  //-browser:ok
   if (fn) {
     Jymin.forEach(elements, fn);
   }
-  return elements || [];
+  return elements;
 };
 
 /**
@@ -541,8 +526,61 @@ Jymin.all = function (parentElement, selector, fn) {
  *
  * @param  {HTMLElement} parentElement  An optional element under which to find an element.
  * @param  {String}      selector       A simple selector for finding an element.
- * @return {function}    fn             An optional function to run on a matching element.
+ * @param  {Function}    fn             An optional function to run on a matching element.
+ * @return {HTMLElement}                The matching element (if any).
  */
 Jymin.one = function (parentElement, selector, fn) {
-  return Jymin.all(parentElement, selector, fn)[0];
+  if (!selector || Jymin.isFunction(selector)) {
+    fn = selector;
+    selector = parentElement;
+    parentElement = document;
+  }
+  var element;
+  //+browser:old
+  element = Jymin.all(parentElement, selector)[0];
+  //-browser:old
+  //+browser:ok
+  element = parentElement.querySelector(selector);
+  //-browser:ok
+  if (element && fn) {
+    fn(element);
+  }
+  return element;
+};
+
+
+/**
+ * Push new HTML into one or more selected elements.
+ *
+ * @param  {String} html     A string of HTML.
+ * @param  {String} selector An optional selector (default: "body").
+ */
+Jymin.pushHtml = function (html, selector) {
+
+  // Grab the new page title if there is one.
+  var title = Jymin.getTagContents(html, 'title')[0];
+
+  // If there's no target, we're replacing the body contents.
+  if (!selector) {
+    selector = 'body';
+    html = Jymin.getTagContents(html, selector)[0];
+  }
+
+  // TODO: Implement a DOM diff.
+  Jymin.all(selector || 'body', function (element) {
+
+    // Set the HTML of an element.
+    Jymin.setHtml(element, html);
+
+    // If there's a title, set it.
+    if (title) {
+      document.title = title;
+      Jymin.scrollTop(0);
+    }
+    Jymin.ready(element);
+  });
+
+  // Execute any scripts that are found.
+  // TODO: Skip over JSX, etc.
+  Jymin.getTagContents(html, 'script', Jymin.execute);
 };

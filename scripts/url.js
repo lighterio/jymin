@@ -15,9 +15,7 @@ Jymin.getBaseUrl = function () {
 /**
  * Get the query parameters from a URL.
  */
-Jymin.getQueryParams = function (
-  url
-) {
+Jymin.getQueryParams = function (url) {
   url = url || location.href;
   var query = url.substr(url.indexOf('?') + 1).split('#')[0];
   var pairs = query.split('&');
@@ -34,9 +32,7 @@ Jymin.getQueryParams = function (
 /**
  * Get the query parameters from the hash of a URL.
  */
-Jymin.getHashParams = function (
-  hash
-) {
+Jymin.getHashParams = function (hash) {
   hash = (hash || location.hash).replace(/^#/, '');
   return hash ? Jymin.getQueryParams(hash) : {};
 };

@@ -10,8 +10,8 @@ Jymin.getStorage = function () {
 /**
  * Fetch an item from local storage.
  *
- * @param  {string} key  A key to fetch an object by
- * @return {Object}      The object that was fetched and deserialized
+ * @param  {String} key  A key to fetch an object by
+ * @return {Any}         The object that was fetched and deserialized
  */
 Jymin.fetch = function (key) {
   var storage = Jymin.getStorage();
@@ -21,8 +21,8 @@ Jymin.fetch = function (key) {
 /**
  * Store an item in local storage.
  *
- * @param  {string} key    A key to store and fetch an object by
- * @param  {Object} value  A value to be stringified and stored
+ * @param  {String} key    A key to store and fetch an object by
+ * @param  {Any}    value  A value to be stringified and stored
  */
 Jymin.store = function (key, value) {
   var storage = Jymin.getStorage();

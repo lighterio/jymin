@@ -1,5 +1,5 @@
 *.seed
-*.Jymin.log
+*.log
 *.csv
 *.dat
 *.out
@@ -10,12 +10,10 @@
 .DS_Store
 .cache
 pids
-Jymin.logs
+logs
+log
 results
 coverage
 node_modules
 build
 jymin.min.js
-
-*.log
-logs

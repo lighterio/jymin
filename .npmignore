@@ -1,5 +1,5 @@
 *.seed
-*.Jymin.log
+*.log
 *.csv
 *.dat
 *.out
@@ -11,15 +11,14 @@
 .cache
 .travis.yml
 pids
-Jymin.logs
+logs
+log
 results
 coverage
 node_modules
 test
 build
 jymin.min.js
-
 .npmignore
-
-*.log
-logs
+.editorconfig
+.jshintrc

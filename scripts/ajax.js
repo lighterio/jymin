@@ -17,14 +17,27 @@ Jymin.responseSuccessFn = Jymin.doNothing;
 Jymin.responseFailureFn = Jymin.doNothing;
 
 /**
+ * Name of the XMLHttpRequest object.
+ * @type {String}
+ */
+Jymin.XHR = 'XMLHttpRequest';
+
+/**
  * Get an XMLHttpRequest object (or ActiveX object in old IE).
  *
  * @return {XMLHttpRequest}   The request object.
  */
 Jymin.getXhr = function () {
-  var Xhr = window.XMLHttpRequest;
-  var ActiveX = window.ActiveXObject;
-  return Xhr ? new Xhr() : (ActiveX ? new ActiveX('Microsoft.XMLHTTP') : false);
+  var xhr;
+  //+browser:old
+  xhr = window.XMLHttpRequest ? new XMLHttpRequest() :
+    window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : // jshint ignore:line
+    false;
+  //-browser:old
+  //+browser:ok
+  xhr = new XMLHttpRequest();
+  //-browser:ok
+  return xhr;
 };
 
 /**
@@ -57,28 +70,27 @@ Jymin.getResponse = function (url, body, onSuccess, onFailure) {
   if (request) {
     onFailure = onFailure || Jymin.responseFailureFn;
     onSuccess = onSuccess || Jymin.responseSuccessFn;
-    request.onreadystatechange = function() {
-      if (request.readyState == 4) {
-        //+env:debug
-        Jymin.log('[Jymin] Received response from "' + url + '". (' + Jymin.getResponse._waiting + ' in progress).');
-        //-env:debug
-        --Jymin.getResponse._waiting;
-        var status = request.status;
-        var isSuccess = (status == 200);
-        var fn = isSuccess ?
-          onSuccess || Jymin.responseSuccessFn :
-          onFailure || Jymin.responseFailureFn;
-        var data = Jymin.parse(request.responseText) || {};
-        data._status = status;
-        data._request = request;
-        fn(data);
-      }
-    };
+    Jymin.bindReady(request, function () {
+
+      //+env:debug
+      Jymin.log('[Jymin] Received response from "' + url + '". (' + Jymin.getResponse._waiting + ' in progress).');
+      --Jymin.getResponse._waiting;
+      //-env:debug
+
+      var status = request.status;
+      var isSuccess = (status == 200);
+      var fn = isSuccess ?
+        onSuccess || Jymin.responseSuccessFn :
+        onFailure || Jymin.responseFailureFn;
+      var data = Jymin.parse(request.responseText) || {};
+      fn(data, request, status);
+    });
     request.open(body ? 'POST' : 'GET', url, true);
-    request.setRequestHeader('x-requested-with', 'XMLHttpRequest');
     if (body) {
       request.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
     }
+
+    //+env:debug
 
     // Record the original request URL.
     request._url = url;
@@ -94,11 +106,11 @@ Jymin.getResponse = function (url, body, onSuccess, onFailure) {
     // Allow applications to back off when too many requests are in progress.
     Jymin.getResponse._waiting = (Jymin.getResponse._waiting || 0) + 1;
 
-    //+env:debug
     Jymin.log('[Jymin] Sending request to "' + url + '". (' + Jymin.getResponse._waiting + ' in progress).');
-    //-env:debug
-    request.send(body || null);
 
+    //-env:debug
+
+    request.send(body || null);
   }
   return true;
 };

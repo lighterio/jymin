@@ -1,10 +1,11 @@
 /**
- * An Emitter is an EventEmitter-style object.
+ * Create an event emitter object, lazily loading its prototype.
  */
 Jymin.Emitter = function () {
-  // Lazily apply the prototype so that Emitter can minify out if not used.
-  // TODO: Find out if this is still necessary with UglifyJS.
-  Jymin.Emitter.prototype = Jymin.EmitterPrototype;
+  this._events = {};
+  if (!this._on) {
+    Jymin.decorateObject(Jymin.Emitter.prototype, Jymin.EmitterPrototype);
+  }
 };
 
 /**
@@ -14,7 +15,7 @@ Jymin.EmitterPrototype = {
 
   _on: function (event, fn) {
     var self = this;
-    var events = self._events || (self._events = {});
+    var events = self._events;
     var listeners = events[event] || (events[event] = []);
     listeners.push(fn);
     return self;
@@ -42,8 +43,7 @@ Jymin.EmitterPrototype = {
 
   _listeners: function (event) {
     var self = this;
-    var events = self._events || 0;
-    var listeners = events[event] || [];
+    var listeners = self._events[event] || [];
     return listeners;
   },
 
@@ -57,9 +57,9 @@ Jymin.EmitterPrototype = {
     return self;
   },
 
-  _removeAllListeners: function (event, fn) {
+  _removeAllListeners: function (event) {
     var self = this;
-    var events = self._events || {};
+    var events = self._events;
     if (event) {
       delete events[event];
     }

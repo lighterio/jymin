@@ -114,10 +114,10 @@ bindHover
 onHover
 bindClick
 bindWindowLoad
-isLoaded
+isReady
 focusElement
 doOnce
-addTimeout
+setTimer
 removeTimeout
 getType
 getValue

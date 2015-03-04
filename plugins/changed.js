@@ -1,5 +1,5 @@
 var lastChangedElement;
-Jymin.addTimeout(function () {
+Jymin.setTimer(function () {
 
   Jymin.onReady(function (readyElement) {
     Jymin.all(readyElement, 'input,select,textarea', function (input) {
