@@ -7,16 +7,37 @@
 [![Support](https://img.shields.io/gittip/zerious.png)](https://www.gittip.com/lighterio/)
 
 
-Jymin is "JavaScript You Minify", meaning Jymin scripts get concatenated with
-your application code and minfied within a single function closure. Functions
-you use will remain intact after minification, and functions you don't use
-will drop out. The end result is that browsers will download and run
-your code quickly, enabling the most responsive experiences possible.
+Jymin is "JavaScript You Minify", meaning Jymin scripts can be concatenated
+with your application code and minfied together. Functions you use will
+remain intact, and functions you don't use will minify out. The end result
+is that browsers will download and run your code quickly, enabling the fastest
+experiences possible.
+
+# Understanding Latency
+
+Browser experiences are affected by three main causes of latency, which can
+roughly be categorized as **hops**, **size** and **speed**.
+* **Hops** to servers and back can be very latent, depending on distance to
+  servers and number of subsequent hops.
+* **Size** of downloads affect bandwidth usage, and large assets can cause
+  long delays.
+* **Speed** of browser rendering is affected by how fast a CPU is and how much
+  work it needs to do.
+
+The relationship between
+[Moore's Law](http://www.nngroup.com/articles/law-of-bandwidth/) and
+[Nielsen's Law](http://en.wikipedia.org/wiki/Moore%27s_law) means CPU speeds
+can be expected to increase at a greater rate than bandwidth, so over time,
+size becomes more important than speed. Additionally, caching is a
+common solution for mitigating latency from hops, and small sizes are better
+for caching, both on CDNs (saving cost) and browsers (saving space).
+
+
 
 <!--
 doNothing
-responseSuccessHandler
-responseFailureHandler
+responseSuccessFn
+responseFailureFn
 getXhr
 getUpload
 getResponse
@@ -51,8 +72,6 @@ wrapElement
 getChildren
 getIndex
 insertElement
-insertBefore
-insertAfter
 removeElement
 clearElement
 getHtml
@@ -64,6 +83,7 @@ setAttribute
 getData
 setData
 getClass
+getClasses
 setClass
 getFirstChild
 getPreviousSibling
@@ -94,10 +114,10 @@ bindHover
 onHover
 bindClick
 bindWindowLoad
-isLoaded
+isReady
 focusElement
 doOnce
-addTimeout
+setTimer
 removeTimeout
 getType
 getValue
@@ -128,7 +148,7 @@ forIn
 forOf
 decorateObject
 ensureProperty
-storage
+getStorage
 fetch
 store
 ensureString
@@ -161,6 +181,7 @@ getHost
 getBaseUrl
 getQueryParams
 getHashParams
+onReady
 -->
 
 ## Acknowledgements

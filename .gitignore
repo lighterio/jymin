@@ -11,6 +11,7 @@
 .cache
 pids
 logs
+log
 results
 coverage
 node_modules

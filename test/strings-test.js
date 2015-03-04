@@ -1,15 +1,9 @@
-var $ = require('../jymin.node');
+describe('Jymin', function () {
 
-describe('Strings', function () {
+  describe('.lower', function () {
 
-  describe('ensureString', function () {
-
-    it('appends an argument to a string', function () {
-      is($.ensureString('Hello'), 'Hello');
-      is($.ensureString(0), '0');
-      is($.ensureString({}), '[object Object]');
-      is($.ensureString([]), '');
-      is($.ensureString(), 'undefined');
+    it('converts a string to lowercase', function () {
+      is(Jymin.lower('Hello'), 'hello');
     });
 
   });

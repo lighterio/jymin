@@ -1,19 +1,13 @@
 /**
- * Get the type of a form element.
- */
-var getType = function (input) {
-  return ensureString(input.type)[0];
-};
-
-/**
  * Get the value of a form element.
+ *
+ * @param  {HTMLElement}  input  A form element.
+ * @return {String|Array}        The value of the form element (or array of elements).
  */
-var getValue = function (
-  input
-) {
-  input = getElement(input);
+Jymin.getValue = function (input) {
+  input = Jymin.getElement(input);
   if (input) {
-    var type = getType(input);
+    var type = input.type[0];
     var value = input.value;
     var checked = input.checked;
     var options = input.options;
@@ -22,14 +16,14 @@ var getValue = function (
     }
     else if (input.multiple) {
       value = [];
-      forEach(options, function (option) {
+      Jymin.forEach(options, function (option) {
         if (option.selected) {
-          push(value, option.value);
+          Jymin.push(value, option.value);
         }
       });
     }
     else if (options) {
-      value = getValue(options[input.selectedIndex]);
+      value = Jymin.getValue(options[input.selectedIndex]);
     }
     return value;
   }
@@ -37,14 +31,14 @@ var getValue = function (
 
 /**
  * Set the value of a form element.
+ *
+ * @param  {HTMLElement}  input  A form element.
+ * @return {String|Array}        A value or values to set on the form element.
  */
-var setValue = function (
-  input,
-  value
-) {
-  input = getElement(input);
+Jymin.setValue = function (input, value) {
+  input = Jymin.getElement(input);
   if (input) {
-    var type = getType(input);
+    var type = input.type[0];
     var options = input.options;
     if (type == 'c' || type == 'r') {
       input.checked = value ? true : false;
@@ -52,18 +46,15 @@ var setValue = function (
     else if (options) {
       var selected = {};
       if (input.multiple) {
-        if (!isArray(value)) {
-          value = splitByCommas(value);
-        }
-        forEach(value, function (val) {
-          selected[val] = true;
+        Jymin.forEach(value, function (optionValue) {
+          selected[optionValue] = true;
         });
       }
       else {
         selected[value] = true;
       }
-      value = isArray(value) ? value : [value];
-      forEach(options, function (option) {
+      value = Jymin.isArray(value) ? value : [value];
+      Jymin.forEach(options, function (option) {
         option.selected = !!selected[option.value];
       });
     }

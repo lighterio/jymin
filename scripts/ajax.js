@@ -1,91 +1,116 @@
 /**
  * Empty handler.
+ * @type {function}
  */
-var doNothing = function () {};
-
-// TODO: Enable multiple handlers using "bind" or perhaps middlewares.
-var responseSuccessHandler = doNothing;
-var responseFailureHandler = doNothing;
+Jymin.doNothing = function () {};
 
 /**
- * Get an XMLHttpRequest object.
+ * Default AJAX success handler function.
+ * @type {function}
  */
-var getXhr = function () {
-  var Xhr = window.XMLHttpRequest;
-  var ActiveX = window.ActiveXObject;
-  return Xhr ? new Xhr() : (ActiveX ? new ActiveX('Microsoft.XMLHTTP') : false);
+Jymin.responseSuccessFn = Jymin.doNothing;
+
+/**
+ * Default AJAX failure handler function.
+ * @type {function}
+ */
+Jymin.responseFailureFn = Jymin.doNothing;
+
+/**
+ * Name of the XMLHttpRequest object.
+ * @type {String}
+ */
+Jymin.XHR = 'XMLHttpRequest';
+
+/**
+ * Get an XMLHttpRequest object (or ActiveX object in old IE).
+ *
+ * @return {XMLHttpRequest}   The request object.
+ */
+Jymin.getXhr = function () {
+  var xhr;
+  //+browser:old
+  xhr = window.XMLHttpRequest ? new XMLHttpRequest() :
+    window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : // jshint ignore:line
+    false;
+  //-browser:old
+  //+browser:ok
+  xhr = new XMLHttpRequest();
+  //-browser:ok
+  return xhr;
 };
 
 /**
- * Get an XHR upload object.
+ * Get an XMLHttpRequest upload object.
+ *
+ * @return {XMLHttpRequestUpload}   The request upload object.
  */
-var getUpload = function () {
-  var xhr = getXhr();
+Jymin.getUpload = function () {
+  var xhr = Jymin.getXhr();
   return xhr ? xhr.upload : false;
 };
 
 /**
  * Make an AJAX request, and handle it with success or failure.
- * @return boolean: True if AJAX is supported.
+ *
+ * @param  {string}   url        A URL from which to request a response.
+ * @param  {string}   body       An optional query, which if provided, makes the request a POST.
+ * @param  {function} onSuccess  An optional function to run upon success.
+ * @param  {function} onFailure  An optional function to run upon failure.
+ * @return {boolean}             True if AJAX is supported.
  */
-var getResponse = function (
-  url,       // string:    The URL to request a response from.
-  body,      // object|:   Data to post. The method is automagically "POST" if body is truey, otherwise "GET".
-  onSuccess, // function|: Callback to run on success. `onSuccess(response, request)`.
-  onFailure  // function|: Callback to run on failure. `onFailure(response, request)`.
-) {
+Jymin.getResponse = function (url, body, onSuccess, onFailure) {
   // If the optional body argument is omitted, shuffle it out.
-  if (isFunction(body)) {
+  if (Jymin.isFunction(body)) {
     onFailure = onSuccess;
     onSuccess = body;
     body = 0;
   }
-  var request = getXhr();
+  var request = Jymin.getXhr();
   if (request) {
-    onFailure = onFailure || responseFailureHandler;
-    onSuccess = onSuccess || responseSuccessHandler;
-    request.onreadystatechange = function() {
-      if (request.readyState == 4) {
-        //+env:debug
-        log('[Jymin] Received response from "' + url + '". (' + getResponse._WAITING + ' in progress).');
-        //-env:debug
-        --getResponse._WAITING;
-        var status = request.status;
-        var isSuccess = (status == 200);
-        var callback = isSuccess ?
-          onSuccess || responseSuccessHandler :
-          onFailure || responseFailureHandler;
-        var data = parse(request.responseText) || {};
-        data._STATUS = status;
-        data._REQUEST = request;
-        callback(data);
-      }
-    };
+    onFailure = onFailure || Jymin.responseFailureFn;
+    onSuccess = onSuccess || Jymin.responseSuccessFn;
+    Jymin.bindReady(request, function () {
+
+      //+env:debug
+      Jymin.log('[Jymin] Received response from "' + url + '". (' + Jymin.getResponse._waiting + ' in progress).');
+      --Jymin.getResponse._waiting;
+      //-env:debug
+
+      var status = request.status;
+      var isSuccess = (status == 200);
+      var fn = isSuccess ?
+        onSuccess || Jymin.responseSuccessFn :
+        onFailure || Jymin.responseFailureFn;
+      var data = Jymin.parse(request.responseText) || {};
+      fn(data, request, status);
+    });
     request.open(body ? 'POST' : 'GET', url, true);
-    request.setRequestHeader('x-requested-with', 'XMLHttpRequest');
     if (body) {
       request.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
     }
 
+    //+env:debug
+
     // Record the original request URL.
-    request._URL = url;
+    request._url = url;
 
     // If it's a post, record the post body.
     if (body) {
-      request._BODY = body;
+      request._body = body;
     }
 
     // Record the time the request was made.
-    request._TIME = getTime();
+    request._time = Jymin.getTime();
 
     // Allow applications to back off when too many requests are in progress.
-    getResponse._WAITING = (getResponse._WAITING || 0) + 1;
+    Jymin.getResponse._waiting = (Jymin.getResponse._waiting || 0) + 1;
 
-    //+env:debug
-    log('[Jymin] Sending request to "' + url + '". (' + getResponse._WAITING + ' in progress).');
+    Jymin.log('[Jymin] Sending request to "' + url + '". (' + Jymin.getResponse._waiting + ' in progress).');
+
     //-env:debug
-    request.send(body || null);
 
+    request.send(body || null);
   }
   return true;
 };

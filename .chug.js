@@ -1,4 +1,3 @@
-var path = require('path');
 var chug = require('chug');
 var figlet = require('figlet');
 var pkg = require('./package');
@@ -9,16 +8,14 @@ figlet.text('Jymin v' + pkg.version, {font: 'Standard'}, function (e, art) {
   var pattern = /^.*\/(workspace|node_modules|lighterio)\/([\d\w-_]+)\//i;
   var url = 'https://github.com/lighterio/$2/blob/master/';
   var urls = [];
-  var content;
 
   // Concatenate and output all non-plugin scripts.
-  var load = chug('scripts')
+  chug('scripts')
     .each(function (asset) {
       urls.push(asset.location.replace(pattern, url));
     })
-    .concat('jymin.js')
+    .concat()
     .each(function (asset) {
-      content = "var version = '" + pkg.version + "';\n\n" + asset.getContent();
       asset.setContent(
         "/**" + art.replace(/ +$/, '').replace(/ *\n/g, '\n * ') + "\n" +
         " *\n" +
@@ -29,15 +26,37 @@ figlet.text('Jymin v' + pkg.version, {font: 'Standard'}, function (e, art) {
         " * Source files:\n" +
         " *   " + urls.join("\n *   ") + "\n" +
         " */\n\n\n" +
-        content);
+        "var Jymin = {version: '" + pkg.version + "'};\n\n" +
+        "//+env:commonjs\n" +
+        "// Support CommonJS.\n" +
+        "if (typeof exports == 'object') {\n" +
+        "  module.exports = Jymin;\n" +
+        "}\n" +
+        "//-env:commonjs\n\n" +
+        "//+env:amd\n" +
+        "// Support AMD.\n" +
+        "else if (typeof define == 'function' && define.amd) {\n" +
+        "  define(function() {\n" +
+        "    return Jymin;\n" +
+        "  });\n" +
+        "}\n" +
+        "//-env:amd\n\n" +
+        "//+env:window\n" +
+        "// Support browsers.\n" +
+        "else {\n" +
+        "  this.Jymin = Jymin;\n" +
+        "}\n" +
+        "//-env:window\n\n" +
+        asset.getContent());
     })
-    .wrap('window, document, location, Math')
-    .minify()
-    .each(function (asset) {
-      asset.content = addEval(asset.content);
-      asset.minifiedContent = addEval(asset.minifiedContent);
-    })
+    .cull('browser', 'ok')
     .write(dir, 'jymin.js')
+    .replace(/Jymin\.([$_a-zA-Z0-9]+)(\s*=)?/g, function (match, name, equals) {
+      return equals ? 'var ' + name + ' =' : name;
+    })
+    .cull('env', 'min')
+    .wrap()
+    .minify()
     .write(dir, 'jymin.min.js', 'minified');
 });
 

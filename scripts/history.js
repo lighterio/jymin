@@ -1,9 +1,9 @@
 /**
  * Return a history object.
  */
-var getHistory = function () {
+Jymin.getHistory = function () {
   var history = window.history || {};
-  forEach(['push', 'replace'], function (key) {
+  Jymin.forEach(['push', 'replace'], function (key) {
     var fn = history[key + 'State'];
     history[key] = function (href) {
       if (fn) {
@@ -19,35 +19,27 @@ var getHistory = function () {
 /**
  * Push an item into the history.
  */
-var historyPush = function (
-  href
-) {
-  getHistory().push(href);
+Jymin.historyPush = function (href) {
+  Jymin.getHistory().push(href);
 };
 
 /**
  * Replace the current item in the history.
  */
-var historyReplace = function (
-  href
-) {
-  getHistory().replace(href);
+Jymin.historyReplace = function (href) {
+  Jymin.getHistory().replace(href);
 };
 
 /**
  * Go back.
  */
-var historyPop = function (
-  href
-) {
-  getHistory().back();
+Jymin.historyPop = function () {
+  Jymin.getHistory().back();
 };
 
 /**
  * Listen for a history change.
  */
-var onHistoryPop = function (
-  callback
-) {
-  bind(window, 'popstate', callback);
+Jymin.onHistoryPop = function (callback) {
+  Jymin.bind(window, 'popstate', callback);
 };

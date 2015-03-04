@@ -12,11 +12,13 @@
 .travis.yml
 pids
 logs
+log
 results
 coverage
 node_modules
 test
 build
 jymin.min.js
-
 .npmignore
+.editorconfig
+.jshintrc

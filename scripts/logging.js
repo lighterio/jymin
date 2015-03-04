@@ -1,42 +1,42 @@
 /**
  * Log values to the console, if it's available.
  */
-var error = function () {
-  ifConsole('error', arguments);
+Jymin.error = function () {
+  Jymin.ifConsole('Jymin.error', arguments);
 };
 
 /**
  * Log values to the console, if it's available.
  */
-var warn = function () {
-  ifConsole('warn', arguments);
+Jymin.warn = function () {
+  Jymin.ifConsole('Jymin.warn', arguments);
 };
 
 /**
  * Log values to the console, if it's available.
  */
-var info = function () {
-  ifConsole('info', arguments);
+Jymin.info = function () {
+  Jymin.ifConsole('Jymin.info', arguments);
 };
 
 /**
  * Log values to the console, if it's available.
  */
-var log = function () {
-  ifConsole('log', arguments);
+Jymin.log = function () {
+  Jymin.ifConsole('Jymin.log', arguments);
 };
 
 /**
  * Log values to the console, if it's available.
  */
-var trace = function () {
-  ifConsole('trace', arguments);
+Jymin.trace = function () {
+  Jymin.ifConsole('Jymin.trace', arguments);
 };
 
 /**
  * Log values to the console, if it's available.
  */
-var ifConsole = function (method, args) {
+Jymin.ifConsole = function (method, args) {
   var console = window.console;
   if (console && console[method]) {
     console[method].apply(console, args);

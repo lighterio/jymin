@@ -1,15 +1,18 @@
 var lastChangedElement;
+Jymin.setTimer(function () {
 
-onReady(function (readyElement) {
-  all(readyElement, 'input,select,textarea', function (input) {
-    input._ORIGINAL_VALUE = getValue(input);
+  Jymin.onReady(function (readyElement) {
+    Jymin.all(readyElement, 'input,select,textarea', function (input) {
+      input._originalValue = Jymin.getValue(input);
+    });
   });
-});
 
-on('input,select,textarea', 'mouseup keyup change', function (input) {
-  var isChanged = (getValue(input) != input._ORIGINAL_VALUE);
-  input._CHANGED = isChanged;
-  if (isChanged) {
-    lastChangedElement = input;
-  }
+  Jymin.on('input,select,textarea', 'mouseup keyup change', function (input) {
+    var isChanged = (Jymin.getValue(input) != input._originalValue);
+    input._changed = isChanged;
+    if (isChanged) {
+      lastChangedElement = input;
+    }
+  });
+
 });

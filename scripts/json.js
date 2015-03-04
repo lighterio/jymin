@@ -1,59 +1,44 @@
-// JavaScript reserved words.
-var reservedWordPattern = /^(break|case|catch|continue|debugger|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|this|throw|try|typeof|var|void|while|with)$/;
-
 /**
- * Create JSON that doesn't necessarily have to be strict.
+ * Create a circular-safe JSON string.
  */
-var stringify = function (data, strict, stack) {
-  if (isString(data)) {
+Jymin.safeStringify = function (data, stack) {
+  if (Jymin.isString(data)) {
     data = '"' + data.replace(/\n\r"/g, function (c) {
       return c == '\n' ? '\\n' : c == '\r' ? '\\r' : '\\"';
     }) + '"';
   }
-  else if (isFunction(data)) {
-    data = data.toString();
-    if (strict) {
-      data = stringify(data);
-    }
+  else if (Jymin.isFunction(data) || Jymin.isUndefined(data) || (data === null)) {
+    return null;
   }
-  else if (isDate(data)) {
-    data = 'new Date(' + getTime(data) + ')';
-    if (strict) {
-      data = stringify(data);
-    }
-  }
-  else if (data && isObject(data)) {
+  else if (data && Jymin.isObject(data)) {
     stack = stack || [];
-    var isCircular = false;
-    forEach(stack, function (item, index) {
+    var isCircular;
+    Jymin.forEach(stack, function (item) {
       if (item == data) {
-        isCircular = true;
+        isCircular = 1;
       }
     });
     if (isCircular) {
       return null;
     }
-    push(stack, data);
+    Jymin.push(stack, data);
     var parts = [];
     var before, after;
-    if (isArray(data)) {
+    if (Jymin.isArray(data)) {
       before = '[';
       after = ']';
-      forEach(data, function (value) {
-        push(parts, stringify(value, strict, stack));
+      Jymin.forEach(data, function (value) {
+        Jymin.push(parts, Jymin.stringify(value, stack));
       });
     }
     else {
       before = '{';
       after = '}';
-      forIn(data, function (key, value) {
-        if (strict || reservedWordPattern.test(key) || /(^\d|[^\w$])/.test(key)) {
-          key = '"' + key + '"';
-        }
-        push(parts, key + ':' + stringify(value, strict, stack));
+      Jymin.forIn(data, function (key, value) {
+        Jymin.push(parts, Jymin.stringify(key) + ':' + Jymin.stringify(value, stack));
       });
     }
-    pop(stack);
+    Jymin.pop(stack);
     data = before + parts.join(',') + after;
   }
   else {
@@ -63,64 +48,79 @@ var stringify = function (data, strict, stack) {
 };
 
 /**
+ * Create a JSON string.
+ */
+Jymin.stringify = function (data) {
+  var json;
+  //+browser:old
+  json = Jymin.safeStringify(data);
+  //-browser:old
+  //+browser:ok
+  json = JSON.stringify(data);
+  //-browser:ok
+};
+
+/**
  * Parse JavaScript and return a value.
  */
-var parse = function (value) {
+Jymin.parse = function (value, alternative) {
   try {
     var evil = window.eval; // jshint ignore:line
     evil('eval.J=' + value);
-    return evil.J;
+    value = evil.J;
   }
   catch (e) {
     //+env:debug
-    error('[Jymin] Could not parse JS: ' + value);
+    Jymin.error('[Jymin] Could not parse JS: ' + value);
     //-env:debug
+    value = alternative;
   }
+  return value;
 };
 
 /**
  * Execute JavaScript.
  */
-var execute = function (text) {
-  parse('0;' + text);
+Jymin.execute = function (text) {
+  Jymin.parse('0;' + text);
 };
 
 /**
  * Parse a value and return a boolean no matter what.
  */
-var parseBoolean = function (value, alternative) {
-  value = parse(value);
-  return isBoolean(value) ? value : (alternative || false);
+Jymin.parseBoolean = function (value, alternative) {
+  value = Jymin.parse(value);
+  return Jymin.isBoolean(value) ? value : (alternative || false);
 };
 
 /**
  * Parse a value and return a number no matter what.
  */
-var parseNumber = function (value, alternative) {
-  value = parse(value);
-  return isNumber(value) ? value : (alternative || 0);
+Jymin.parseNumber = function (value, alternative) {
+  value = Jymin.parse(value);
+  return Jymin.isNumber(value) ? value : (alternative || 0);
 };
 
 /**
  * Parse a value and return a string no matter what.
  */
-var parseString = function (value, alternative) {
-  value = parse(value);
-  return isString(value) ? value : (alternative || '');
+Jymin.parseString = function (value, alternative) {
+  value = Jymin.parse(value);
+  return Jymin.isString(value) ? value : (alternative || '');
 };
 
 /**
  * Parse a value and return an object no matter what.
  */
-var parseObject = function (value, alternative) {
-  value = parse(value);
-  return isObject(value) ? value : (alternative || {});
+Jymin.parseObject = function (value, alternative) {
+  value = Jymin.parse(value);
+  return Jymin.isObject(value) ? value : (alternative || {});
 };
 
 /**
  * Parse a value and return a number no matter what.
  */
-var parseArray = function (value, alternative) {
-  value = parse(value);
-  return isObject(value) ? value : (alternative || []);
+Jymin.parseArray = function (value, alternative) {
+  value = Jymin.parse(value);
+  return Jymin.isObject(value) ? value : (alternative || []);
 };

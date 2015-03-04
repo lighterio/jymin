@@ -1,6 +1,6 @@
 var zeriousify;
 try {
-  zeriousify = require('zeriousify');
+  // zeriousify = require('zeriousify');
 }
 catch (e) {
   // If Zeriousify isn't installed globally, skip it.

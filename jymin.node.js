@@ -1,12 +1,6 @@
-// Fake some stuff.
+// TODO: Find a good DOM mock library for testing.
 global.window = global;
-global.document = {};
-global.location = document.location = {};
-
-// Load Jymin using eval so it can be tested in Node.
-var fs = require('fs');
-var code = '' + fs.readFileSync(__dirname + '/jymin.js');
-code = code.replace(/\nvar (\w+) = /g, '\nvar $1 = jymin.$1 = ');
-code = 'var jymin = eval.jymin = {};\n' + code;
-eval(code);
-module.exports = eval.jymin;
+var document = window.document = {};
+var location = window.location = document.location = {};
+require(__dirname + '/jymin');
+module.exports = Jymin;

@@ -1,91 +1,131 @@
 /**
- * Return true if a variable is a given type.
+ * Check whether a value is of a given primitive type.
+ *
+ * @param  {Any}     value  A value to check.
+ * @param  {Any}     type   The primitive type.
+ * @return {boolean}        True if the value is of the given type.
  */
-var isType = function (
-  value, // mixed:  The variable to check.
-  type   // string: The type we're checking for.
-) {
+Jymin.isType = function (value, type) {
   return typeof value == type;
 };
 
 /**
- * Return true if a variable is undefined.
+ * Check whether a value is undefined.
+ *
+ * @param  {Any}     value  A value to check.
+ * @return {boolean}        True if the value is undefined.
  */
-var isUndefined = function (
-  value // mixed:  The variable to check.
-) {
-  return isType(value, 'undefined');
+Jymin.isUndefined = function (value) {
+  return typeof value == 'undefined';
 };
 
 /**
- * Return true if a variable is boolean.
+ * Check whether a value is a boolean.
+ *
+ * @param  {Any}     value  A value to check.
+ * @return {boolean}        True if the value is a boolean.
  */
-var isBoolean = function (
-  value // mixed:  The variable to check.
-) {
-  return isType(value, 'boolean');
+Jymin.isBoolean = function (value) {
+  return typeof value == 'boolean';
 };
 
 /**
- * Return true if a variable is a number.
+ * Check whether a value is a number.
+ *
+ * @param  {Any}     value  A value to check.
+ * @return {boolean}        True if the value is a number.
  */
-var isNumber = function (
-  value // mixed:  The variable to check.
-) {
-  return isType(value, 'number');
+Jymin.isNumber = function (value) {
+  return typeof value == 'number';
 };
 
 /**
- * Return true if a variable is a string.
+ * Check whether a value is a string.
+ *
+ * @param  {Any}     value  A value to check.
+ * @return {boolean}        True if the value is a string.
  */
-var isString = function (
-  value // mixed:  The variable to check.
-) {
-  return isType(value, 'string');
+Jymin.isString = function (value) {
+  return typeof value == 'string';
 };
 
 /**
- * Return true if a variable is a function.
+ * Check whether a value is a function.
+ *
+ * @param  {Any}     value  A value to check.
+ * @return {boolean}        True if the value is a function.
  */
-var isFunction = function (
-  value // mixed:  The variable to check.
-) {
-  return isType(value, 'function');
+Jymin.isFunction = function (value) {
+  return typeof value == 'function';
 };
 
 /**
- * Return true if a variable is an object.
+ * Check whether a value is an object.
+ *
+ * @param  {Any}     value  A value to check.
+ * @return {boolean}        True if the value is an object.
  */
-var isObject = function (
-  value // mixed:  The variable to check.
-) {
-  return isType(value, 'object');
+Jymin.isObject = function (value) {
+  return typeof value == 'object';
 };
 
 /**
- * Return true if a variable is an instance of a class.
+ * Check whether a value is null.
+ *
+ * @param  {Any}     value  A value to check.
+ * @return {boolean}        True if the value is null.
  */
-var isInstance = function (
-  value,     // mixed:  The variable to check.
-  protoClass // Class|: The class we'ere checking for.
-) {
-  return value instanceof (protoClass || Object);
+Jymin.isNull = function (value) {
+  return value === null;
 };
 
 /**
- * Return true if a variable is an array.
+ * Check whether a value is an instance of a given type.
+ *
+ * @param  {Any}      value        A value to check.
+ * @param  {Function} Constructor  A constructor for a type of object.
+ * @return {boolean}               True if the value is an instance of a given type.
  */
-var isArray = function (
-  value // mixed:  The variable to check.
-) {
-  return isInstance(value, Array);
+Jymin.isInstance = function (value, Constructor) {
+  return value instanceof Constructor;
 };
 
 /**
- * Return true if a variable is a date.
+ * Check whether a value is an array.
+ *
+ * @param  {Any}     value  A value to check.
+ * @return {boolean}        True if the value is an array.
  */
-var isDate = function (
-  value // mixed:  The variable to check.
-) {
-  return isInstance(value, Date);
+Jymin.isArray = function (value) {
+  return Jymin.isInstance(value, Array);
+};
+
+/**
+ * Check whether a value is a date.
+ *
+ * @param  {Any}     value  A value to check.
+ * @return {boolean}        True if the value is a date.
+ */
+Jymin.isDate = function (value) {
+  return Jymin.isInstance(value, Date);
+};
+
+/**
+ * Check whether a value is an error.
+ *
+ * @param  {Any}     value  A value to check.
+ * @return {boolean}        True if the value is an error.
+ */
+Jymin.isError = function (value) {
+  return Jymin.isInstance(value, Error);
+};
+
+/**
+ * Check whether a value is a regular expression.
+ *
+ * @param  {Any}     value  A value to check.
+ * @return {boolean}        True if the value is a regular expression.
+ */
+Jymin.isRegExp = function (value) {
+  return Jymin.isInstance(value, RegExp);
 };
